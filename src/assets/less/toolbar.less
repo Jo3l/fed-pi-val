@@ -1,0 +1,111 @@
+	#toolbarContainer {
+		width:100%;
+		overflow:hidden;
+	}
+	.ui-toolbar__brand-text{
+		font-family: 'Rambla', sans-serif;
+		font-size: 1.3em;
+		color:@fedcolor;
+		@media(max-width: @screenMobile) {
+			font-size: 1em;
+		}
+		
+	}
+	.ui-toolbar__nav-icon {
+		img {
+			margin-left:10px;
+			@media(max-width: @screenMobile) {
+				width:25px;
+			}
+		}
+	}
+	
+	.ui-toolbar__right {
+		@media(max-width: @screenMobile) {
+			display:none;
+		}
+	}
+	
+.waveHorizontals{
+	width: 100%;
+	height: 3vw;
+	max-height:20px;
+	position:relative;
+	overflow:hidden;
+	transform: rotate(180deg);
+	//margin-bottom:-20px;
+}
+.waveHorizontal{
+	width: 200%;
+	height: 100%;
+	display: block;
+	position:absolute;
+	
+	animation: move 52s linear infinite;
+}
+#waveHorizontal1{
+	animation-delay: -2s;
+	path {
+		fill: rgba(135, 33, 46, 0.5);
+	}
+}
+#waveHorizontal2{
+	animation-delay: -2s;
+	animation-duration: 25s;
+	path {
+		fill: rgba(135, 33, 46, 0.5);
+	}
+}
+#waveHorizontal3{
+	animation-delay: -4s;
+	animation-duration: 23s;
+	path {
+		fill: rgba(135, 33, 46, 0.5);
+	}
+}
+
+
+.fancyStart, .fancyEnd {
+	width:100%;
+	overflow:hidden;
+	position: absolute;
+	height: 20px;
+	svg {
+	    height: 20px;
+	    max-height:20px;
+	    width: 200%;
+	    position: absolute;
+	    z-index: 99;
+	    filter: drop-shadow(0px 0px 3px @fedcolor);
+	    path {
+			fill: white;
+		}
+	}
+}
+
+.fancyStart {
+	margin-top: -20px;
+	svg{
+		transform: translate(-25%, 0%);
+	}
+
+
+}
+
+.fancyEnd {
+	margin-bottom: -20px;
+	svg{
+		margin-top:-1px;
+	}
+
+}
+
+
+
+
+
+
+@keyframes move{
+	0% {		transform: translate(0%,0%);}
+	100% {	transform: translate(-50%,0%);}
+}

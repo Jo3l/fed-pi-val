@@ -20,14 +20,12 @@
 @columnWidth: 	100%/@columns;
 
 // Break-points
-
+@screenMobile: 	480px;
 @screenTablet: 	768px;
 @screenDesktop: 992px;
 @screenLarge:   1200px;
 
-//
-// Mobile and up
-//
+
 
 [class*="col-fixed-"] {
   float: left;
@@ -69,6 +67,78 @@
 .fluidable (0) {}
 .fluidable (@columns);
 
+//
+// Mobile and up
+//
+
+@media (min-width: @screenMobile) {
+
+	.container {
+		max-width: @screenTablet - (@gutterWidth * 2);
+		.center-block();
+	}
+
+	// Columns
+
+	.fluidable (@index) when (@index > 0) {
+		.col-@{index} {
+			padding-left: @gutterWidth / 2;
+			padding-right: @gutterWidth / 2;
+			width: @columnWidth * @index;
+			float: left;
+		}
+		.fluidable(@index - 1);
+	}
+	.fluidable (0) {}
+	.fluidable (@columns);
+
+
+	// Offset
+
+	.offset (@index) when (@index > -1) {
+		.col-offset-@{index} {
+			margin-left: @columnWidth * @index;
+		}
+		.offset(@index - 1);
+	}
+	.offset (0) {}
+	.offset (@columns);
+
+
+	// Pull
+
+	.pull (@index) when (@index > -1) {
+		.col-pull-@{index} {
+			right: @columnWidth * @index;
+		}
+		.pull(@index - 1);
+	}
+	.pull (0) {}
+	.pull (@columns);
+
+
+	// Push
+
+	.push (@index) when (@index > -1) {
+		.col-push-@{index} {
+			left: @columnWidth * @index;
+		}
+		.push(@index - 1);
+	}
+	.push (0) {}
+	.push (@columns);
+
+
+	// Groups
+
+	.col-group {
+		margin-right: @gutterWidth / -2;
+		margin-left: @gutterWidth / -2;
+		padding: 0;
+		.clear();
+	}
+
+}
 
 //	
 //	Tablet and up

@@ -57,8 +57,8 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
     noInfo: true,
-    host: "192.168.1.101", // Your Computer Name
-    port: 8080
+    host: "fedpival.indiza.com", // Your Computer Name
+    port: 8181
   },
   performance: {
     hints: false

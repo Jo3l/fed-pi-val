@@ -8,6 +8,7 @@
 /usuari ? POST {"pwd":""} // autenticar
 /usuari/logout // desautenticar
 /noticia // llista totes les noticies (les primeres 20)
+/noticia/short // llista totes les noticies (les primeres 20) tallant camps llargs
 /noticia/p/1 // torna la segona pagina de noticies (les segones 20)
 /noticia ? POST {elements} // nova noticia
 /noticia/id/{id} // torna una noticia amb eixe id

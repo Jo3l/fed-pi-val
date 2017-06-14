@@ -1,15 +1,10 @@
 //defines
-
-@fblue: #004f9f;
-@fgrey: #666666;
-@fgreyLight: #d7d7d7;
-@fred: #e12129;
-@fgreyBg: #d3d3d3;
-@flightBlue: #ccdcec;
+@fedcolor: #87212e;
+//font-family: 'Yantramanav', cursive;
+//font-family: 'Rambla', sans-serif;
 
 @import "fluidable.less";
-@import "button.less";
-@import "modal.less";
+@import "toolbar.less";
 
 @font-face {
     font-family: 'bootcampregular';
@@ -18,11 +13,6 @@
     font-weight: normal;
     font-style: normal;
 }
-
-@import url('https://fonts.googleapis.com/css?family=Amaranth');
-@import url('https://fonts.googleapis.com/css?family=Changa+One');
-@import url('https://fonts.googleapis.com/css?family=ABeeZee');
-@import url(https://fonts.googleapis.com/css?family=Lato:900,300);
 
 html { //this is to avoid right scrollbar jump when it appears
     @media screen and (min-width: 960px) {
@@ -35,10 +25,9 @@ body {
     margin: 0;
     padding: 0;
     min-width: 320px;
-    color: @fgrey;
-    font-family: 'ABeeZee', sans-serif;
-    color: #012744;
-    transition: background .2s ease-in, color .2s ease;
+    font-family: 'Yantramanav', cursive;
+    color: #232323;
+    position: relative;
 }
 
 //remove Firefox's dotted outline
@@ -64,47 +53,10 @@ input[type="submit"]::-moz-focus-inner {
   opacity: 0
 }
 
-.avatar:after {
-	border: 3px dotted #2196f3;
-	box-sizing: content-box;
-	content:"";
-}
-
-.logo {
-	font-family: 'Lato', sans-serif;
-}
-
-
-.circle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20vmin;
-    height: 20vmin;
-    border-radius: 100%;
-    line-height: 19vmin;
-    text-decoration: none;
-    font-family: 'Lato';
-    font-weight: 900;
-    font-size: 35px;
-    color: inherit;
-    text-align: center;
-	&:before, &:after {
-	    content: '';
-	    position: absolute;
-	    border-radius: 100%;
-	    top: 0;
-	    left: 0;
-	    right: 0;
-	    bottom: 0;
-	    box-shadow: inset 50px 0 0 rgba(9, 68, 105, 0.5), inset 0 50px 0 rgba(0, 140, 186, 0.5), inset -50px 0 0 hsla(185, 99%, 60%, 0.52), inset 0 -50px 0 rgba(43, 173, 233, 0.5);
-	    transition: box-shadow .3s ease;
-	}
-	&:after {
-	    -webkit-transform: rotate(45deg);
-	    transform: rotate(45deg);
-	}
+#container {
+	width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 

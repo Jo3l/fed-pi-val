@@ -2,19 +2,25 @@
 <html lang="es">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Descripció">
+    <meta name="keywords" content="">
+    <meta name="apple-mobile-web-app-title" content="nom app apple">
+    <meta property="og:site_name" content="facebook compartir url nom site">
+    <meta property="og:title" content="facebook title">
+    <meta property="og:description" content="facebook desc">
+    
     <title>Fedpival</title>
 	<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,600,700" rel="stylesheet">
 	<link rel="stylesheet" href="dist/keen-ui.min.css">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
+	<link href="https://fonts.googleapis.com/css?family=Yantramanav|Rambla" rel="stylesheet">
   </head>
   <body>
     <div id="app">
     	
     	<Toolbar></Toolbar>
-        <App></App>
+        <router-view></router-view>
         
     </div>
 

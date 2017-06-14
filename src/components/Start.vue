@@ -1,87 +1,27 @@
 <template>
     <transition name="fade">
-    <div class="container" id="start">
+    <div id="start">
+	
+    	<div class="teaser"></div>
+    
+	<div class="fancyStart">
+		<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			     <path stroke="null" d="m0,18.44316c29.9,0 57.8,-13.60243 87.5,-13.60243c30.2,0 58.1,13.60243 87.1,13.60243c29.9,0 57.8,-13.60243 87.7,-13.60243c29.9,0 57.8-13.60243 87.7,13.60243l0,2.30684l-350,0l0,-2.30684z" fill="rgba(69,121,226,0.5)" id="svg_1"/>
+
+
+		</svg>
+	</div> 
+	<div class="fancyEnd">
+		<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path stroke="null" id="svg_1" fill="rgba(45,85,170,0.5)" d="m0,2.21516c29.9,0 57.8,14.53465 87.5,14.53465c30.2,0 58.1,-14.53465 87.1,-14.53465c29.9,0 57.8,14.53465 87.7,14.53465c29.9,0 57.8,-14.53465 87.7,-14.53465l0,-2.46494l-350,0l0,2.46494z"/>
+		</svg>
+	</div>    	
+    	
+    	<news></news>
         <div class="col-group">
 
-		<carousel>
-		  <slide>
-		    Slide 1 Content
-		  </slide>
-		  <slide>
-		    Slide 2 Content
-		  </slide>
-		   <slide>
-		    Slide 3 Content
-		  </slide>
-		  <slide>
-		    Slide 4 Content
-		  </slide>
-		    <slide>
-		    Slide 5 Content
-		  </slide>
-		  <slide>
-		    Slide 6 Content
-		  </slide>
-		    <slide>
-		    Slide 7 Content
-		  </slide>
-		  <slide>
-		    Slide 8 Content
-		  </slide>
-		    <slide>
-		    Slide 9 Content
-		  </slide>
-		  <slide>
-		    Slide 10 Content
-		  </slide>
-		    <slide>
-		    Slide 11 Content
-		  </slide>
-		  <slide>
-		    Slide 12 Content
-		  </slide>
-		</carousel>
-
-            <section class="col-12">
-                <div class="fieldset">
-                    <div v-for="(dates, index) in links">
-                    	<p>{{ index }}</p>
-    					<div v-for="link in dates">
-	                    	<p><ui-button><!-- {{ users[link.LNK_USER].avatar }}  --> {{ users[link.LNK_USER].name }}</ui-button></p>
-	                        <p><a :href="link.LNK_URL">{{ link.LNK_TEXT }}</a></p>
-    					</div>
-                    </div>
-                </div>
-            </section>
-		
-		
-		
 		<ui-button @click="post()">Hello world!</ui-button>
 
-	        <ui-icon-button
-	            color="white"
-	            icon=" "
-	            size="normal"
-	            type="secondary"
-	            v-bind:style="{ background:'radial-gradient(ellipse at center, rgba(68,126,185,0) 36%,rgb(33, 150, 243) 38%),url(' + image + ') no-repeat center / cover' }"
-	            ></ui-icon-button>
-
-	        <ui-icon-button
-	            color="white avatar"
-	            icon=" "
-	            size="small"
-	            type="secondary"
-	            v-bind:style="{ background: 'url(' + image + ') center / cover' }"
-	            
-	            ></ui-icon-button>
-
-	        <ui-icon-button
-	            color="white"
-	            icon=" "
-	            size="large"
-	            type="secondary"
-	            v-bind:style="{ background: 'url(' + image + ') no-repeat center / cover' }"
-	            ></ui-icon-button>
 	            
         </div>
 
@@ -91,12 +31,13 @@
 
 <script>
 
+import News from './NewsCarousel.vue';
+
 export default {
   name: 'Start',
+  components: {'news' : News},
   data () {
     return {
-    	image:'https://pbs.twimg.com/profile_images/1278521940/domokun_400x400.png',
-        currentPage: this.$parent.currentPage,
         pagina: 1,
         links:{},
         tag: {},
@@ -157,5 +98,17 @@ export default {
 </script>
 
 <style>
-
+.VueCarousel img {
+    width: 100%;
+}
+.teaser {
+	width: 100%;
+    height: 50vw;
+    max-height: 400px;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background: url(/static/dev/player.svg) no-repeat 120% 0% / auto 121%, url(/static/dev/wave.svg) no-repeat 0% 31% / 100%, linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ec9c33 100%), linear-gradient(to right, #e04820 0%, #e76723 100%);
+    
+    /*background: url(/static/dev/player.svg) no-repeat 120% 0% / auto 121%, linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #963b48 100%), linear-gradient(to right, #e61626 0%, #c38f96 100%);*/
+}
 </style>

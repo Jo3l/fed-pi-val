@@ -6,6 +6,7 @@
 			width: 100%;
 			height: 50%;
 			border: 1px dotted gray;
+			background-color: #555;
 		}
 		
 		textarea {
@@ -18,13 +19,19 @@
 			height: 80px;
 			background: #af8;
 		}
+		#url { width:80%; }
+		#jsoneditor { border:1px outset gray; margin:4px; }
+		#jsoneditor td { border:1px inset gray; padding:3px; }
+		.btn { text-decoration:none; color:black; padding:10px; margin:5px; cursor:pointer; border:1px solid black; border-radius:20px; width:40px; }
+		body, textarea, input, select { background-color:black; color:white; }
 	</style>
 	<form target="ifr" action="/api/index.php/usuari" method="POST" id="form">
 		Recurso:
-		<select id="tabla" onchange="document.getElementById('form').action=this.value;">
+		<select id="urls" >
 			<option>/api/index.php/usuari</option>
 			<option>/api/index.php/usuari/logout</option>
 			<option>/api/index.php/noticia</option>
+			<option>/api/index.php/noticia/short</option>
 			<option>/api/index.php/noticia/id/1</option>
 			<option>/api/index.php/pagina</option>
 			<option>/api/index.php/pagina/id/1</option>
@@ -37,20 +44,51 @@
 			<option>/api/index.php/pagina/d/20170525</option>
 			<option>/api/index.php/pagina/d/20170524</option>
 			<option>/api/index.php/pagina/d/20170525/u/1</option>
-			<option>/api/index.php/article</option>
+			<option>/api/index.php/producte</option>
+			<option>/api/index.php/producte/id/1</option>
 			<option>/api/index.php/partida</option>
 			<option>/api/index.php/acte</option>
 		</select>
 		<input type="hidden" name="nom" value="usuario" />
-		<hr/> ID:
-		<input type="text" name="id" id="id" placeholder="id" />
+		<hr/> URL:
+		<input type="text" name="url" id="url" placeholder="url" value="/api/index.php/usuari" />
 		<hr/> JSON:
 		<br/>
-		<textarea name="json" id="json" placeholder="json object">{"pwd":"37e714943a89182fce6e1b038fc264d8"}</textarea>
+		<textarea name="json" id="json" placeholder="json object">{"pwd":"37e714943a89182fce6e1b038fc264d8","slug":"testslug"}</textarea>
 		<hr/>
+		O bé...<br/>
+		<table id="jsoneditor">
+			<tr><td contenteditable>pwd</td><td contenteditable>37e714943a89182fce6e1b038fc264d8</td></tr>
+		</table>
 		<input type="submit" value="test" />
 	</form>
 	<iframe frameborder="0" src="about:blank" id="ifr" name="ifr"></iframe>
+	
+<script
+  src="https://code.jquery.com/jquery-3.2.1.slim.js"
+  integrity="sha256-tA8y0XqiwnpwmOIl3SGAcFl2RvxHjA8qp0+1uCGmRmg="
+  crossorigin="anonymous"></script>
+
+<script>
+	/// json editor https://rawgit.com/jdorn/json-editor/master/examples/advanced.html
+	function jsonpress(e) {
+		if (e.keyCode==13 && !e.shiftKey) {
+			$('#jsoneditor').append('<tr><td id="newtd" contenteditable></td><td contenteditable></td></tr>').find('td').keydown(jsonpress);
+			$('#newtd').attr('id',null).focus();
+			return false; 
+		}
+	}
+	function selchg(e) {
+		$('#url')[0].value= this.value
+	}
+	function init() { 
+		$('#jsoneditor td').keydown(jsonpress);
+		$('#urls').on('change', function(e) { $('#url')[0].value= $('form')[0].action= e.target.value; } );
+		$('#url').on('change', function(e) { $('form')[0].action= e.target.value; } );
+	}
+	$(document).ready(init);
+</script>	
+	
 </body>
 
 </html>

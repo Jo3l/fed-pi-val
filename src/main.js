@@ -6,7 +6,6 @@ import axios from 'axios'
 
 import css from './assets/less/app.less'
 
-import App from './App.vue'
 import Toolbar from './components/Toolbar.vue'
 import Start from './components/Start.vue'
 
@@ -35,7 +34,7 @@ const router = new VueRouter({
 
 new Vue({
   el: '#app',
-  components: { App, Start, Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide },
+  components: { Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide },
   router,
   data: {
         showModal: true,
