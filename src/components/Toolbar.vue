@@ -1,4 +1,5 @@
 <template>
+
 <div id="toolbarContainer">
 	
 	<div class="waveHorizontals">
@@ -33,6 +34,20 @@
 	    </div>
 	    
 	</ui-toolbar>
+
+	<div class="mainMenu">
+	    <input id="menu-toggle" type="checkbox">
+	    <label class="menu-button-container" for="menu-toggle">
+	    	<div class="menu-button"></div>
+	  	</label>
+	    <ul class="menu">
+			<li>One</li>
+			<li>Two</li>
+			<li>Three</li>
+			<li>Four</li>
+			<li>Five</li>
+	    </ul>
+	</div>
 
    	<div class="fancyEnd">
 		<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
