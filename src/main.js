@@ -6,8 +6,9 @@ import axios from 'axios'
 
 import css from './assets/less/app.less'
 
-import Toolbar from './components/Toolbar.vue'
-import Start from './components/Start.vue'
+import Toolbar from './components/Toolbar.vue' //este se carga aqui ya que esta fuera de las rutas
+
+import { routes } from './routes';
 
 Vue.use(VueRouter)
 Vue.use(KeenUI)
@@ -24,11 +25,7 @@ Vue.prototype.$http = axios;
 const router = new VueRouter({
   mode: 'history',
   base: __dirname,
-  routes: [
-    { path: '/', component: Start },
-    { path: '/foo', component: Toolbar },
-    { path: '/bar', component: Start }
-  ]
+  routes: routes
 })
 
 

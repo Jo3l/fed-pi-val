@@ -41,11 +41,13 @@
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
-			<li>One</li>
-			<li>Two</li>
-			<li>Three</li>
-			<li>Four</li>
-			<li>Five</li>
+			<li>Inici</li>
+			<li>Noticies</li>
+			<li>Competicions</li>
+			<li>Calendari</li>
+			<li>Botiga</li>
+			<li>Buscador</li>
+			<li>Contacte</li>
 	    </ul>
 	</div>
 

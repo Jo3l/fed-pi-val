@@ -4,62 +4,74 @@
 		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30>
 			
 		  <slide>
-		    <article style="background-image:linear-gradient(rgba(0, 0, 0, 0) 57%, rgb(255, 255, 255) 70%), url(/static/dev/foto2.jpg);">
-		    	<small>30/05/2017</small>
-		    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
-		    	<section>
-		    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
-		    	</section>
+		    <article style="background-image:url(/static/dev/foto2.jpg);">
+		    	<div class="articleContainer">
+			    	<small>30/05/2017</small>
+			    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
+			    	<section>
+			    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
+			    	</section>
+		    	</div>
 		    </article>
 		  </slide>
 
 		  <slide>
-		    <article style="background-image:linear-gradient(rgba(0, 0, 0, 0) 57%, rgb(255, 255, 255) 70%), url(/static/dev/foto3.jpg);">
-		    	<small>30/05/2017</small>
-		    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
-		    	<section>
-		    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
-		    	</section>
+		    <article style="background-image:url(/static/dev/foto3.jpg);">
+		    	<div class="articleContainer">
+			    	<small>30/05/2017</small>
+			    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
+			    	<section>
+			    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
+			    	</section>
+		    	</div>
 		    </article>
 		  </slide>	
 		  
 		  <slide>
-		    <article style="background-image:linear-gradient(rgba(0, 0, 0, 0) 57%, rgb(255, 255, 255) 70%), url(/static/dev/foto4.jpg);">
-		    	<small>30/05/2017</small>
-		    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
-		    	<section>
-		    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
-		    	</section>
+		    <article style="background-image:url(/static/dev/foto4.jpg);">
+		    	<div class="articleContainer">
+			    	<small>30/05/2017</small>
+			    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
+			    	<section>
+			    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
+			    	</section>
+		    	</div>
 		    </article>
 		  </slide>
 
 		  <slide>
-		    <article style="background-image:linear-gradient(rgba(0, 0, 0, 0) 57%, rgb(255, 255, 255) 70%), url(/static/dev/foto1.jpg);">
-		    	<small>30/05/2017</small>
-		    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
-		    	<section>
-		    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
-		    	</section>
+		    <article style="background-image:url(/static/dev/foto1.jpg);">
+		    	<div class="articleContainer">
+			    	<small>30/05/2017</small>
+			    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
+			    	<section>
+			    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
+			    	</section>
+		    	</div>
 		    </article>
 		  </slide>
 
 		  <slide>
-		    <article style="background-image:linear-gradient(rgba(0, 0, 0, 0) 57%, rgb(255, 255, 255) 70%), url(/static/dev/foto2.jpg);">
-		    	<small>30/05/2017</small>
-		    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
-		    	<section>
-		    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
-		    	</section>
+		    <article style="background-image:url(/static/dev/foto2.jpg);">
+		    	<div class="articleContainer">
+			    	<small>30/05/2017</small>
+			    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
+			    	<section>
+			    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
+			    	</section>
+		    	</div>
 		    </article>
 		  </slide>
 
 		  <slide>
-		    <article style="background-image:linear-gradient(rgba(0, 0, 0, 0) 57%, rgb(255, 255, 255) 70%), url(/static/dev/foto3.jpg);">
-		    	<small>30/05/2017</small>
-		    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
-		    	<section>
-		    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
-		    	</section>
+		    <article style="background-image:url(/static/dev/foto3.jpg);">
+		    	<div class="articleContainer">
+			    	<small>30/05/2017</small>
+			    	<h2>Multitudinària Trobada de Pilota a l'escola a Massalfassar</h2>
+			    	<section>
+			    		<p>El Poliesportiu municipal de Massalfassar acollia este matí la cloenda, en este cas, segona ja després de la Borriana, dins del programa Pilota a l’Escola de la Conselleria d’Educació, Investigació, Cultura i Esport.</p>
+			    	</section>
+		    	</div>
 		    </article>
 		  </slide>
 		</carousel>
@@ -143,15 +155,19 @@ export default {
 		display:flex;
 		flex-direction: column;
 		justify-content:flex-end;
-		padding:20px;
-		h2 {
-			margin:0;
-			line-height:1em;
+		border-left: 5px solid white;
+		border-left: 5px solid white;
+		
+		.articleContainer {
+			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
+    		padding: 40px 20px 20px 20px;
 		}
-		p {
-			margin:0;
+		
+		h2 {margin:0;line-height:1em;}
+		
+		p {margin:0;}
+	
 		}
-	}
 }
 
 </style>
