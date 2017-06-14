@@ -50,6 +50,23 @@ class FedpivalAPI {
     
     private function error($str) { die($str); }
     
+    private function login($pwd) {
+    	global $_SESSION;
+		@$this->db->sql("SELECT * FROM fedpival.usuario where pwd='".$pwd."';");
+		$result= @$this->db->getResult();
+		if (count($result)>0){
+			$_SESSION['id']= $result[0]['id'];
+			$this->error('100 OK Usuari autenticat amb èxit');
+		}
+		$this->error('ERROR: 200 ACCESS ERROR');
+    }
+    
+    private function logout() {
+    	global $_SESSION;
+		unset($_SESSION['id']);
+		session_destroy();
+		$this->error('100 OK LOGGED OUT ');
+    }
     //
     //
     // funció que identifica què fer a partir de la estructura de la URL
@@ -59,10 +76,16 @@ class FedpivalAPI {
     	global $_SESSION, $_POST;
 		$request= explode('/',$path);
 		$this->nom= $request[2];
-		// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
-		if (!isset($_SESSION['id'])) if ($this->nom!='usuari') $this->error('200 ACCESS ERROR');
 		if (isset($_POST['json'])) $this->json= json_decode($_POST['json'],true);
-		$wheres= array('1=1');
+		// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
+		if (!isset($_SESSION['id'])) {
+			// si no s'està intentant autenticar, error
+			if ($this->nom!='usuari') $this->error('200 ACCESS ERROR');
+			// si no s'indica password, error
+			if (!$this->json['pwd']) $this->error('200 ACCESS ERROR');
+			$this->login($this->json['pwd']);
+		}
+		$this->wheres= array('1=1');
 		$limit='';
 		
 		$pos= array_search('p', $request);
@@ -75,11 +98,11 @@ class FedpivalAPI {
 		}
 		$pos= array_search('c', $request);
 		if ( $pos ) {
-		    array_push( $wheres, "instr('".$request[$pos+1]."',categoria)>0" );
+		    array_push( $this->wheres, "instr('".$request[$pos+1]."',categoria)>0" );
 		}
 		$pos= array_search('t', $request);
 		if ( $pos ) {
-		    array_push( $wheres, "instr('".$request[$pos+1]."',tags)>=0" );
+		    array_push( $this->wheres, "instr('".$request[$pos+1]."',tags)>=0" );
     	}
 		$pos= array_search('u', $request);
 		if ( $pos ) {
@@ -98,19 +121,7 @@ class FedpivalAPI {
 		
 		switch($this->nom){
 			case "usuari":
-				if ($request[3]=='logout'){
-					unset($_SESSION['id']);
-					session_destroy();
-					$this->error('LOGGEDOUT ');
-				}
-				if (!$this->json['pwd']) $this->error('200 ACCESS ERROR');
-				@$this->db->sql("SELECT * FROM fedpival.usuario where pwd='".$this->json['pwd']."';");
-				$result= @$this->db->getResult();
-				if (count($result)>0){
-					$_SESSION['id']= $result[0]['id'];
-				}
-				echo json_encode($result);
-				exit ;
+				if ($request[3]=='logout') $this->logout();
 			break;
 			case "noticia":
 				// select
@@ -133,8 +144,10 @@ class FedpivalAPI {
 			}
     }
     
+    // funció de validacions de l'objecte json traspassat
     private function validar() {
-		// validacions
+		// comprove si els camps obligatoris estan definits
+		// i elimine del json (opcionals) els camps que ja existeixen en la taula
 		$testminims= $this->minims[$this->nom];
 		$camps= $this->json;
 		if (empty($camps['alta'])) $camps['alta']= date('YmdHis');
@@ -176,9 +189,7 @@ class FedpivalAPI {
     }
     
     private function select() {
-		$sql= "SELECT * FROM fedpival.".$this->nom;
-		if (!empty($this->wheres)) $sql.=" where ".implode(' and ',$this->wheres);
-		$sql.= $this->limit;
+		$sql= "SELECT * FROM fedpival.".($this->nom)." where ".implode(' and ',$this->wheres).$this->limit;
 		$this->db->sql( $sql );
 		$result= $this->db->getResult();
 		// si s'especifica "short" retalle camps llargs i pose el·lipsi "..."
