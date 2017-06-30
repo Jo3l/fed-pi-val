@@ -29,8 +29,8 @@
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
-			<li>Inici</li>
-			<li>Noticies</li>
+			<li><router-link to="/">Inici</router-link></li>
+			<li><router-link to="/noticia">Noticies</router-link></li>
 			<li>Competicions</li>
 			<li>Calendari</li>
 			<li>Botiga</li>
@@ -89,6 +89,11 @@ export default {
 
 <style lang="less">
 	
-
+.menu {
+	a {
+		text-decoration: none;
+	&:visited {color: #232323;}
+	}
+}
 
 </style>
