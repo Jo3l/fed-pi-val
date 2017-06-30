@@ -18,6 +18,18 @@
 	</div>    	
     	
     	<news></news>
+    	
+		<div class="noticiasdiv">
+			<div class="wrapper">
+				<div v-for="noticia in noticias" class="noticia">
+				<span class="creacio">{{ noticia.modificacio }}</span>
+				<h3>{{ noticia.titol }}</h3>
+				{{ noticia.imatge }}
+				<p class="cos">{{ noticia.contingut }}</p>
+				</div>
+			</div>
+		</div>
+		
         <div class="col-group">
 
 		<ui-button @click="post()">Hello world!</ui-button>
@@ -38,11 +50,21 @@ export default {
   components: {'news' : News},
   data () {
     return {
-        pagina: 1,
-        links:{},
-        tag: {},
-        tagNames: {},
-        users: {}
+    	noticias: {}
+        /*id: 1,
+        slug:'',
+        titol: '',
+        categoria: '',
+        tags: '',
+        idioma: '',
+        autor: '',
+        contingut: '',
+        imatge: '',
+        json: '',
+        alta:'',
+        modificacio:'',
+        publicacio:'',
+        baixa:''*/
     }
   },
   methods: {
@@ -57,25 +79,28 @@ export default {
 			//return false;
   		}
   	},
+  	stringDate: function(dateStr) {
+  		return dateStr.substr(6,2)+'/'+dateStr.substr(4,2)+'/'+dateStr.substr(0,4);
+  	},
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
 	},
-    getLinks: function() {
+    getData: function() {
 
         var vm = this;
 		vm.loadingBar(true);
-        this.$http.get('')
+        this.$http.get('index.php/noticia')
         .then(function (response) {
             
-            console.log(response);
-            vm.links = response.data.links;
-            vm.tag = response.data.tag;
-            vm.tagNames = response.data.tagNames;
-            vm.users = response.data.users;
+            // console.log(response);
+            vm.noticias = response.data;
+            vm.noticias.forEach(function(elm){ 
+            	elm.alta= vm.stringDate(elm.alta);
+            	elm.modificacio= vm.stringDate(elm.modificacio);
+            	elm.baixa= vm.stringDate(elm.baixa);
+            });
             vm.loadingBar(false);
-            
-            console.log(vm.links);
-            
+            console.log(vm.noticias);
             
         })
         .catch(function (error) {
@@ -89,7 +114,7 @@ export default {
     }
   },
     mounted: function () {
-		this.getLinks();
+		this.getData();
     },
     watch: {
 

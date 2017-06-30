@@ -58,7 +58,8 @@ module.exports = {
     historyApiFallback: true,
     noInfo: true,
     host: "fedpival.indiza.com", // Your Computer Name
-    port: 8181
+    port: 8181,
+    compress: true
   },
   performance: {
     hints: false
