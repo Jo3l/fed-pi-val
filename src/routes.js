@@ -33,6 +33,18 @@ export const routes = [
     path: '/noticia',
     name: 'Noticia',
     component: News,
+    children: [
+      {
+        path: ':id',
+        name: 'noticia-id',
+        component: News,
+      },
+      {
+        path: ':id/edit',
+        name: 'news-edit',
+        component: News,
+      }
+    ]
   },
   {
     path: '/forbidden',

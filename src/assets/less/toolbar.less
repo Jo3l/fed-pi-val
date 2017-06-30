@@ -33,34 +33,58 @@
 	position:relative;
 	overflow:hidden;
 	transform: rotate(180deg);
-	//margin-bottom:-20px;
-}
-.waveHorizontal{
-	width: 200%;
-	height: 100%;
-	display: block;
-	position:absolute;
+	z-index:10;
+	display:block!important;
+
+	svg {
+		width: 200%;
+		height: 100%;
+		display: block;
+		position:absolute;
+		animation: move 52s linear infinite;
 	
-	animation: move 52s linear infinite;
-}
-#waveHorizontal1{
-	animation-delay: -2s;
-	path {
-		fill: rgba(135, 33, 46, 0.5);
+		&#waveHorizontal1{
+			animation-delay: -2s;
+			path {
+				fill: rgba(135, 33, 46, 0.5);
+			}
+		}
+		&#waveHorizontal2{
+			animation-delay: -2s;
+			animation-duration: 25s;
+			path {
+				fill: rgba(135, 33, 46, 0.5);
+			}
+		}
+		&#waveHorizontal3{
+			animation-delay: -4s;
+			animation-duration: 23s;
+			path {
+				fill: rgba(135, 33, 46, 0.5);
+			}
+		}
 	}
-}
-#waveHorizontal2{
-	animation-delay: -2s;
-	animation-duration: 25s;
-	path {
-		fill: rgba(135, 33, 46, 0.5);
+
+	&.darrere {
+	    position: absolute;
+	    top: 0;
+	    z-index: -1;
+	    display: block;
+	    padding-bottom: 300px;
+	    opacity: 0.1;
 	}
-}
-#waveHorizontal3{
-	animation-delay: -4s;
-	animation-duration: 23s;
-	path {
-		fill: rgba(135, 33, 46, 0.5);
+	
+	&.footer {
+	    transform: rotate(0deg);
+	    bottom: 0px;
+	    z-index: 10;
+	    margin-top: -20px;
+	    height: 20px;
+	    svg {
+	    	path{
+	    		fill: rgba(255, 255, 255, 0.5)!important;
+	    	}
+	    }
 	}
 }
 
@@ -121,6 +145,7 @@
 
 .menu > li {
   margin: 0 1rem;
+  font-size:1.1em;
 }
 
 .menu-button-container {
@@ -209,6 +234,7 @@
     width: 100%;
     color: #333333;
     background-color: white;
+    font-size:1.1em;
   }
   .menu > li:not(:last-child) {
     //border-bottom: 1px solid #444;

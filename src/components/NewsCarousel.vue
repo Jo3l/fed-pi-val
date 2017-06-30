@@ -148,22 +148,24 @@ export default {
 
 .VueCarousel {
 	article {
-		height:400px;
-		overflow:hidden;
-		background-size:cover;
-		background-position:center;
-		display:flex;
-		flex-direction: column;
-		justify-content:flex-end;
-		border-left: 5px solid white;
-		border-left: 5px solid white;
+	    min-height: 400px;
+	    overflow: hidden;
+	    background-size: 130%;
+	    background-position: top;
+	    display: flex;
+	    flex-direction: column;
+	    justify-content: flex-end;
+	    background-repeat: no-repeat;
+	    border-left: 5px solid white;
 		
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;
 		}
 		
-		h2 {margin:0;line-height:1em;}
+		small {text-shadow: 1px 1px 1px white;}
+		
+		h2 {margin:0;line-height:1em;text-shadow: 1px 1px 1px white;}
 		
 		p {margin:0;}
 	
