@@ -52,7 +52,7 @@ class FedpivalAPI {
     
     private function login($pwd) {
     	global $_SESSION;
-		@$this->db->sql("SELECT * FROM fedpival.usuario where pwd='".$pwd."';");
+		@$this->db->sql("SELECT * FROM fedpival.usuari where pwd='".$pwd."';");
 		$result= @$this->db->getResult();
 		if (count($result)>0){
 			$_SESSION['id']= $result[0]['id'];
@@ -163,13 +163,23 @@ class FedpivalAPI {
 		return $camps;
     }
     
+    // funció que verifica que l'slug es unic
+    private function slugunic($propos) {
+    	$sufixe= '-';
+    	do {
+    		$this->db->sql("select slug from pagina where slug='".$propos."';");
+    		$propos.= $sufixe;
+		} while ($this->db->numRows()!=0);
+		return substr($propos,0,-1); // està correcte el proposat
+	}
+    
     private function exe() {
 		// si únicament estem consultant:
 		if (empty($this->json)) return $this->select();
- 		// edició o inserció:
-		$camps= $this->validar();
 		// id no existeix: inserció
 		if (empty($this->id)) {
+			$camps['slug']= $this->slugunic($camps['slug']);
+			$camps= $this->validar();
 			$keys= implode(',',array_keys($camps));
 			$values= "'".implode("','",array_values($camps))."'";
 			$sql="insert into ".$this->nom." (".$keys.") values (".$values.");";
