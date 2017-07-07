@@ -3,12 +3,13 @@ import VueRouter from 'vue-router'
 import VueCarousel from 'vue-carousel'
 import KeenUI from 'keen-ui'
 import axios from 'axios'
+import { routes } from './routes'
+import Date from 'datejs'
 
 import css from './assets/less/app.less'
 
 import Toolbar from './components/Toolbar.vue' //este se carga aqui ya que esta fuera de las rutas
 
-import { routes } from './routes';
 
 Vue.use(VueRouter)
 Vue.use(KeenUI)

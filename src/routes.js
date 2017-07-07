@@ -1,5 +1,6 @@
 import Start from './components/Start.vue'
 import News from './components/News.vue'
+import Calendar from './components/Calendar.vue'
 
 export const routes = [
   {
@@ -10,11 +11,6 @@ export const routes = [
       {
         path: 'inici',
         name: 'inici',
-        component: Start,
-      },
-      {
-        path: 'goal/:id',
-        name: 'goal',
         component: Start,
       },
       {
@@ -45,6 +41,11 @@ export const routes = [
         component: News,
       }
     ]
+  },
+  {
+    path: '/calendari',
+    name: 'calendari',
+    component: Calendar,
   },
   {
     path: '/forbidden',
