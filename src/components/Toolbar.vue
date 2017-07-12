@@ -30,9 +30,9 @@
 	  	</label>
 	    <ul class="menu">
 			<li><router-link to="/">Inici</router-link></li>
-			<li><router-link to="/noticia">Noticies</router-link></li>
+			<li><router-link to="/val/noticia">Noticies</router-link></li>
 			<li>Competicions</li>
-			<li>Calendari</li>
+			<li><router-link to="/val/calendari">Calendari</router-link></li>
 			<li>Botiga</li>
 			<li>Buscador</li>
 			<li>Contacte</li>

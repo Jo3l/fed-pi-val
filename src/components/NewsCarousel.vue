@@ -85,58 +85,31 @@ export default {
   name: 'Noticias',
   data () {
     return {
-        pagina: 1,
-        links:{},
-        tag: {},
-        tagNames: {},
-        users: {}
+        news:{},
     }
   },
   methods: {
-  	dayGroup: function(dateStr) {
-  		
-  		return dateStr.split(' ')[0]
-  		
-  		if (vm.day != dateStr.split(' ')[0]) {
-  			//vm.day = dateStr.split(' ')[0];
-  			//return true;
-  		} else {
-			//return false;
-  		}
-  	},
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
 	},
-    getLinks: function() {
+    getData: function() {
 
         var vm = this;
 		vm.loadingBar(true);
-        this.$http.get('')
+        this.$http.get('index.php/noticia')
         .then(function (response) {
-            
-            console.log(response);
-            vm.links = response.data.links;
-            vm.tag = response.data.tag;
-            vm.tagNames = response.data.tagNames;
-            vm.users = response.data.users;
+            vm.news = response.data;
             vm.loadingBar(false);
-            
-            console.log(vm.links);
-            
-            
         })
         .catch(function (error) {
             console.log(error);
         });
         
-    },
-    post: function() {
-    	console.log(this.links);
-    	this.$http.post('', {'user':'joel', 'password':'cibermatch'} ).then(function (response) { console.log(response) });
+        //console.log(vm.news);
     }
   },
     mounted: function () {
-		this.getLinks();
+		this.getData();
     },
     watch: {
 

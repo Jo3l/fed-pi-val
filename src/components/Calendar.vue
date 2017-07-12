@@ -1,27 +1,28 @@
-// Requires datejs
-// https://github.com/datejs/Datejs
-
 <template>
-	<div class="calendarContainer">
-		<a @click="decMonth" class="calendar--nav--chevron">d</a>
-		<a @click="incMonth" class="calendar--nav--chevron">b</a>
-		<div class="calendar" v-for="n in 3">
-			<nav class="calendar--nav">
+	<div class="componentContainer">
+		
+		<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
+		<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
 
-				<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
-				<b>{{ getYear(n-1+increment)}}</b>
-
-			</nav>
-			<div class="labels">
-				<span class="calendar--label" v-for="label in dayLabelsFixed">{{ label }} </span>
-			</div>
-			<div class="calendar--month">
-				<div v-for="week in getCalendar(n-1+increment)">
-					<span class="calendar--day" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]" @click="select(day)">
-						<span v-if="day.date">
-							{{ day.date }}
+		<div class="calendarContainer">
+			<div class="calendar" v-for="n in 4">
+				<nav class="calendarHead">
+	
+					<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
+					<b>{{ getYear(n-1+increment)}}</b>
+	
+				</nav>
+				<div class="labels">
+					<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
+				</div>
+				<div class="calendarMonth">
+					<div v-for="week in getCalendar(n-1+increment)">
+						<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]" @click="select(day)">
+							<span v-if="day.date" v-bind:class="day.data.class">
+								{{ day.date }}
+							</span>
 						</span>
-					</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -31,13 +32,16 @@
 
 
 <script>
+
 module.exports = {
+	name: 'Calendar',
+  	components: { },
 	'data': function(){ 
 		return {
-			mondayFirst: true,
-			dayLabels: [ 'Diu', 'Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss'],
+			mondayFirst: this.$parent.$i18n.t('calendar.mondayFirst'),
+			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
 			increment: 0,
-			monthArray: ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Decembre'],
+			monthArray: this.$parent.$i18n.t('calendar.months'),
 			selected : {
 				day : false,
 				month : false,
@@ -86,16 +90,17 @@ module.exports = {
 							data : {
 								day : dateOfMonth,
 								month : month,
-								year : year
+								year : year,
+								class : Date.today().getDate()==dateOfMonth && Date.today().getMonth() == month && (Date.today().getYear()+1900) == year ? 'today' : 'normal',
 							}
 						});
+						
 						dateOfMonth++;
 					}
 					squareIndex++;
 				}
 				weeks.push(week);
 			}
-			console.log(weeks);
 			return weeks;
 			
 		},
@@ -153,44 +158,127 @@ module.exports = {
 </script>
 
 
-<style>
-.calendarContainer {
-	display:flex;
-}
-.calendar {
-	margin: 20px 30px;
-}
-.calendar--nav,
-.calendar--day,
-.calendar--label
-{
-	user-select: none;
-}
-a.calendar--nav--chevron {
-  display: inline-block;
-  padding: 10px 15px;
-  background: #2ecc71;
-  color: #fff;
-  vertical-align: middle;
-  line-height: 20px;
-  height: 40px;
+<style lang="less">
+
+@import "../assets/less/defines.less";
+
+.buttonLeft, .buttonRight {
+		margin: 0 15px;
 }
 
-span.calendar--label, span.calendar--day {
-  display: inline-block;
-  width: 40px;
-  padding: 10px 5px;
-  box-sizing: border-box;
-  overflow: hidden;
-  text-align: center;
+.buttonRight {
+		float:right;
+}	
+.calendarContainer {
+	display:flex;
+	position: relative;
+    width: 100%;
+    justify-content:space-around;
+    
+
+	
+	.calendarNav {
+		cursor: pointer;
+	}
+    
+    .calendar {
+		padding: 0 15px;
+		min-height: 240px;
+		
+		&:nth-child(4) {
+			@media(max-width:@screenDesktop) {
+				display:none;
+			}
+		}
+		
+		&:nth-child(3) {
+			@media(max-width:@screenTablet) {
+				display:none;
+			}
+		}
+		
+		&:nth-child(2) {
+			@media(max-width:@screenMobile) {
+				display:none;
+			}
+		}
+
+	}
+	.calendarHead,
+	.calendarDay,
+	.calendarLabel
+	{
+		user-select: none;
+		text-align:center;
+	}
+	
+	.calendarMonth {
+		&>div {
+		    display: flex;
+		    flex-direction: row;
+		    justify-content: center;
+		}
+	}
+	
+	.labels {
+	    display: flex;
+	    flex-direction: row;
+	    justify-content: center;
+	}
+	
+
+	
+	span.calendarLabel{
+	  display: inline-block;
+	  box-sizing: border-box;
+	  overflow: hidden;
+	  text-align: center;
+	  font-size:10px;
+	  width:32px;
+	  padding:5px 0;
+	}
+	
+	span.calendarDay {
+		display: inline-block;
+		box-sizing: border-box;
+		overflow: hidden;
+		text-align: center;
+		height: 32px;
+		width: 32px;
+		&.day {
+		  cursor: pointer;
+		  &:last-child {
+		    color: #ff7676;
+		    //color: white;
+		    box-sizing: content-box;
+		  }
+		}
+		span {
+			border-radius: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 	32px;
+			width: 32px;
+		  	&.today {
+			    background-color: yellow;
+			    border: 2px dotted yellow;
+			    color:black;
+			}
+		}
+		
+		
+		&.selected {
+			span {
+				background: #2ecc71;
+			    color: #fff;
+			    font-weight: bold;
+			}
+		}
+	
+	}
+
 }
-span.calendar--label.day, span.calendar--day.day {
-  cursor: pointer;
-}
-span.calendar--day.selected {
-  background: #2ecc71;
-  color: #fff;
-  font-weight: bold;
-}
+
 
 </style>
