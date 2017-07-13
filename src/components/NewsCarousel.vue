@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
     	
-		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30>
+		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 class="news">
 			
 		  <slide>
 		    <article style="background-image:url(/static/dev/foto2.jpg);">
@@ -119,7 +119,7 @@ export default {
 
 <style lang="less">
 
-.VueCarousel {
+.news {
 	article {
 	    min-height: 400px;
 	    overflow: hidden;

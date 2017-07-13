@@ -19,6 +19,8 @@
     	
     	<news></news>
 		<calendar></calendar>
+		<cart></cart>
+		
 		
 		<div class="noticiasdiv">
 			<div class="wrapper">
@@ -31,10 +33,6 @@
 			</div>
 		</div>
 		
-        <div class="col-group">
-
-	            
-        </div>
 
     </div>
     </transition>
@@ -46,9 +44,11 @@ import News from './NewsCarousel.vue';
 
 import Calendar from './Calendar.vue';
 
+import Cart from './Cart.vue';
+
 export default {
   name: 'Start',
-  components: {'news' : News, 'calendar' : Calendar},
+  components: {'news' : News, 'calendar' : Calendar, 'cart': Cart },
   data () {
     return {
     	noticias: {},
@@ -100,9 +100,7 @@ export default {
 </script>
 
 <style>
-.VueCarousel img {
-    width: 100%;
-}
+
 .teaser {
 	width: 100%;
     height: 50vw;

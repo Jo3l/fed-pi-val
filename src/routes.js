@@ -6,6 +6,7 @@ export const routes = [
   {
     path: '/',
     component: Start,
+    redirect: '/val/inici'
   },
   {
     path: '/val',
@@ -29,12 +30,12 @@ export const routes = [
   },
   {
     path: '/val/noticia',
-    name: 'Noticia',
+    name: 'Noticia_val',
     component: News,
   },
   {
     path: '/es/noticia',
-    name: 'Noticia',
+    name: 'Noticia_es',
     component: News,
   },
   {

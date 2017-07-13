@@ -38,7 +38,7 @@ module.exports = {
   	components: { },
 	'data': function(){ 
 		return {
-			mondayFirst: this.$parent.$i18n.t('calendar.mondayFirst'),
+			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
 			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
 			increment: 0,
 			monthArray: this.$parent.$i18n.t('calendar.months'),
