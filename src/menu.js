@@ -1,9 +1,4 @@
-import Start from './components/Start.vue'
-import News from './components/News.vue'
-import Calendar from './components/Calendar.vue'
-import Cart from './components/Cart.vue'
-
-export const routes = [
+export const menu = [
   {
     path: '/',
     component: Start,
@@ -23,49 +18,41 @@ export const routes = [
     path: '/val/inici',
     name: 'Inici',
     component: Start,
-    lang:'val'
   },
   {
     path: '/es/inicio',
     name: 'Inicio',
     component: Start,
-    lang:'es'
   },
   {
     path: '/val/noticia',
-    name: 'Noticies',
+    name: 'Noticia_val',
     component: News,
-    lang:'val'
   },
   {
     path: '/es/noticia',
-    name: 'Noticias',
+    name: 'Noticia_es',
     component: News,
-    lang:'es'
   },
   {
     path: '/val/calendari',
-    name: 'Calendari',
+    name: 'calendari',
     component: Calendar,
-    lang:'val'
   },
     {
     path: '/es/calendario',
-    name: 'Calendario',
+    name: 'calendario',
     component: Calendar,
-    lang:'es'
   },
   {
     path: '/val/tenda',
     name: 'Tenda',
     component: Cart,
-    lang:'val'
   },
     {
     path: '/es/tienda',
     name: 'Tienda',
     component: Cart,
-    lang:'es'
   },
   {
     path: '/forbidden',

@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
     	
-		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 class="news">
+		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 class="newsCarousel">
 			
 		  <slide>
 		    <article style="background-image:url(/static/dev/foto2.jpg);">
@@ -96,10 +96,12 @@ export default {
 
         var vm = this;
 		vm.loadingBar(true);
-        this.$http.get('index.php/noticia')
+        this.$http.get('/noticia')
         .then(function (response) {
             vm.news = response.data;
             vm.loadingBar(false);
+            
+            console.log(vm.news);
         })
         .catch(function (error) {
             console.log(error);
@@ -119,7 +121,7 @@ export default {
 
 <style lang="less">
 
-.news {
+.newsCarousel {
 	article {
 	    min-height: 400px;
 	    overflow: hidden;
@@ -129,7 +131,8 @@ export default {
 	    flex-direction: column;
 	    justify-content: flex-end;
 	    background-repeat: no-repeat;
-	    border-left: 5px solid white;
+	    border-right: 2px solid white;
+    	border-left: 2px solid white;
 		
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);

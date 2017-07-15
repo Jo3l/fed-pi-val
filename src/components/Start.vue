@@ -2,7 +2,7 @@
     <transition name="fade">
     <div id="start">
 	
-    	<div class="teaser"></div>
+    	<teaser></teaser>
     
 	<div class="fancyStart">
 		<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
@@ -19,7 +19,7 @@
     	
     	<news></news>
 		<calendar></calendar>
-		<cart></cart>
+		<cart type="slider"></cart>
 		
 		
 		<div class="noticiasdiv">
@@ -41,14 +41,13 @@
 <script>
 
 import News from './NewsCarousel.vue';
-
 import Calendar from './Calendar.vue';
-
 import Cart from './Cart.vue';
+import Teaser from './Teaser.vue';
 
 export default {
   name: 'Start',
-  components: {'news' : News, 'calendar' : Calendar, 'cart': Cart },
+  components: {'news' : News, 'calendar' : Calendar, 'cart': Cart, 'teaser' : Teaser },
   data () {
     return {
     	noticias: {},

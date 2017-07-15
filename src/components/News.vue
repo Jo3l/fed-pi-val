@@ -43,7 +43,7 @@ export default {
 	},
 	mounted: function () {
 	console.log(this.$route.params.slug);
-	console.log(this.$route);
+	console.log(this.$router.options.routes);
 	},
 	watch: {
 	

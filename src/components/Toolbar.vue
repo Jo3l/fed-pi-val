@@ -29,13 +29,7 @@
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
-			<li><router-link to="/">Inici</router-link></li>
-			<li><router-link to="/val/noticia">Noticies</router-link></li>
-			<li>Competicions</li>
-			<li><router-link to="/val/calendari">Calendari</router-link></li>
-			<li>Botiga</li>
-			<li>Buscador</li>
-			<li>Contacte</li>
+	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale"><router-link v-bind:to="menu.path">{{ menu.name }}</router-link></li>
 	    </ul>
 	</div>
 
