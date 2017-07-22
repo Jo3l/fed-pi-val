@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import VueStash from 'vue-stash'
 import VueI18n from 'vue-i18n'
 import VueRouter from 'vue-router'
 import VueCarousel from 'vue-carousel'
@@ -14,6 +15,7 @@ import css from './assets/less/app.less'
 
 import Toolbar from './components/Toolbar.vue' //este se carga aqui ya que esta fuera de las rutas
 
+Vue.use(VueStash)
 Vue.use(VueI18n)
 Vue.use(VueRouter)
 Vue.use(KeenUI)
@@ -45,9 +47,12 @@ new Vue({
   el: '#app',
   i18n,
   router,
+  VueStash,
   components: { Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide },
   data: {
-        showModal: true,
+        store: {
+    		news: null,
+    	}
   },
   beforeCreate: function () {
   	

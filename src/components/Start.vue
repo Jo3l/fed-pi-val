@@ -17,6 +17,8 @@
 		</svg>
 	</div>    	
     	
+
+    	
     	<news></news>
 		<calendar></calendar>
 		<cart type="slider"></cart>
@@ -33,6 +35,11 @@
 			</div>
 		</div>
 		
+
+    	<div ref="image" style="background-image: url(/static/dev/foto4.jpg);background-position: 50%;background-size: cover;margin-bottom: 1rem;margin-right: 1rem;position: relative;">
+    		<ui-ripple-ink trigger="image"></ui-ripple-ink>
+    	</div>
+
 
     </div>
     </transition>
@@ -99,7 +106,7 @@ export default {
 </script>
 
 <style>
-
+/*
 .teaser {
 	width: 100%;
     height: 50vw;
@@ -109,5 +116,5 @@ export default {
     background: url(/static/dev/player.svg) no-repeat 120% 0% / auto 121%, url(/static/dev/wave.svg) no-repeat 0% 31% / 100%, linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ec9c33 100%), linear-gradient(to right, #e04820 0%, #e76723 100%);
     
 }
-
+*/
 </style>

@@ -2,6 +2,7 @@ import Start from './components/Start.vue'
 import News from './components/News.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
+import PageNotFound from './components/PageNotFound.vue'
 
 export const routes = [
   {
@@ -76,5 +77,11 @@ export const routes = [
     path: '/login',
     name: 'login',
     component: Start,
-  }
+  },
+  {
+    path: '/404',
+    name: '404',
+    component: PageNotFound
+  },
+  { path: "*", redirect: '/404'}
 ];

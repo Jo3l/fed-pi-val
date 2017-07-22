@@ -24,12 +24,12 @@
 	</ui-toolbar>
 
 	<div class="mainMenu">
-	    <input id="menu-toggle" type="checkbox">
+	    <input id="menu-toggle" type="checkbox" v-model="menuOpen">
 	    <label class="menu-button-container" for="menu-toggle">
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
-	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale"><router-link v-bind:to="menu.path">{{ menu.name }}</router-link></li>
+	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen"><router-link v-bind:to="menu.path">{{ menu.name }}</router-link></li>
 	    </ul>
 	</div>
 
@@ -49,17 +49,7 @@ export default {
 	data () {
 	return {
 		loadingBar: false,
-		menuOptions: [
-		    {
-		        label: 'Settings'
-		    },
-		    {
-		        label: 'About'
-		    },
-		    {
-		        label: 'Help'
-		    }
-		]
+		menuOpen: false,
 	}
 	},
 	methods: {

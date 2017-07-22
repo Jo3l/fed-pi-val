@@ -1,13 +1,11 @@
 <template>
     <transition name="fade">
-	    <div id="teaser">
-
-			<picture style="background-image:url(/static/dev/foto1.jpg);">
+	    <div class="teaser" >
+			<picture v-for="noticia in news" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true" v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
 				<aside>
-					<h1>Bicorp i Xeraco jugaran de nou la final de l'Autonòmic de Raspall</h1>
+					<h1>{{ noticia.titol }}</h1>
 				</aside>
 			</picture>
-
 	    </div>
     </transition>
 </template>
@@ -17,6 +15,7 @@
 export default {
 	name: 'Teaser',
   	components: {},
+  	store: ['news'],
 	data () {
 	return {
 	    pagina: 1,
@@ -39,7 +38,7 @@ export default {
 </script>
 
 <style lang="less">
-#teaser {
+.teaser {
 	width:100%;
 	min-height:200px;
 	background-color:white;
@@ -52,7 +51,7 @@ export default {
 	    height: 50vh;
 	    max-height: 80vw;
 	    background-size: cover;
-	    background-position: center;
+	    background-position: 50% 33%;
 	    aside {
 			position: absolute;
 		    bottom: 0;

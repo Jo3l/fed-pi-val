@@ -32,18 +32,13 @@ export default {
 	data () {
 	return {
 	    pagina: 1,
-	    links:{},
-	    tag: {},
-	    tagNames: {},
-	    users: {}
 	}
 	},
 	methods: {
 	
 	},
 	mounted: function () {
-	console.log(this.$route.params.slug);
-	console.log(this.$router.options.routes);
+
 	},
 	watch: {
 	
