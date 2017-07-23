@@ -16,7 +16,8 @@
 /noticia/c/{categoria} // torna totes les noticies que incloguen la categoria
 /noticia/t/{tag} // torna totes les noticies que incloguen el tag
 /noticia/u/{usuari} // torna totes les noticies d'un usuari
-/noticia/d/{20170524} // torna totes les noticie d'una data
+/noticia/d/{20170524} // torna totes les noticies d'una data
+/noticia/s/{text-a-buscar} // busca les noticies que continguen el text
 
 /noticia/p/4/u/32
 
@@ -25,19 +26,32 @@
 
 
 temporada
-competicions
 modalitat
+competicio
+partida
 club
-jugadors
-partida - resultat
+equip
+jugador
+participa
 
 Estic definint el model de dades per a començar a fer proves i introduir informació per veure si podem arrimar-nos al que esteu fent actualment. Propose el següents conceptes:
 
 Es defineix un club com una entitat amb un nom.
-Es defineix un equip com una entitat que pertany a un club i té una modalitat específica.
-Es defineix un jugador com una entitat amb nom, dni, numero de soci, data naixement, domicili, foto, ...
-Es defineix una temporada indicant data d'inici i de final. Tota competició farà referència a una temporada.
-Es defineix una modalitat com un sistema de joc amb les seues regles. Tota partida, tot equip, i tota competició seran d'una modalitat específica.
-Es defineix una competició com a un conjunt de partides.
-Es defineix una partida com una entitat amb un dia determinat, amb dos equips indicats, amb una sèrie de jugadors i amb un resultat.
-Definiré un sistema de vinculació entre equips i jugadors de forma que quan un jugador participe en una partida, ho farà amb un equip i, per tant, s'utilitzarà eixa informació per donar prioritat a eixe jugador en la llista de possibles jugadors d'eixe equip, per tal d'agilitzar la selecció.
+Es defineix un equip com una entitat que pertany a un club i té una
+modalitat específica.
+Es defineix un jugador com una entitat amb nom, dni, numero de soci,
+data naixement, domicili, foto, ...
+Es defineix una modalitat com un sistema de joc amb les seues regles.
+Tota partida, tot equip, i tota competició seran d'una modalitat
+específica.
+Es defineix una competició com a un conjunt de partides. Contindrá número d'edició i dates d'inici i fi.
+Es defineix una partida com una entitat amb un dia determinat, amb dos
+equips indicats, amb una sèrie de jugadors i amb un resultat.
+Definiré un sistema de vinculació entre equips i jugadors de forma que
+quan un jugador participe en una partida, ho farà amb un equip i, per
+tant, s'utilitzarà eixa informació per donar prioritat a eixe jugador
+en la llista de possibles jugadors d'eixe equip, per tal d'agilitzar
+la selecció.
+
+Hola Alfons, ho he comentat en Josep, Fran i Rixard i ens sembla bé si el primer graó és el jugador, de baix cap a dalt, ja que pot haver molts canvis enmig d'un campionat respecte els jugadors, la resta de info és manté estable.
+En quant a marcar un inici i final de temporada (p.e.2016-2017) no ho vegem important, de fet és més interessant el número d'edició de la competició que no l'any ja que alguns varien de dates o solpaen a dos anys diferents. Per tant si es puguera ficar manualment l'inici i finalització d'una edició de X campionat ens sobra.

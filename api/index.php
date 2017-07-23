@@ -5,6 +5,14 @@
  * @Package FedpivalAPI 
  */
 
+/*
+PENDENTS
+- sanititzar entrades api
+- cercar dades
+- emulador jugadors i campionats
+- querypack
+*/
+
 include('mysqli_crud.php');
 
 /// mostrar errors
@@ -17,12 +25,12 @@ class FedpivalAPI {
     private $itemsPerPage = 20;	// elements per pàgina 
     private $db= null; //objecte de base de dades
     private $json= null; // objecte json per a dades de consulta o guardar en db
-    private $short= false; // abreviar o no camps llargs
     private $nom= null; // nom de l'objecte principal de consulta
     private $wheres= array(); // clàusules de filtrat where per a sql
-    private $minims= array(); // camps obligatoris a omplir per cada taula de la db
+    private $mshoinims= array(); // camps obligatoris a omplir per cada taula de la db
     private $tots= array(); // tots els camps existents a cada taula de la db
     private $limit= null; // màxims elements
+    private $order= null; // ordre definit
     private $id= null; // id del registre que se va a editar
      
     // Function to make connection to database 
@@ -76,19 +84,22 @@ class FedpivalAPI {
     	global $_SESSION, $_POST;
 		$request= explode('/',$path);
 		$this->nom= $request[2];
-		if (isset($_POST['json'])) $this->json= json_decode($_POST['json'],true);
-		// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
-		if (!isset($_SESSION['id'])) {
-			// si no s'està intentant autenticar, error
-			if ($this->nom!='usuari') $this->error('200 ACCESS ERROR');
-			// si no s'indica password, error
-			if (!$this->json['pwd']) $this->error('200 ACCESS ERROR');
-			$this->login($this->json['pwd']);
+		if (!empty($_POST['json']) || $this->nom=='usuari') {
+			$this->json= json_decode($_POST['json'],true);
+			// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
+			if (!isset($_SESSION['id'])) {
+				// si no s'està intentant autenticar, error
+				if ($this->nom!='usuari') $this->error('200 ACCESS ERROR');
+				// si no s'indica password, error
+				if (!$this->json['pwd']) $this->error('200 ACCESS ERROR');
+				$this->login($this->json['pwd']);
+			}
 		}
 		$this->wheres= array('1=1');
-		$limit='';
+		$this->limit = ' limit '.$this->itemsPerPage;
 		
 		$pos= array_search('p', $request);
+		if (empty($pos)) $pos=1;
 		if ( $pos && is_numeric($request[$pos+1]) )
 		    $this->limit = ' limit '.$request[$pos+1].','.$this->itemsPerPage;
 		$pos= array_search('id', $request);
@@ -115,18 +126,16 @@ class FedpivalAPI {
 		if ( $pos && is_numeric($request[$pos+1]) )
 		    array_push( $this->wheres, "modificacio='".$request[$pos+1]."'" );
 		// OPCIONAL: opció de posar rangos des de-fins a (i posar només el de o el fins a)
-	
-		/// short = abreviar continguts >100 (busque primer espai i pose "...")
-		$this->short= array_search('short', $request)>0;
-		
+
 		switch($this->nom){
 			case "usuari":
 				if ($request[3]=='logout') $this->logout();
 			break;
 			case "noticia":
 				// select
-		    	array_push( $this->wheres, "instr('noticia',categoria)>0" );
+		    	array_push( $this->wheres, "instr('noticies',categoria)>0" );
 		    	$this->nom= 'pagina';
+		    	$this->order= ' order by publicacio, alta desc ';
 			break;
 			case "pagina":
 				// select
@@ -199,14 +208,14 @@ class FedpivalAPI {
     }
     
     private function select() {
-		$sql= "SELECT * FROM fedpival.".($this->nom)." where ".implode(' and ',$this->wheres).$this->limit;
+		$sql= "SELECT * FROM fedpival.".($this->nom)." where ".implode(' and ',$this->wheres).$this->order.$this->limit;
 		$this->db->sql( $sql );
 		$result= $this->db->getResult();
-		// si s'especifica "short" retalle camps llargs i pose el·lipsi "..."
+		// si no és llistar un id, retalle camps llargs i pose el·lipsi "..."
 		// validacions
 		foreach($result as $i=>$r) { // en cada registre...
 			foreach($r as $k=>$v) { // en cada parell de valors
-				if ($this->short && strlen(strval($v))>100) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
+				if (empty($this->id) && strlen(strval($v))>100) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
 			}
 		}
 		$this->render($result);
