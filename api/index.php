@@ -38,13 +38,12 @@ class FedpivalAPI {
 		session_start();
 		$this->db=new Database();
 		$this->db->connect();
-		$this->columnes();
 		$this->parse(trim($_SERVER['REQUEST_URI'],'/'));
 		$this->exe();
 		return true;
     }
     
-    // funció que obté les columnes de les taules de la DB fedpival i són o no obligatoris (minims)
+    // funció que obté les columnes de les taules de la DB fedpival i si són o no obligatoris (minims)
     private function columnes() {
 		$this->db->sql("select table_name as t,column_name as c,is_nullable as nul from information_schema.columns where column_name<>'id' and table_schema='fedpival'"); /*COLUMN_TYPE,COLUMN_KEY*/
 		$result= $this->db->getResult();
@@ -56,7 +55,7 @@ class FedpivalAPI {
 		return true;
     }
     
-    private function error($str) { die($str); }
+    private function error($str) { echo $str; if($str!='OK') exit; }
     
     private function login($pwd) {
     	global $_SESSION;
@@ -82,6 +81,27 @@ class FedpivalAPI {
     //
     private function parse($path) {
     	global $_SESSION, $_POST;
+    	//echo '<hr>',$path,'<hr>';
+    	if (strpos($path,'?')) {
+    		$requests= explode('?',$path);
+    		array_shift($requests);
+    		$results= array();
+    		foreach ( $requests as $request ) {
+	    		ob_start();
+	    		//$request= trim($request,'/');
+	    		//if (substr($request,0,13)!='api/index.php') $request= '/api/index.php/'.$request;
+    			$this->parse('/index.php'.$request);
+				$oneresult= $oneresult= $this->exe();
+	    		ob_end_clean();
+				if (count($oneresult)==1) $oneresult= $oneresult[0]; // un array d'un sol element
+				if (!isset($results[$this->nom])) $results[$this->nom]= array();
+				// un element o llista:
+				if (isset($oneresult[id])) $results[$this->nom][$oneresult[id]]= $oneresult;
+				else $results[$this->nom.'s']= $oneresult; // plural
+    		}
+    		echo json_encode($results);
+    		exit;
+    	}
 		$request= explode('/',$path);
 		$this->nom= $request[2];
 		if (!empty($_POST['json']) || $this->nom=='usuari') {
@@ -101,7 +121,7 @@ class FedpivalAPI {
 		$pos= array_search('p', $request);
 		if (empty($pos)) $pos=1;
 		if ( $pos && is_numeric($request[$pos+1]) )
-		    $this->limit = ' limit '.$request[$pos+1].','.$this->itemsPerPage;
+		    $this->limit = ' limit '.($request[$pos+1]*$this->itemsPerPage).','.$this->itemsPerPage;
 		$pos= array_search('id', $request);
 		if ( $pos && is_numeric($request[$pos+1]) ) {
 		    array_push( $this->wheres, "id=".$request[$pos+1] );
@@ -115,6 +135,10 @@ class FedpivalAPI {
 		if ( $pos ) {
 		    array_push( $this->wheres, "instr('".$request[$pos+1]."',tags)>=0" );
     	}
+		$pos= array_search('i', $request);
+		if ( $pos ) {
+		    array_push( $this->wheres, "idioma='".$request[$pos+1]."'" );
+    	}
 		$pos= array_search('u', $request);
 		if ( $pos ) {
 			if ( is_numeric($request[$pos+1]) ) // usuari com a id
@@ -127,6 +151,16 @@ class FedpivalAPI {
 		    array_push( $this->wheres, "modificacio='".$request[$pos+1]."'" );
 		// OPCIONAL: opció de posar rangos des de-fins a (i posar només el de o el fins a)
 
+  		$pos= array_search('search', $request);
+		if ( $pos ) {
+			//$query= json_decode($_POST['json'],true);
+			$query= $request[$pos+1];
+        	$query = htmlspecialchars($query); 
+        	// changes characters used in html to their equivalents, for example: < to &gt;
+        	$query = mysqli_real_escape_string($GLOBALS["___mysqli_ston"],$query);
+        	// makes sure nobody uses SQL injection
+			array_push( $this->wheres, "((titol LIKE '%".$query."%') OR (contingut LIKE '%".$query."%') OR (tags LIKE '%".$query."%'))" );
+		}
 		switch($this->nom){
 			case "usuari":
 				if ($request[3]=='logout') $this->logout();
@@ -149,7 +183,7 @@ class FedpivalAPI {
 			break;
 			// objecte no identificat:
 			default:
-				$this->error('200 UNKNOWN ERROR');
+				$this->error('200 UNKNOWN ERROR '.$this->nom);
 			}
     }
     
@@ -157,6 +191,7 @@ class FedpivalAPI {
     private function validar() {
 		// comprove si els camps obligatoris estan definits
 		// i elimine del json (opcionals) els camps que ja existeixen en la taula
+		$this->columnes();
 		$testminims= $this->minims[$this->nom];
 		$camps= $this->json;
 		if (empty($camps['alta'])) $camps['alta']= date('YmdHis');
@@ -218,14 +253,15 @@ class FedpivalAPI {
 				if (empty($this->id) && strlen(strval($v))>100) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
 			}
 		}
-		$this->render($result);
-		return;
+		return $this->render($result);
     }
     
     private function render($result) {
 		header('Content-Type: application/json, charset=utf-8');
+		// si només hi ha un element, el torna sense array
+		if (is_array($result) && count($result)==1) $result= $result[0];
 		echo json_encode($result);
-		exit;    	
+		return $result;
     }
     
 }

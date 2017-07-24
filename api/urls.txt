@@ -17,11 +17,18 @@
 /noticia/t/{tag} // torna totes les noticies que incloguen el tag
 /noticia/u/{usuari} // torna totes les noticies d'un usuari
 /noticia/d/{20170524} // torna totes les noticies d'una data
-/noticia/s/{text-a-buscar} // busca les noticies que continguen el text
+/noticia/i/{val|es}
+/noticia/search ? POST {"search":"text"} // busca les noticies que continguen el text
 
 /noticia/p/4/u/32
 
 - el mateix canviant noticia per pagina
+
+COM FER MULTICONSULTES AMB UNA MATEIXA URL
+He d'ignorar les opcions d'actualització i el que es transmet per $_POST en aquest cas, si no, serà impossible saber de quin és
+Separació de les consultes amb caràcters ( millor opcio: // )
+/api/index.php/noticia/id/112//api/index.php/noticia/id/113
+----
 
 
 
