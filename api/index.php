@@ -119,7 +119,7 @@ class FedpivalAPI {
 		$this->limit = ' limit '.$this->itemsPerPage;
 		
 		$pos= array_search('p', $request);
-		if (empty($pos)) $pos=1;
+		if (empty($pos)) $pos= array_search('page',$request);
 		if ( $pos && is_numeric($request[$pos+1]) )
 		    $this->limit = ' limit '.($request[$pos+1]*$this->itemsPerPage).','.$this->itemsPerPage;
 		$pos= array_search('id', $request);
@@ -127,19 +127,27 @@ class FedpivalAPI {
 		    array_push( $this->wheres, "id=".$request[$pos+1] );
 		    $this->id=$request[$pos+1];
 		}
+		$pos= array_search('slug', $request);
+		if ( $pos ) {
+		    array_push( $this->wheres, "slug='".$request[$pos+1]."'" );
+		}
 		$pos= array_search('c', $request);
+		if (empty($pos)) $pos= array_search('cat',$request);
 		if ( $pos ) {
 		    array_push( $this->wheres, "instr('".$request[$pos+1]."',categoria)>0" );
 		}
 		$pos= array_search('t', $request);
+		if (empty($pos)) $pos= array_search('tag',$request);
 		if ( $pos ) {
 		    array_push( $this->wheres, "instr('".$request[$pos+1]."',tags)>=0" );
     	}
 		$pos= array_search('i', $request);
+		if (empty($pos)) $pos= array_search('idioma',$request);
 		if ( $pos ) {
 		    array_push( $this->wheres, "idioma='".$request[$pos+1]."'" );
     	}
 		$pos= array_search('u', $request);
+		if (empty($pos)) $pos= array_search('autor',$request);
 		if ( $pos ) {
 			if ( is_numeric($request[$pos+1]) ) // usuari com a id
 		    	array_push( $this->wheres, "autor=".$request[$pos+1] );
@@ -147,6 +155,7 @@ class FedpivalAPI {
 		    	array_push( $this->wheres, "autor=(select id from fedpival.usuari where nom like '%".$request[$pos+1]."%'" );
 		}
 		$pos= array_search('d', $request);
+		if (empty($pos)) $pos= array_search('dates',$request);
 		if ( $pos && is_numeric($request[$pos+1]) )
 		    array_push( $this->wheres, "modificacio='".$request[$pos+1]."'" );
 		// OPCIONAL: opció de posar rangos des de-fins a (i posar només el de o el fins a)
