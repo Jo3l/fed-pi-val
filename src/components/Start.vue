@@ -81,14 +81,12 @@ export default {
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
 	},
-    getData: function() {
+	getData: function(apiUrl) {
 
         var vm = this;
-		vm.loadingBar(true);
-        this.$http.get('index.php/noticia')
+        this.$http.get(apiUrl)
         .then(function (response) {
-            vm.noticias = response.data;
-            vm.loadingBar(false);
+            vm.$store.start = response.data;
         })
         .catch(function (error) {
             console.log(error);
@@ -97,7 +95,8 @@ export default {
     }
   },
     mounted: function () {
-		//this.getData();
+    	console.log('fet!!!!!');
+		this.getData(this.$store.apiUrl);
     },
     watch: {
 

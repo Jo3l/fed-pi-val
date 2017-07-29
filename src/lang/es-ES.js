@@ -13,5 +13,6 @@ export default {
 	common : {
 		salute : 'Buenos dias',
 		goodbye: 'Adios',
+		news: 'noticia',
 	},
 }

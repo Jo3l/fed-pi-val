@@ -47,6 +47,7 @@ export default {
 </script>
 
 <style lang="less">
+
 .news {
 	width:100%;
 	min-height:200px;

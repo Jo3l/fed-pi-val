@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
 	    <div class="teaser" >
-			<picture v-for="noticia in news" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true" v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
+			<picture v-for="noticia in $store.start" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true" v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
 				<aside>
 					<h1>{{ noticia.titol }}</h1>
 				</aside>
@@ -15,21 +15,15 @@
 export default {
 	name: 'Teaser',
   	components: {},
-  	store: ['news'],
 	data () {
 	return {
-	    pagina: 1,
-	    links:{},
-	    tag: {},
-	    tagNames: {},
-	    users: {}
+
 	}
 	},
 	methods: {
 	
 	},
 	mounted: function () {
-
 	},
 	watch: {
 	
@@ -48,8 +42,8 @@ export default {
 	    margin: 0 auto;
 	    position: relative;
 	    overflow: hidden;
-	    height: 50vh;
-	    max-height: 80vw;
+	    height: 100vw;
+    	max-height: 480px;
 	    background-size: cover;
 	    background-position: 50% 33%;
 	    aside {

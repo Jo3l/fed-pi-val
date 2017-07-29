@@ -51,8 +51,13 @@ new Vue({
   components: { Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide },
   data: {
         store: {
-    		news: null,
-    	}
+        	start: '',
+    		news: '',
+    		apiUrl: '',
+    	},
+  },
+  methods: {
+   
   },
   beforeCreate: function () {
   	
@@ -69,6 +74,11 @@ new Vue({
   	} else {
   	//	window.location.href = "/404";
   	}
-    
   },
+  mounted: function () {
+		//this.getData();
+  },
+   watch: {
+
+   }
 })

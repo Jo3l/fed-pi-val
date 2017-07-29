@@ -1,5 +1,6 @@
 import Start from './components/Start.vue'
 import News from './components/News.vue'
+import singleNews from './components/singleNews.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
 import PageNotFound from './components/PageNotFound.vue'
@@ -43,6 +44,16 @@ export const routes = [
     name: 'Noticias',
     component: News,
     lang:'es'
+  },
+  {
+    path: '/val/noticia/:slug',
+    name: 'Noticia',
+    component: singleNews,
+  },
+  {
+    path: '/es/noticia/:slug',
+    name: 'Noticia-es',
+    component: singleNews,
   },
   {
     path: '/val/calendari',

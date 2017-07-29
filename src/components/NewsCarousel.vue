@@ -3,7 +3,8 @@
     	
 		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
 
-		  <slide v-for="noticia in news" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
+		  <slide v-for="noticia in $store.start" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
+		  	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 		    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
 		    	<div class="articleContainer">
 			    	<small>{{ fixDate(noticia.alta) }}</small>
@@ -13,6 +14,7 @@
 			    	</section>
 		    	</div>
 		    </article>
+		    </router-link>
 		  </slide>
 
 		</carousel>
@@ -24,11 +26,8 @@
 
 export default {
   name: 'Noticias',
-  store: ['news'],
   data () {
     return {
-        //news: this.$store.news,
-        
     }
   },
   methods: {
@@ -38,27 +37,11 @@ export default {
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
 	},
-    getData: function() {
-
-        var vm = this;
-		vm.loadingBar(true);
-        this.$http.get('/noticia')
-        .then(function (response) {
-            //vm.news = response.data;
-            vm.$store.news = response.data;
-            vm.loadingBar(false);
-            
-            //console.log(vm.news);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-        
-        //console.log(vm.news);
-    }
   },
-    mounted: function () {
-		this.getData();
+    beforeCreate: function () {
+    	
+		this.$store.apiUrl += '/noticia/i/'+this.$i18n.locale;
+
     },
     watch: {
 
@@ -67,12 +50,19 @@ export default {
 </script>
 
 <style lang="less">
+
+@import "../assets/less/defines.less";
+
 .VueCarousel-navigation-button {
 	transform:initial!important;
 	color:white!important;
 	text-shadow: 0px 0px 1px black!important;
+	@media(max-width:@screenTablet) {
+		display:none;
+	}
 }
 .newsCarousel {
+	a {text-decoration:none;color:black;}
 	article {
 	    min-height: 400px;
 	    overflow: hidden;
