@@ -51,9 +51,9 @@ new Vue({
   components: { Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide },
   data: {
         store: {
-        	start: '',
+        	newsTeaser: '',
+        	newsCarousel: '',
     		news: '',
-    		apiUrl: '',
     	},
   },
   methods: {

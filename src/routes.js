@@ -1,6 +1,6 @@
 import Start from './components/Start.vue'
 import News from './components/News.vue'
-import singleNews from './components/singleNews.vue'
+import SingleNews from './components/SingleNews.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
 import PageNotFound from './components/PageNotFound.vue'
@@ -48,12 +48,26 @@ export const routes = [
   {
     path: '/val/noticia/:slug',
     name: 'Noticia',
-    component: singleNews,
+    component: SingleNews,
   },
   {
     path: '/es/noticia/:slug',
     name: 'Noticia-es',
-    component: singleNews,
+    component: SingleNews,
+  },
+  {
+    path: '/val/noticia/edit/:slug',
+    name: 'NoticiaEdit',
+    component: function(resolve) {
+             require(['./components/EditSingleNews.vue'], resolve);
+        },
+  },
+  {
+    path: '/es/noticia/edit/:slug',
+    name: 'NoticiaEdit-es',
+    component: function(resolve) {
+             require(['./components/EditSingleNews.vue'], resolve);
+        },
   },
   {
     path: '/val/calendari',

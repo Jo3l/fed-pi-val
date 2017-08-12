@@ -11,8 +11,11 @@ export default {
 		added : 'Afegit'
 	},
 	common : {
+		language_name: 'Valencià',
 		salute : 'Bon dia',
 		goodbye: 'Adeu',
 		news: 'noticia',
+		save_on_other_lang: 'Guardar en ',
+		duplicate_on_other_lang: 'Duplicar en '
 	},
 }

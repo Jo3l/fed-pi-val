@@ -76,6 +76,7 @@ export default {
 .menu {
 	a {
 		text-decoration: none;
+		color: #232323;
 	&:visited {color: #232323;}
 	}
 }

@@ -3,18 +3,18 @@
     	
 		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
 
-		  <slide v-for="noticia in $store.start" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
-		  	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
+		  <slide v-for="noticia in $store.newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
 		    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
-		    	<div class="articleContainer">
-			    	<small>{{ fixDate(noticia.alta) }}</small>
-			    	<h2>{{ noticia.titol }}</h2>
-			    	<section>
-			    		<p>{{ noticia.contingut }}</p>
-			    	</section>
-		    	</div>
+		    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
+			    	<div class="articleContainer">
+				    	<small>{{ fixDate(noticia.alta) }}</small>
+				    	<h2>{{ noticia.titol }}</h2>
+				    	<section>
+				    		<p>{{ noticia.contingut }}</p>
+				    	</section>
+			    	</div>
+		    	</router-link>
 		    </article>
-		    </router-link>
 		  </slide>
 
 		</carousel>
@@ -37,11 +37,21 @@ export default {
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
 	},
-  },
-    beforeCreate: function () {
-    	
-		this.$store.apiUrl += '/noticia/i/'+this.$i18n.locale;
+	getData: function(apiUrl) {
 
+        var vm = this;
+        this.$http.get(apiUrl)
+        .then(function (response) {
+            vm.$store.newsCarousel = response.data;
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        
+    }
+  },
+    mounted: function () {
+		if(this.$store.newsCarousel == '') this.getData('/noticia/i/'+this.$i18n.locale);
     },
     watch: {
 
@@ -74,10 +84,14 @@ export default {
 	    background-repeat: no-repeat;
 	    border-right: 2px solid white;
     	border-left: 2px solid white;
-		cursor:pointer;
+		cursor:e-resize;
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;
+    		transition: padding .5s ease;
+    		&:hover {
+    			padding: 40px 20px 60px 20px;
+    		}
 		}
 		
 		small {text-shadow: 1px 1px 1px white;}

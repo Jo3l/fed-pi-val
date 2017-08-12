@@ -1,9 +1,9 @@
 <template>
     <transition name="fade">
 	    <div class="teaser" >
-			<picture v-for="noticia in $store.start" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true" v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
+			<picture v-bind:style="{ 'background-image': 'url(' + $store.newsTeaser.imatge + ')' }">
 				<aside>
-					<h1>{{ noticia.titol }}</h1>
+					<h1>{{ $store.newsTeaser.titol }}</h1>
 				</aside>
 			</picture>
 	    </div>
@@ -16,14 +16,26 @@ export default {
 	name: 'Teaser',
   	components: {},
 	data () {
-	return {
-
-	}
+		return {
+			teaser: '',
+		}
 	},
 	methods: {
+		getData: function(apiUrl) {
 	
+	        var vm = this;
+	        this.$http.get(apiUrl)
+	        .then(function (response) {
+	            vm.$store.newsTeaser = response.data;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+	    }
 	},
 	mounted: function () {
+		if(this.$store.newsTeaser == '') this.getData('/noticia/destacada/i/'+this.$i18n.locale);
 	},
 	watch: {
 	

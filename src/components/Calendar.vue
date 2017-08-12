@@ -41,6 +41,7 @@ module.exports = {
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
 			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
 			increment: 0,
+			events: [],
 			monthArray: this.$parent.$i18n.t('calendar.months'),
 			selected : {
 				day : false,
@@ -59,6 +60,34 @@ module.exports = {
 		}
 	},
 	methods: {
+		getData: function(apiUrl) {
+	
+	        var vm = this;
+	        this.$http.get(apiUrl)
+	        .then(function (response) {
+	        	
+	        	for (event in response.data) {
+	        		if(response.data[event].publicacio) {
+
+		        		var key = response.data[event].publicacio.substring(0,6);
+		        		if (!(vm.events[key] instanceof Array)) vm.events[key] = [];
+		        		
+		        		var id =  response.data[event].id;
+		        		if (!(vm.events[key][id] instanceof Array)) vm.events[key][id] = [];
+		        		
+		        		vm.events[key][id] = response.data[event];
+
+	        		}
+	        	}
+	        	
+	        	//console.log(vm.events);
+	        	
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+	    },
 		getMonth: function(n) {
 			return Date.today().add(n).month().getMonth();
 		},
@@ -77,6 +106,8 @@ module.exports = {
 			var daysInMonth = Date.getDaysInMonth(year, month);
 			var firstDayIndex = firstDate.getDay();
 			var lastDate = firstDate.getDay() + Date.getDaysInMonth(year, month);
+			
+			if(!this.events[year+''+("0" + (month + 1)).slice(-2)]) this.getData('acte/'+year+''+("0" + (month + 1)).slice(-2)+'/i/'+this.$i18n.locale);
 			
 			while (squareIndex < (lastDate)) {
 				var week = [];
@@ -153,6 +184,12 @@ module.exports = {
 		isDay : function(day){
 			return day.date !== false;
 		}
+	},
+	mounted: function() {
+		var month = Date.today().month().getMonth();
+		var year = Date.today().month().getYear() + 1900;
+		this.getData('acte/'+year+''+("0" + (month + 1)).slice(-2)+'/i/'+this.$i18n.locale);
+		console.log(this.getCalendar(0));
 	}
 };
 </script>

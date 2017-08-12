@@ -19,7 +19,8 @@
     "vue-carousel": "^0.6.4",
     "vue-i18n": "^7.0.5",
     "vue-router": "^2.5.3",
-    "vue-stash": "^2.0.1-beta"
+    "vue-stash": "^2.0.1-beta",
+    "vue2-editor": "^2.0.26"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

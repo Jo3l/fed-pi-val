@@ -15,20 +15,20 @@
 		</article>
 		<em>Nom del autor</em>
 	</div>
-
-	<news></news>
-
+	
+	<NewsCarousel></NewsCarousel>
+	
     </div>
     </transition>
 </template>
 
 <script>
 
-import News from './NewsCarousel.vue';
+import NewsCarousel from './NewsCarousel.vue';
 
 export default {
 	name: 'News',
-  	components: {'news' : News},
+  	components: {'NewsCarousel' : NewsCarousel},
 	data () {
 	return {
 	    pagina: 1,

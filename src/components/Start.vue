@@ -17,61 +17,29 @@
 		</svg>
 	</div>    	
     	
-
+    	<newsCarousel></newsCarousel>
     	
-    	<news></news>
 		<calendar></calendar>
+		
 		<cart type="slider"></cart>
 		
-		
-		<div class="noticiasdiv">
-			<div class="wrapper">
-				<div v-for="noticia in noticias" class="noticia">
-				<span class="creacio">{{ stringDate(noticia.modificacio) }}</span>
-				<h3>{{ noticia.titol }}</h3>
-				{{ noticia.imatge }}
-				<p class="cos">{{ noticia.contingut }}</p>
-				</div>
-			</div>
-		</div>
-		
-
-    	<div ref="image" style="background-image: url(/static/dev/foto4.jpg);background-position: 50%;background-size: cover;margin-bottom: 1rem;margin-right: 1rem;position: relative;">
-    		<ui-ripple-ink trigger="image"></ui-ripple-ink>
-    	</div>
-
-
     </div>
     </transition>
 </template>
 
 <script>
 
-import News from './NewsCarousel.vue';
+import NewsCarousel from './NewsCarousel.vue';
 import Calendar from './Calendar.vue';
 import Cart from './Cart.vue';
 import Teaser from './Teaser.vue';
 
 export default {
   name: 'Start',
-  components: {'news' : News, 'calendar' : Calendar, 'cart': Cart, 'teaser' : Teaser },
+  components: {'NewsCarousel' : NewsCarousel, 'calendar' : Calendar, 'cart': Cart, 'teaser' : Teaser },
   data () {
     return {
-    	noticias: {},
-        /*id: 1,
-        slug:'',
-        titol: '',
-        categoria: '',
-        tags: '',
-        idioma: '',
-        autor: '',
-        contingut: '',
-        imatge: '',
-        json: '',
-        alta:'',
-        modificacio:'',
-        publicacio:'',
-        baixa:''*/
+
     }
   },
   methods: {
@@ -80,23 +48,9 @@ export default {
   	},
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
-	},
-	getData: function(apiUrl) {
-
-        var vm = this;
-        this.$http.get(apiUrl)
-        .then(function (response) {
-            vm.$store.start = response.data;
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-        
-    }
+	}
   },
     mounted: function () {
-    	console.log('fet!!!!!');
-		this.getData(this.$store.apiUrl);
     },
     watch: {
 
