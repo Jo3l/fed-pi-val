@@ -3,6 +3,7 @@ import News from './components/News.vue'
 import SingleNews from './components/SingleNews.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
+import Form from './components/Form.vue'
 import PageNotFound from './components/PageNotFound.vue'
 
 export const routes = [
@@ -102,6 +103,12 @@ export const routes = [
     path: '/login',
     name: 'login',
     component: Start,
+  },
+  {
+    path: '/val/form',
+    name: 'ProvaFormulari',
+    component: Form,
+    lang:'val'
   },
   {
     path: '/404',

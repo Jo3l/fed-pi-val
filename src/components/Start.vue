@@ -19,7 +19,7 @@
     	
     	<newsCarousel></newsCarousel>
     	
-		<calendar></calendar>
+		<Calendar></Calendar>
 		
 		<cart type="slider"></cart>
 		
@@ -36,7 +36,7 @@ import Teaser from './Teaser.vue';
 
 export default {
   name: 'Start',
-  components: {'NewsCarousel' : NewsCarousel, 'calendar' : Calendar, 'cart': Cart, 'teaser' : Teaser },
+  components: {'NewsCarousel' : NewsCarousel, 'Calendar': Calendar, 'cart': Cart, 'teaser' : Teaser },
   data () {
     return {
 

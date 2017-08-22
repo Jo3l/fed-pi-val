@@ -8,7 +8,7 @@
 			<div class="calendar" v-for="n in 4">
 				<nav class="calendarHead">
 	
-					<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
+					<b @click="eventos()">{{ monthArray[getMonth(n-1+increment)] }}</b>
 					<b>{{ getYear(n-1+increment)}}</b>
 	
 				</nav>
@@ -16,9 +16,9 @@
 					<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
 				</div>
 				<div class="calendarMonth">
-					<div v-for="week in getCalendar(n-1+increment)">
+					<div v-for="week in events[eventos(n-1+increment)]">
 						<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]" @click="select(day)">
-							<span v-if="day.date" v-bind:class="day.data.class">
+							<span v-if="day.date" v-bind:class="day.data.cssClass">
 								{{ day.date }}
 							</span>
 						</span>
@@ -60,6 +60,81 @@ module.exports = {
 		}
 	},
 	methods: {
+		eventos: function(n) {
+			var month = Date.today().add(n).month().getMonth();
+			var year = Date.today().add(n).month().getYear() + 1900;
+			var current = year+''+("0" + (month + 1)).slice(-2);
+			return current;
+		},
+		calendar: function(n) {
+			var squareIndex =  this.mondayFirst ? 1 : 0;
+			var dateOfMonth = 1;
+			var weeks = [];
+			var month = Date.today().add(n).month().getMonth();
+			var year = Date.today().add(n).month().getYear() + 1900;
+			
+			var firstDate = new Date(year, month, 1);
+			var daysInMonth = Date.getDaysInMonth(year, month);
+			var firstDayIndex = firstDate.getDay();
+			var lastDate = firstDate.getDay() + Date.getDaysInMonth(year, month);
+			
+			var current = year+''+("0" + (month + 1)).slice(-2);
+		    var vm = this;
+		    
+	        this.$http.get('acte/'+current+'/i/'+this.$i18n.locale)
+	        .then(function (response) {
+		        while (squareIndex < (lastDate)) {
+					var week = [];
+					for (var d = 0; d < 7; d++) {
+						if (squareIndex < firstDayIndex || squareIndex >= (lastDate)) {
+							week.push({ date : false });
+						} else {
+							
+							var eventsInDay=[];
+							for (event in response.data) {
+								if(response.data[event].publicacio && response.data[event].publicacio == year+''+("0" + (month + 1)).slice(-2)+''+("0" + (dateOfMonth)).slice(-2)) {
+									eventsInDay.push(response.data[event]);
+	        					}
+							}
+							
+							var clase = '';
+							if( Object.keys(eventsInDay).length > 0 ) {
+								clase = 'event';
+							}
+							if( Date.today().getDate()==dateOfMonth && Date.today().getMonth() == month && (Date.today().getYear()+1900) == year) {
+								clase = 'today';
+							}
+
+							week.push({
+								date : dateOfMonth, 
+								data : {
+									day : dateOfMonth,
+									month : month,
+									year : year,
+									cssClass : clase,
+									events: eventsInDay
+								}
+							});
+							dateOfMonth++;
+						}
+						squareIndex++;
+					}
+					weeks.push(week);
+				}
+
+				vm.events[current] = weeks;
+				vm.events.unshift(vm.events.shift());
+				return weeks;
+
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+
+		},
+		drawCalendar: function(n) {
+			return this.events[Date.today().add(n).month().getYear() + 1900+''+('0' + (Date.today().add(n).month().getMonth() + 1)).slice(-2)];
+		},
 		getData: function(apiUrl) {
 	
 	        var vm = this;
@@ -94,54 +169,17 @@ module.exports = {
 		getYear: function(n) {
 			return Date.today().add(n).month().getYear() + 1900;
 		},
-		getCalendar: function(n) {
-			
-			var squareIndex =  this.mondayFirst ? 1 : 0;
-			var dateOfMonth = 1;
-			var weeks = [];
-			var month = Date.today().add(n).month().getMonth();
-			var year = Date.today().add(n).month().getYear() + 1900;
-			
-			var firstDate = new Date(year, month, 1);
-			var daysInMonth = Date.getDaysInMonth(year, month);
-			var firstDayIndex = firstDate.getDay();
-			var lastDate = firstDate.getDay() + Date.getDaysInMonth(year, month);
-			
-			if(!this.events[year+''+("0" + (month + 1)).slice(-2)]) this.getData('acte/'+year+''+("0" + (month + 1)).slice(-2)+'/i/'+this.$i18n.locale);
-			
-			while (squareIndex < (lastDate)) {
-				var week = [];
-				for (var d = 0; d < 7; d++) {
-					if (squareIndex < firstDayIndex || squareIndex >= (lastDate)) {
-						week.push({ date : false });
-						
-					} else {
-						week.push({
-							date : dateOfMonth, 
-							data : {
-								day : dateOfMonth,
-								month : month,
-								year : year,
-								class : Date.today().getDate()==dateOfMonth && Date.today().getMonth() == month && (Date.today().getYear()+1900) == year ? 'today' : 'normal',
-							}
-						});
-						
-						dateOfMonth++;
-					}
-					squareIndex++;
-				}
-				weeks.push(week);
-			}
-			return weeks;
-			
-		},
 		incMonth: function() {
 			this.increment++;
+			this.calendar(this.increment + 3);
 		},
 		decMonth: function() {
 			this.increment--;
+			this.calendar(this.increment);
+
 		},
 		select : function(day){
+			console.log(day);
 			if(this.isSelected(day)){
 				this.selected = {
 					day : false,
@@ -150,6 +188,7 @@ module.exports = {
 				};
 				return true;
 			}
+			
 			return this.selected = {
 				day : day.data.day,
 				month : day.data.month,
@@ -186,10 +225,10 @@ module.exports = {
 		}
 	},
 	mounted: function() {
-		var month = Date.today().month().getMonth();
-		var year = Date.today().month().getYear() + 1900;
-		this.getData('acte/'+year+''+("0" + (month + 1)).slice(-2)+'/i/'+this.$i18n.locale);
-		console.log(this.getCalendar(0));
+		this.calendar(0);
+		this.calendar(1);
+		this.calendar(2);
+		this.calendar(3);
 	}
 };
 </script>
@@ -301,6 +340,10 @@ module.exports = {
 			    background-color: yellow;
 			    border: 2px dotted yellow;
 			    color:black;
+			}
+		  	&.event {
+				background-color: #ffeef0;
+    			border: 1px dashed #d46b78;
 			}
 		}
 		
