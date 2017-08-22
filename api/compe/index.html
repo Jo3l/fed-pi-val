@@ -1,0 +1,50 @@
+<html>
+<!-- - - - -->
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="https://josephuspaye.github.io/Keen-UI/docs.bundle.css" rel="stylesheet">
+
+	<style>
+		.btn { text-decoration:none; color:black; padding:10px; margin:5px; cursor:pointer; border:1px solid black; border-radius:20px; width:40px; }
+		body, textarea, input, select { background-color:black; color:white; }
+	</style>
+</head>
+<!-- - - - -->
+<body>
+
+<script>
+    const jugador= {
+        "id":"int*",
+        "nom":"string(50)*",
+        "naixement":"string(14)",
+        "creacio":"string(14)",
+        "dni":"string(10)*",
+        "numsoci":"string(10)",
+        "email":"string(50)",
+        "dir":"string(50)",
+        "cp":"string(50)",
+        "poblacio":"string(50)",
+        "foto": "string(50)",
+        "json":"text"
+    }
+    ///
+    function drawfield(id,type) {
+        return id+'='+type+'<br/>';
+    }
+    ///
+    function drawform(obj) {
+        var html='';
+        Object.keys(obj).forEach( function(key,index) { html+= drawfield(key,jugador[key]);} );
+        document.getElementById('div').innerHTML= html;
+    }
+    ///
+    document.addEventListener("DOMContentLoaded", function(event) { 
+        drawform(jugador);
+    });    
+</script>
+
+<div id="div">---</div>
+
+</body>
+<!-- - - - -->
+</html>

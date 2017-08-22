@@ -8,9 +8,7 @@
 /*
 PENDENTS
 - sanititzar entrades api
-- cercar dades
 - emulador jugadors i campionats
-- querypack
 */
 
 include('mysqli_crud.php');
@@ -27,11 +25,12 @@ class FedpivalAPI {
     private $json= null; // objecte json per a dades de consulta o guardar en db
     private $nom= null; // nom de l'objecte principal de consulta
     private $wheres= array(); // clàusules de filtrat where per a sql
-    private $mshoinims= array(); // camps obligatoris a omplir per cada taula de la db
+    private $minims= array(); // camps obligatoris a omplir per cada taula de la db
     private $tots= array(); // tots els camps existents a cada taula de la db
     private $limit= null; // màxims elements
     private $order= null; // ordre definit
     private $id= null; // id del registre que se va a editar
+    private $mes= null; // mes a partir del qual es consulten dades
      
     // Function to make connection to database 
     public function init(){
@@ -45,12 +44,12 @@ class FedpivalAPI {
     
     // funció que obté les columnes de les taules de la DB fedpival i si són o no obligatoris (minims)
     private function columnes() {
-		$this->db->sql("select table_name as t,column_name as c,is_nullable as nul from information_schema.columns where column_name<>'id' and table_schema='fedpival'"); /*COLUMN_TYPE,COLUMN_KEY*/
+		$this->db->sql("select table_name as t,column_name as c,is_nullable as nul, column_type as tt from information_schema.columns where column_name<>'id' and table_schema='fedpival'"); /*COLUMN_TYPE,COLUMN_KEY*/
 		$result= $this->db->getResult();
 		$this->minims= $this->tots= array();
 		foreach($result as $r) {
 			if ($r['nul']=='NO') $this->minims[$r['t']][]= $r['c'];
-			$this->tots[$r['t']][]= $r['c'];
+			$this->tots[$r['t']][$r['c']]= $r[tt];
 		}
 		return true;
     }
@@ -81,7 +80,7 @@ class FedpivalAPI {
     //
     private function parse($path) {
     	global $_SESSION, $_POST;
-    	//echo '<hr>',$path,'<hr>';
+    	// MULTIREQUEST begin
     	if (strpos($path,'?')) {
     		$requests= explode('?',$path);
     		array_shift($requests);
@@ -102,6 +101,7 @@ class FedpivalAPI {
     		echo json_encode($results);
     		exit;
     	}
+    	// MULTIREQUEST end
 		$request= explode('/',$path);
 		$this->nom= $request[2];
 		if (!empty($_POST['json']) || $this->nom=='usuari') {
@@ -118,6 +118,13 @@ class FedpivalAPI {
 		$this->wheres= array('1=1');
 		$this->limit = ' limit '.$this->itemsPerPage;
 		
+		$pos= array_search('destacada', $request);
+		if ( $pos ) {
+		    array_push( $this->wheres, "destacada=1" );
+		    $this->limit = ' limit 1';
+		    $this->order = ' order by publicada desc';
+		    $this->id=$request[$pos+1];
+		}
 		$pos= array_search('p', $request);
 		if (empty($pos)) $pos= array_search('page',$request);
 		if ( $pos && is_numeric($request[$pos+1]) )
@@ -130,6 +137,7 @@ class FedpivalAPI {
 		$pos= array_search('slug', $request);
 		if ( $pos ) {
 		    array_push( $this->wheres, "slug='".$request[$pos+1]."'" );
+		    $this->id=$request[$pos+1];
 		}
 		$pos= array_search('c', $request);
 		if (empty($pos)) $pos= array_search('cat',$request);
@@ -154,6 +162,10 @@ class FedpivalAPI {
 		    else // usuari com a nom (seguretat?)
 		    	array_push( $this->wheres, "autor=(select id from fedpival.usuari where nom like '%".$request[$pos+1]."%'" );
 		}
+		
+		$pos= array_search('acte', $request);
+		if ( $pos && is_numeric($request[$pos+1]) )
+		    $this->mes= $request[$pos+1];
 		$pos= array_search('d', $request);
 		if (empty($pos)) $pos= array_search('dates',$request);
 		if ( $pos && is_numeric($request[$pos+1]) )
@@ -171,13 +183,23 @@ class FedpivalAPI {
 			array_push( $this->wheres, "((titol LIKE '%".$query."%') OR (contingut LIKE '%".$query."%') OR (tags LIKE '%".$query."%'))" );
 		}
 		switch($this->nom){
+		    case 'struct':
+        		$this->columnes();
+		        echo json_encode($this->tots);
+		        exit;
+		    break;
 			case "usuari":
 				if ($request[3]=='logout') $this->logout();
+			break;
+			case "jugador":
+			case "equip":
+			case "club":
 			break;
 			case "noticia":
 				// select
 		    	array_push( $this->wheres, "instr('noticies',categoria)>0" );
 		    	$this->nom= 'pagina';
+		    	$this->nomorg= 'noticia';
 		    	$this->order= ' order by publicacio, alta desc ';
 			break;
 			case "pagina":
@@ -189,6 +211,14 @@ class FedpivalAPI {
 			case "partida":
 			break;
 			case "acte":
+		    	array_push( $this->wheres, "instr('acte',categoria)>0" );
+		    	$mes= strtotime( substr($this->mes,0,4).'-'.substr($this->mes,4,2) );
+		    	$mes0= date('Ym',$mes);
+		    	/*$mes1= date('Ym',strtotime('+1 month',$mes));*/
+		    	array_push( $this->wheres, "(publicacio like '".$mes0."%')" );
+		    	$this->nom= 'pagina';
+		    	$this->order= ' order by publicacio, alta desc ';
+		    	$this->limit='';
 			break;
 			// objecte no identificat:
 			default:
@@ -259,7 +289,7 @@ class FedpivalAPI {
 		// validacions
 		foreach($result as $i=>$r) { // en cada registre...
 			foreach($r as $k=>$v) { // en cada parell de valors
-				if (empty($this->id) && strlen(strval($v))>100) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
+				if (empty($this->id) && strlen(strval($v))>100 && ($this->nomorg=='noticia')) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
 			}
 		}
 		return $this->render($result);
