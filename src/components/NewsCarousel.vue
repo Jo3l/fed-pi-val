@@ -3,7 +3,7 @@
     	
 		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
 
-		  <slide v-for="noticia in $store.newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
+		  <slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
 		    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
 		    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 			    	<div class="articleContainer">
@@ -28,6 +28,7 @@ export default {
   name: 'Noticias',
   data () {
     return {
+    	newsCarousel:''
     }
   },
   methods: {
@@ -50,7 +51,7 @@ export default {
         var vm = this;
         this.$http.get(apiUrl)
         .then(function (response) {
-            vm.$store.newsCarousel = response.data;
+            vm.newsCarousel = response.data;
         })
         .catch(function (error) {
             console.log(error);
@@ -59,10 +60,7 @@ export default {
     }
   },
     mounted: function () {
-		if(this.$store.newsCarousel == '') this.getData('/noticia/i/'+this.$i18n.locale);
-    },
-    watch: {
-
+		this.getData('/noticia/i/'+this.$i18n.locale);
     }
 }
 </script>

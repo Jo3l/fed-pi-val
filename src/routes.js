@@ -4,6 +4,7 @@ import SingleNews from './components/SingleNews.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
 import Clubs from './components/Clubs.vue'
+import Tournament from './components/Tournament.vue'
 import Form from './components/Form.vue'
 import PageNotFound from './components/PageNotFound.vue'
 
@@ -105,6 +106,18 @@ export const routes = [
     path: '/es/clubs',
     name: 'Clubs-es',
     component: Clubs,
+    lang:'es'
+  },
+  {
+    path: '/val/torneig',
+    name: 'Torneig',
+    component: Tournament,
+    lang:'val'
+  },
+  {
+    path: '/es/torneo',
+    name: 'Torneo',
+    component: Tournament,
     lang:'es'
   },
   {

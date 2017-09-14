@@ -136,11 +136,11 @@ export default {
 	    }
 	},
 	mounted: function () {
-		if(this.struct == '') this.getData('/struct');
+		//if(this.struct == '') this.getData('/struct');
 	}}
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 @import "../assets/less/defines.less";
 	

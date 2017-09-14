@@ -1,9 +1,9 @@
 <template>
     <transition name="fade">
 	    <div class="teaser" >
-			<picture v-bind:style="{ 'background-image': 'url(' + $store.newsTeaser.imatge + ')' }">
+			<picture v-bind:style="{ 'background-image': 'url(' + newsTeaser.imatge + ')' }">
 				<aside>
-					<h1>{{ $store.newsTeaser.titol }}</h1>
+					<h1>{{ newsTeaser.titol }}</h1>
 				</aside>
 			</picture>
 	    </div>
@@ -17,7 +17,7 @@ export default {
   	components: {},
 	data () {
 		return {
-			teaser: '',
+			newsTeaser: '',
 		}
 	},
 	methods: {
@@ -26,7 +26,7 @@ export default {
 	        var vm = this;
 	        this.$http.get(apiUrl)
 	        .then(function (response) {
-	            vm.$store.newsTeaser = response.data[0];
+	            vm.newsTeaser = response.data[0];
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -35,7 +35,7 @@ export default {
 	    }
 	},
 	mounted: function () {
-		if(this.$store.newsTeaser == '') this.getData('/noticia/destacada/i/'+this.$i18n.locale);
+		this.getData('/noticia/destacada/i/'+this.$i18n.locale);
 	},
 	watch: {
 	

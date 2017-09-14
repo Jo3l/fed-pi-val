@@ -3,7 +3,7 @@
     <div id="news">
 	
 	<div class="news">
-		<picture v-bind:style="{ 'background-image': 'url(' + $store.news.imatge + ')' }"  v-bind:class="{ active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
+		<picture v-bind:style="{ 'background-image': 'url(' + news.imatge + ')' }"  v-bind:class="{ active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
 		</picture>
 		
             <div class="page__demo-group icon-right">
@@ -20,10 +20,10 @@
             </div>
 		
 		
-		<h1>{{ $store.news.titol }}</h1>
+		<h1>{{ news.titol }}</h1>
 		<small>{{ publishedDate }}</small>
-		<article v-html="$store.news.contingut"></article>
-		<em>{{ $store.news.autor }}</em>
+		<article v-html="news.contingut"></article>
+		<em>{{ news.autor }}</em>
 	</div>
 
 	<NewsCarousel></NewsCarousel>
@@ -42,6 +42,7 @@ export default {
 	data () {
 		return {
 		    pagina: 1,
+		    news: '',
 		    showMobileMenu: false,
 		    publishedDate: '',
 			menuOptions: [
@@ -65,8 +66,8 @@ export default {
 	        var vm = this;
 	        this.$http.get(apiUrl)
 	        .then(function (response) {
-	            vm.$store.news = response.data[0];
-	            vm.publishedDate = vm.fixDate(response.data.alta);
+	            vm.news = response.data[0];
+	            vm.publishedDate = vm.fixDate(response.data[0].alta);
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -95,9 +96,6 @@ export default {
 	mounted: function () {
 		this.getData(this.$i18n.t('common.news')+'/slug/'+this.$route.params.slug);
 		this.scrollToTop(0);
-	},
-	watch: {
-	
 	},
 	beforeRouteUpdate (to, from, next) {
 		//el puto router no actualitza el component ja que soles cambies de slug, pel que esta el before route update que ens permet cridar i actualitzar el objecte news al cambiar de slug

@@ -155,7 +155,7 @@ module.exports = {
 
 				vm.events[current] = weeks;
 				vm.events.unshift(vm.events.shift()); //aço força el event d'uptate del vue per a q pinte el calendari
-				console.log(vm.events);
+				//console.log(vm.events);
 				return weeks;
 
 	        })

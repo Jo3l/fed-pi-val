@@ -23,7 +23,7 @@ export default {
 	        this.$http.get(apiUrl)
 	        .then(function (response) {
 	            vm.$store.news = response.data[0];
-	            vm.publishedDate = vm.fixDate(response.data.alta);
+	            vm.publishedDate = vm.fixDate(response.data[0].alta);
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -50,8 +50,7 @@ export default {
 		}
 	},
 	mounted: function () {
-		this.getData(this.$i18n.t('common.news')+'/slug/'+this.$route.params.slug);
-		this.scrollToTop(0);
+
 	},
 	watch: {
 	
