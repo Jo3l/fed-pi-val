@@ -48,7 +48,7 @@ new Vue({
   i18n,
   router,
   VueStash,
-  components: { Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide },
+  components: { Toolbar, 'carousel': VueCarousel.Carousel, 'slide': VueCarousel.Slide},
   data: {
         store: {
         	newsTeaser: '',

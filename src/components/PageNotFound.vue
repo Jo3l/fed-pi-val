@@ -44,10 +44,12 @@ export default {
 </script>
 
 <style lang="less">
-
-pre {
-	padding:20px;
-	text-align: center;
+#page404 {
+	pre {
+		padding:20px;
+		text-align: center;
+	}
 }
+
 
 </style>

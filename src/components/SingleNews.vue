@@ -65,7 +65,7 @@ export default {
 	        var vm = this;
 	        this.$http.get(apiUrl)
 	        .then(function (response) {
-	            vm.$store.news = response.data;
+	            vm.$store.news = response.data[0];
 	            vm.publishedDate = vm.fixDate(response.data.alta);
 	        })
 	        .catch(function (error) {

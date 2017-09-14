@@ -3,6 +3,7 @@ import News from './components/News.vue'
 import SingleNews from './components/SingleNews.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
+import Clubs from './components/Clubs.vue'
 import Form from './components/Form.vue'
 import PageNotFound from './components/PageNotFound.vue'
 
@@ -92,6 +93,18 @@ export const routes = [
     path: '/es/tienda',
     name: 'Tienda',
     component: Cart,
+    lang:'es'
+  },
+  {
+    path: '/val/clubs',
+    name: 'Clubs',
+    component: Clubs,
+    lang:'val'
+  },
+  {
+    path: '/es/clubs',
+    name: 'Clubs-es',
+    component: Clubs,
     lang:'es'
   },
   {

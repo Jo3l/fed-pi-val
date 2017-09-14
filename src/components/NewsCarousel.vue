@@ -10,7 +10,7 @@
 				    	<small>{{ fixDate(noticia.alta) }}</small>
 				    	<h2>{{ noticia.titol }}</h2>
 				    	<section>
-				    		<p>{{ noticia.contingut }}</p>
+				    		<p>{{ stripHtmlToText(noticia.contingut) }}</p>
 				    	</section>
 			    	</div>
 		    	</router-link>
@@ -31,6 +31,14 @@ export default {
     }
   },
   methods: {
+	stripHtmlToText: function(html)	{
+	    var tmp = document.createElement("DIV");
+	    tmp.innerHTML = html;
+	    var res = tmp.textContent || tmp.innerText || '';
+	    res.replace('\u200B', '');
+	    res = res.trim();
+	    return res;
+	},
   	fixDate: function (date) { 
 	  return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("d/M/yyyy");
 	},
@@ -88,9 +96,9 @@ export default {
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;
-    		transition: padding .5s ease;
+    		transition: transform .2s ease;
     		&:hover {
-    			padding: 40px 20px 60px 20px;
+    			//transform: translateY(10%)
     		}
 		}
 		

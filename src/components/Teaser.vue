@@ -26,7 +26,7 @@ export default {
 	        var vm = this;
 	        this.$http.get(apiUrl)
 	        .then(function (response) {
-	            vm.$store.newsTeaser = response.data;
+	            vm.$store.newsTeaser = response.data[0];
 	        })
 	        .catch(function (error) {
 	            console.log(error);

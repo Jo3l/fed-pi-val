@@ -4,6 +4,9 @@
 //@import "fluidable.less";
 @import "toolbar.less";
 
+html { 
+	//margin-left: ~"calc(100vw - 100%);" 
+}
 
 body {
     margin: 0;
@@ -12,6 +15,9 @@ body {
     font-family: 'Yantramanav', cursive;
     color: #232323;
     position: relative;
+    &.ui-modal--is-open{
+    	overflow: initial!important;
+    }
 }
 
 //remove Firefox's dotted outline

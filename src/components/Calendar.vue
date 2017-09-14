@@ -1,6 +1,6 @@
 <template>
 	<div class="componentContainer">
-		
+
 		<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
 		<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
 
@@ -8,7 +8,7 @@
 			<div class="calendar" v-for="n in 4">
 				<nav class="calendarHead">
 	
-					<b @click="eventos()">{{ monthArray[getMonth(n-1+increment)] }}</b>
+					<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
 					<b>{{ getYear(n-1+increment)}}</b>
 	
 				</nav>
@@ -17,8 +17,8 @@
 				</div>
 				<div class="calendarMonth">
 					<div v-for="week in events[eventos(n-1+increment)]">
-						<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]" @click="select(day)">
-							<span v-if="day.date" v-bind:class="day.data.cssClass">
+						<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]">
+							<span v-if="day.date" v-bind:class="day.data.cssClass"  @click="openModal( day )">
 								{{ day.date }}
 							</span>
 						</span>
@@ -26,6 +26,17 @@
 				</div>
 			</div>
 		</div>
+						<ui-modal ref="events" size="normal" title="titol">
+		                    <div slot="header">
+		                        {{selected.day}} - {{selected.month+1}} - {{selected.year}}
+		                        
+					
+		                    </div>
+							<article v-for="event in modalEvent">
+								<h4>{{event.titol}}</h4>
+								<p v-html="event.contingut"></p>
+							</article>
+			            </ui-modal>
 	</div>
 </template>
 
@@ -33,9 +44,12 @@
 
 <script>
 
+
 module.exports = {
 	name: 'Calendar',
-  	components: { },
+  	components: {
+
+  	},
 	'data': function(){ 
 		return {
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
@@ -47,7 +61,8 @@ module.exports = {
 				day : false,
 				month : false,
 				year : false
-			}
+			},
+			modalEvent: []
 		}
 	},
 	'computed': {
@@ -60,6 +75,14 @@ module.exports = {
 		}
 	},
 	methods: {
+        openModal: function(day) {
+        	this.modalEvent = day.data.events;
+        	this.select(day);
+            if( this.modalEvent.length>0 ) this.$refs.events.open();
+        },
+        closeModal: function(ref) {
+            this.$refs.events[ref].close();
+        },
 		eventos: function(n) {
 			var month = Date.today().add(n).month().getMonth();
 			var year = Date.today().add(n).month().getYear() + 1900;
@@ -81,10 +104,13 @@ module.exports = {
 			var current = year+''+("0" + (month + 1)).slice(-2);
 		    var vm = this;
 		    
+		    if( vm.events[current] ) return vm.events[current];
+		    var refIndex = 1;
 	        this.$http.get('acte/'+current+'/i/'+this.$i18n.locale)
 	        .then(function (response) {
 		        while (squareIndex < (lastDate)) {
 					var week = [];
+					
 					for (var d = 0; d < 7; d++) {
 						if (squareIndex < firstDayIndex || squareIndex >= (lastDate)) {
 							week.push({ date : false });
@@ -112,18 +138,24 @@ module.exports = {
 									month : month,
 									year : year,
 									cssClass : clase,
-									events: eventsInDay
+									events: eventsInDay,
+									index: refIndex
 								}
 							});
 							dateOfMonth++;
+							refIndex++;
+							
 						}
 						squareIndex++;
+						
 					}
 					weeks.push(week);
+					
 				}
 
 				vm.events[current] = weeks;
-				vm.events.unshift(vm.events.shift());
+				vm.events.unshift(vm.events.shift()); //aço força el event d'uptate del vue per a q pinte el calendari
+				console.log(vm.events);
 				return weeks;
 
 	        })
@@ -132,37 +164,6 @@ module.exports = {
 	        });
 
 		},
-		drawCalendar: function(n) {
-			return this.events[Date.today().add(n).month().getYear() + 1900+''+('0' + (Date.today().add(n).month().getMonth() + 1)).slice(-2)];
-		},
-		getData: function(apiUrl) {
-	
-	        var vm = this;
-	        this.$http.get(apiUrl)
-	        .then(function (response) {
-	        	
-	        	for (event in response.data) {
-	        		if(response.data[event].publicacio) {
-
-		        		var key = response.data[event].publicacio.substring(0,6);
-		        		if (!(vm.events[key] instanceof Array)) vm.events[key] = [];
-		        		
-		        		var id =  response.data[event].id;
-		        		if (!(vm.events[key][id] instanceof Array)) vm.events[key][id] = [];
-		        		
-		        		vm.events[key][id] = response.data[event];
-
-	        		}
-	        	}
-	        	
-	        	//console.log(vm.events);
-	        	
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
-	        
-	    },
 		getMonth: function(n) {
 			return Date.today().add(n).month().getMonth();
 		},
@@ -179,7 +180,7 @@ module.exports = {
 
 		},
 		select : function(day){
-			console.log(day);
+
 			if(this.isSelected(day)){
 				this.selected = {
 					day : false,
@@ -294,6 +295,15 @@ module.exports = {
 		    flex-direction: row;
 		    justify-content: center;
 		}
+		.ui-modal__container {
+			article {
+			    border-bottom: 1px solid #e1e1e1;
+			    &:last-child {
+			    	border-bottom:none;
+			    }
+			}
+		}
+
 	}
 	
 	.labels {
@@ -302,7 +312,6 @@ module.exports = {
 	    justify-content: center;
 	}
 	
-
 	
 	span.calendarLabel{
 	  display: inline-block;
@@ -323,7 +332,7 @@ module.exports = {
 		width: 32px;
 		&.day {
 		  cursor: pointer;
-		  &:last-child {
+		  &:nth-last-child(2) {
 		    color: #ff7676;
 		    //color: white;
 		    box-sizing: content-box;
