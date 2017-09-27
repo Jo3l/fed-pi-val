@@ -1,5 +1,5 @@
 <template>
-  <div class="panel-body">
+  <div class="form">
     <vue-form-generator :schema="schema" :model="model" :options="formOptions"></vue-form-generator>
     
     <select v-model="addToSchema" @change="add()">
@@ -140,71 +140,66 @@ export default {
 	}}
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 
 @import "../assets/less/defines.less";
 	
-
-pre {
-	overflow: auto;
+.form {
+	
+	pre {
+		overflow: auto;
+	}
+		pre .string { color: #885800; }
+		pre .number { color: blue; }
+		pre .boolean { color: magenta; }
+		pre .null { color: red; }
+		pre .key { color: green; }    
+	
+	h1 {
+		text-align: center;
+		font-size: 36px;
+		margin-top: 20px;
+		margin-bottom: 10px;
+		font-weight: 500;
+	}
+	
+	fieldset {
+		border: 1px solid #cacaca;
+	    border-radius: 5px;
+	    margin-bottom: 20px;
+	}
+	
+	.panel {
+		margin-bottom: 20px;
+		background-color: #fff;
+		border: 1px solid transparent;
+		border-radius: 4px;
+		-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+		box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+		border-color: #ddd;
+	}
+	
+	.panel-heading {
+		color: #333;
+		background-color: #f5f5f5;
+		border-color: #ddd;
+	
+		padding: 10px 15px;
+		border-bottom: 1px solid transparent;
+		border-top-left-radius: 3px;
+		border-top-right-radius: 3px;        
+	}
+	
+	.panel-body {
+		padding: 15px;
+	}				
+	
+	.field-checklist .wrapper {
+		width: 100%;
+	}	
+	
 }
-	pre .string { color: #885800; }
-	pre .number { color: blue; }
-	pre .boolean { color: magenta; }
-	pre .null { color: red; }
-	pre .key { color: green; }    
 
-h1 {
-	text-align: center;
-	font-size: 36px;
-	margin-top: 20px;
-	margin-bottom: 10px;
-	font-weight: 500;
-}
-
-fieldset {
-	border: 1px solid #cacaca;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.panel {
-	margin-bottom: 20px;
-	background-color: #fff;
-	border: 1px solid transparent;
-	border-radius: 4px;
-	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
-	box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
-	border-color: #ddd;
-}
-
-.panel-heading {
-	color: #333;
-	background-color: #f5f5f5;
-	border-color: #ddd;
-
-	padding: 10px 15px;
-	border-bottom: 1px solid transparent;
-	border-top-left-radius: 3px;
-	border-top-right-radius: 3px;        
-}
-
-.panel-body {
-	padding: 15px;
-}				
-
-.field-checklist .wrapper {
-	width: 100%;
-}
-
-
-
-
-/**
- * vue-form-generator v2.0.0
- * https://github.com/icebob/vue-form-generator
- * Released under the MIT License.
- */
 
 .vue-form-generator * {
     box-sizing: border-box

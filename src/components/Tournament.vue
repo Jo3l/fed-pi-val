@@ -4,7 +4,7 @@
 			<div class="tournament-container">
 				  <h1>Torneig tal i tal</h1>
 				  <h2>Celebrat al estadi tal i tal</h2>
-				  <div class="tournament-bracket tournament-bracket--rounded">                                                     
+				  <div class="tournament-bracket rounded">                                                     
 				    <div class="round">
 				      <h3 class="round-title">Quarts de final</h3>
 				      <ul class="list">
@@ -21,7 +21,7 @@
 				                </tr>
 				              </thead>  
 				              <tbody class="content">
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -55,7 +55,7 @@
 				                </tr>
 				              </thead>  
 				              <tbody class="content">
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -88,7 +88,7 @@
 				                </tr>
 				              </thead>  
 				              <tbody class="content">
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">Nom Equip</abbr>
 				                  </td>
@@ -122,7 +122,7 @@
 				                </tr>
 				              </thead>  
 				              <tbody class="content">
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -168,7 +168,7 @@
 				                    <span class="number">1</span>
 				                  </td>
 				                </tr>
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -202,7 +202,7 @@
 				                    <span class="number">4</span>
 				                  </td>
 				                </tr>
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -232,7 +232,7 @@
 				                </tr>
 				              </thead>  
 				              <tbody class="content">
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -271,7 +271,7 @@
 				                </tr>
 				              </thead>  
 				              <tbody class="content">
-				                <tr class="team team--winner">
+				                <tr class="team winner">
 				                  <td class="country">
 				                    <abbr class="code">nom equip</abbr>
 				                  </td>
@@ -359,29 +359,31 @@ export default {
 @breakpoint-md: 52em;
 @breakpoint-lg: 72em;
 
-
-
 .tournament-container {
   width: 90%;
   min-width: 18em;
   margin: 20px auto;
+  
+	h1, h2 { 
+	  text-align: center;
+	}
+	
+	h1 { 
+	  font-size: 2rem; 
+	  font-weight: 700;
+	  margin-bottom: 0.5em;
+	}
+	
+	h2 { 
+	  font-size: 1.4rem; 
+	  font-weight: 600;
+	   margin-bottom: 2em;
+	}
+
+
 }
 
-h1, h2 { 
-  text-align: center;
-}
 
-h1 { 
-  font-size: 2rem; 
-  font-weight: 700;
-  margin-bottom: 0.5em;
-}
-
-h2 { 
-  font-size: 1.4rem; 
-  font-weight: 600;
-   margin-bottom: 2em;
-}
 
 .sr-only {
   position: absolute;
@@ -507,7 +509,7 @@ h2 {
       border-top: 2px solid #9e9e9e;
       transform: translateY(-1px);
       
-      .tournament-bracket--rounded & {
+      .rounded & {
         border-top-right-radius: 0.6em;
       }
     }
@@ -517,7 +519,7 @@ h2 {
       border-bottom: 2px solid #9e9e9e;
       transform: translateY(1px);
       
-      .tournament-bracket--rounded & {
+      .rounded & {
         border-bottom-right-radius: 0.6em;
       }
     }
@@ -593,7 +595,7 @@ h2 {
       border-bottom: 2px solid #9e9e9e;
       transform: translate(0, 1px);
       
-      .tournament-bracket--rounded & {
+      .rounded & {
         border-bottom-left-radius: 0.6em;
       }
     }
@@ -603,7 +605,7 @@ h2 {
       border-top: 2px solid #9e9e9e;
       transform: translate(0, -1px);
       
-      .tournament-bracket--rounded & {
+      .rounded & {
         border-top-left-radius: 0.6em;
       }
     }
@@ -805,7 +807,7 @@ h2 {
   background-color: #FFFFFF;
   border-color: spin(shade(#F5F5F5, 10%), -10);
   
-  .team--winner & {
+  .winner & {
     background-color: #FFF176;
     border-color: spin(shade(#FFF176, 2%), -10);
   }

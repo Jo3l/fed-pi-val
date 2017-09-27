@@ -90,7 +90,8 @@ module.exports = {
 			return current;
 		},
 		calendar: function(n) {
-			var squareIndex =  this.mondayFirst ? 1 : 0;
+			var squareIndex =  0;
+			var mondayFirst = this.mondayFirst ? 1 : 0;
 			var dateOfMonth = 1;
 			var weeks = [];
 			var month = Date.today().add(n).month().getMonth();
@@ -98,8 +99,8 @@ module.exports = {
 			
 			var firstDate = new Date(year, month, 1);
 			var daysInMonth = Date.getDaysInMonth(year, month);
-			var firstDayIndex = firstDate.getDay();
-			var lastDate = firstDate.getDay() + Date.getDaysInMonth(year, month);
+			var firstDayIndex = firstDate.getDay() - mondayFirst < 0 ? 6 : firstDate.getDay() - mondayFirst;
+			var lastDate = firstDayIndex + daysInMonth;
 			
 			var current = year+''+("0" + (month + 1)).slice(-2);
 		    var vm = this;
@@ -108,11 +109,12 @@ module.exports = {
 		    var refIndex = 1;
 	        this.$http.get('acte/'+current+'/i/'+this.$i18n.locale)
 	        .then(function (response) {
-		        while (squareIndex < (lastDate)) {
+		        while (squareIndex < lastDate) {
+		        	console.log(squareIndex+" - "+lastDate+" - "+firstDayIndex)
 					var week = [];
 					
 					for (var d = 0; d < 7; d++) {
-						if (squareIndex < firstDayIndex || squareIndex >= (lastDate)) {
+						if (squareIndex < firstDayIndex || squareIndex >= lastDate) {
 							week.push({ date : false });
 						} else {
 							
@@ -152,9 +154,13 @@ module.exports = {
 					weeks.push(week);
 					
 				}
-
 				vm.events[current] = weeks;
-				vm.events.unshift(vm.events.shift()); //aço força el event d'uptate del vue per a q pinte el calendari
+//var ya = Date.now();
+
+//console.log(ya);
+				//vm.events.unshift(vm.events.shift()); //aço força el event d'uptate del vue per a q pinte el calendari
+				vm.events.push(vm.events.pop());
+//console.log(Date.now() - ya);
 				//console.log(vm.events);
 				return weeks;
 
@@ -332,9 +338,8 @@ module.exports = {
 		width: 32px;
 		&.day {
 		  cursor: pointer;
-		  &:nth-last-child(2) {
+		  &:nth-last-child(2), &:last-child {
 		    color: #ff7676;
-		    //color: white;
 		    box-sizing: content-box;
 		  }
 		}
