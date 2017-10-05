@@ -54,24 +54,30 @@ class FedpivalAPI {
 		return true;
     }
     
-    private function error($str) { echo $str; if($str!='OK') exit; }
+    private function error($str, $cod=200) { 
+        echo $str;
+        http_response_code($cod);
+        if($str!='OK') exit;
+    }
     
-    private function login($pwd) {
+    private function login($elm,$pwd) {
     	global $_SESSION;
-		@$this->db->sql("SELECT * FROM fedpival.usuari where pwd='".$pwd."';");
+		@$this->db->sql("SELECT * FROM fedpival.usuari where email like '".str_replace('@','%',$elm)."' and pwd='".hash('sha256',$pwd)."';");
 		$result= @$this->db->getResult();
 		if (count($result)>0){
 			$_SESSION['id']= $result[0]['id'];
-			$this->error('100 OK Usuari autenticat amb èxit');
+			$result[0]['access_token']= session_id();
+			$this->error(json_encode($result[0]));
+			//$this->error('200 OK Usuari autenticat amb èxit');
 		}
-		$this->error('ERROR: 200 ACCESS ERROR');
+		$this->error('ERROR: 401 UNAUTHORISED ERROR',401);
     }
     
     private function logout() {
     	global $_SESSION;
 		unset($_SESSION['id']);
 		session_destroy();
-		$this->error('100 OK LOGGED OUT ');
+		$this->error('200 OK LOGGED OUT ');
     }
     //
     //
@@ -80,6 +86,7 @@ class FedpivalAPI {
     //
     private function parse($path) {
     	global $_SESSION, $_POST;
+    	/*
     	// MULTIREQUEST begin
     	if (strpos($path,'?')) {
     		$requests= explode('?',$path);
@@ -102,17 +109,18 @@ class FedpivalAPI {
     		exit;
     	}
     	// MULTIREQUEST end
+    	*/
 		$request= explode('/',$path);
 		$this->nom= $request[2];
-		if (!empty($_POST['json']) || $this->nom=='usuari') {
-			$this->json= json_decode($_POST['json'],true);
+		$this->json= json_decode(file_get_contents('php://input'),true);
+		if (!empty($this->json) || $this->nom=='auth') {
 			// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
 			if (!isset($_SESSION['id'])) {
 				// si no s'està intentant autenticar, error
-				if ($this->nom!='usuari') $this->error('200 ACCESS ERROR');
+				if ($this->nom!='auth') $this->error('401 UNAUTHORISED ERROR',401);
 				// si no s'indica password, error
-				if (!$this->json['pwd']) $this->error('200 ACCESS ERROR');
-				$this->login($this->json['pwd']);
+				if (!$this->json['password']) $this->error('401 UNAUTHORISED ERROR',401);
+				$this->login($this->json['email'],$this->json['password']);
 			}
 		}
 		$this->wheres= array('1=1');
@@ -183,13 +191,59 @@ class FedpivalAPI {
 			array_push( $this->wheres, "((titol LIKE '%".$query."%') OR (contingut LIKE '%".$query."%') OR (tags LIKE '%".$query."%'))" );
 		}
 		switch($this->nom){
+		    case 'schema':
+        		$this->columnes();
+        		$schema= array();
+        		foreach($this->tots[$request[3]] as $nom=>$typ) {
+        		    $tipo= 'text';
+        		    $min= 0;
+        		    $val='';
+        		    if ($typ=='varchar(14)') $tipo='date';
+        		    if ($nom=='email') { $tipo='email'; $val= 'email'; }
+        		    if ($nom=='numsoci') { $tipo='number'; }
+        		    if ($nom=='cp') { $tipo='number'; $min= $max= 5; }
+        		    array_push($schema,array(
+        		        'type'=>'input',
+        		        'inputType'=>$tipo,
+        		        'sqltype'=>$typ,
+        		        'id'=>$nom,
+        		        'label'=>ucfirst($nom),
+        		        'model'=>$nom,
+        		        'required'=>'false',
+        		        'min'=>$min,
+        		        'max'=>$max,
+        		        'validator'=>$val
+        		        //placeholder
+        		        //multi
+        		        //multiSelect true
+        		        //values
+        		        //featured
+        		        //disabled
+        		        //visible
+        		        //validator
+        		        //hint
+        		    ));
+        		}
+        		/*
+        		                {
+                    type: "input",
+                    inputType: "number",
+                    id: "current_age",
+                    label: "Age",
+                    model: "age"
+                }*/
+		        header('Content-Type: application/json');
+                echo json_encode( $schema );		        
+		        exit;
 		    case 'struct':
         		$this->columnes();
 		        echo json_encode($this->tots);
 		        exit;
 		    break;
 			case "usuari":
+			case "auth":
 				if ($request[3]=='logout') $this->logout();
+				if ($request[3]=='login') $this->login($this->json['email'],$this->json['password']);
 			break;
 			case "jugador":
 			case "equip":
@@ -222,7 +276,7 @@ class FedpivalAPI {
 			break;
 			// objecte no identificat:
 			default:
-				$this->error('200 UNKNOWN ERROR '.$this->nom);
+				$this->error('501 NOT IMPLEMENTED ERROR '.$this->nom,501);
 			}
     }
     
@@ -243,6 +297,7 @@ class FedpivalAPI {
 		}
 		if (count($testminims)>0) die('ERROR: Camps obligatoris no indicats: '.implode(',',$testminims));
 		if (!empty($this->json)) $camps['json']= json_encode($this->json);
+		return $this->json;
 		return $camps;
     }
     
@@ -260,9 +315,11 @@ class FedpivalAPI {
 		// si únicament estem consultant:
 		if (empty($this->json)) return $this->select();
 		// id no existeix: inserció
-		if (empty($this->id)) {
+		if (empty($this->json['id'])) {
 			$camps['slug']= $this->slugunic($camps['slug']);
+echo '/*SLUG*/',$camps['slug'];
 			$camps= $this->validar();
+//print_r($this->json);
 			$keys= implode(',',array_keys($camps));
 			$values= "'".implode("','",array_values($camps))."'";
 			$sql="insert into ".$this->nom." (".$keys.") values (".$values.");";
@@ -278,7 +335,8 @@ class FedpivalAPI {
 			$sql='update '.($this->nom).' set '.$pairs.' where id='.($this->id);
 		}
 		$res= @$this->db->sql( $sql );
-		if ($res) $this->error('OK'); else $this->error('ERROR '.$sql);
+		die($sql);
+		if ($res) $this->error('OK'); else $this->error('500 ERROR '.$sql,500);
     }
     
     private function select() {
@@ -298,7 +356,7 @@ class FedpivalAPI {
     private function render($result) {
 		header('Content-Type: application/json, charset=utf-8');
 		// si només hi ha un element, el torna sense array
-		if (is_array($result) && count($result)==1) $result= $result[0];
+		//if (is_array($result) && count($result)==1) $result= $result[0];
 		echo json_encode($result);
 		return $result;
     }
