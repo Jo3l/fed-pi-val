@@ -122,6 +122,7 @@ export default {
 	& > h1 {
 		padding: 0px 5vw;
 		font-family: 'Rambla', cursive;
+		margin: 20px 0;
 	}
 	& > small {
 		padding: 0px 5vw;

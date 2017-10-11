@@ -1,23 +1,42 @@
 <template>
     <transition name="fade">
     	
-		<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
+	    <div v-if=" pagina==null ">
+			<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" :paginationPadding=5 paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
+	
+			  <slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
+			    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
+			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
+				    	<div class="articleContainer">
+					    	<small>{{ fixDate(noticia.alta) }}</small>
+					    	<h2>{{ noticia.titol }}</h2>
+					    	<section>
+					    		<p>{{ stripHtmlToText(noticia.contingut) }}</p>
+					    	</section>
+				    	</div>
+			    	</router-link>
+			    </article>
+			  </slide>
+			</carousel>
+		</div>
+		<div class="flex" v-else="v-else">
 
-		  <slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
-		    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
-		    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
-			    	<div class="articleContainer">
-				    	<small>{{ fixDate(noticia.alta) }}</small>
-				    	<h2>{{ noticia.titol }}</h2>
-				    	<section>
-				    		<p>{{ stripHtmlToText(noticia.contingut) }}</p>
-				    	</section>
-			    	</div>
-		    	</router-link>
-		    </article>
-		  </slide>
+			  <div class="multipleNews" v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale">
+			    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
+			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
+				    	<div class="articleContainer">
+					    	<small>{{ fixDate(noticia.alta) }}</small>
+					    	<h2>{{ noticia.titol }}</h2>
+					    	<section>
+					    		<p>{{ stripHtmlToText(noticia.contingut) }}</p>
+					    	</section>
+				    	</div>
+			    	</router-link>
+			    </article>
+			  </div>
+		</div>
 
-		</carousel>
+
 
     </transition>
 </template>
@@ -26,9 +45,15 @@
 
 export default {
   name: 'Noticias',
+  props: {
+        pagina: {
+            type: Number,
+        }
+  },
   data () {
     return {
-    	newsCarousel:''
+    	newsCarousel:'',
+    	updPage:''
     }
   },
   methods: {
@@ -60,8 +85,19 @@ export default {
     }
   },
     mounted: function () {
-		this.getData('/noticia/i/'+this.$i18n.locale);
-    }
+    	
+    	if(this.pagina==null) {
+    		this.getData('/noticia/'+this.$i18n.locale);
+    	}else {
+    		this.getData('/noticia/p/'+this.pagina+'/'+this.$i18n.locale);
+    	}
+	
+    },
+	watch: {
+	    pagina: function (newVal, oldVal) {
+	      this.getData('/noticia/p/'+newVal+'/'+this.$i18n.locale);
+	    }
+	},
 }
 </script>
 
@@ -77,10 +113,16 @@ export default {
 		display:none;
 	}
 }
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+    width: 90%;
+    margin: 0 auto;
+}
 .newsCarousel {
 	a {text-decoration:none;color:black;}
 	article {
-	    min-height: 400px;
+	    min-height: 370px;
 	    overflow: hidden;
 	    background-size: 130%;
 	    background-position: top;
@@ -110,6 +152,59 @@ export default {
 		p {margin:0;}
 	
 		}
+}
+
+.multipleNews {
+	width:20%;
+
+	@media(max-width:@screenDesktop) {
+		width: 33.3%;
+	}
+	
+	@media(max-width:@screenTablet) {
+		width:50%;
+	}
+	
+	@media(max-width:@screenMobile) {
+		width:100%;
+	}
+	
+	a {text-decoration:none;color:black;}
+	article {
+		padding-top:50%;
+	    overflow: hidden;
+	    background-size: 130%;
+	    background-position: top;
+	    display: flex;
+	    flex-direction: column;
+	    justify-content: flex-end;
+	    background-repeat: no-repeat;
+	    border-right: 2px solid white;
+    	border-left: 2px solid white;
+		.articleContainer {
+			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
+    		padding: 10px;
+    		transition: transform .2s ease;
+		}
+		
+		small {text-shadow: 1px 1px 1px white;}
+		
+		h2 {
+			margin:0;
+			line-height:1em;
+			font-size:1em;
+		}
+		
+		p {
+			margin:0;
+			font-size:0.9em;
+		}
+	
+		}
+}
+
+.newsSinCarousel{
+	
 }
 
 </style>

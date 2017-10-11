@@ -37,13 +37,13 @@ export const routes = [
     lang:'es'
   },
   {
-    path: '/val/noticia',
+    path: '/val/noticies',
     name: 'Noticies',
     component: News,
     lang:'val'
   },
   {
-    path: '/es/noticia',
+    path: '/es/noticias',
     name: 'Noticias',
     component: News,
     lang:'es'
@@ -104,7 +104,7 @@ export const routes = [
   },
   {
     path: '/es/clubs',
-    name: 'Clubs-es',
+    name: 'Clubes',
     component: Clubs,
     lang:'es'
   },

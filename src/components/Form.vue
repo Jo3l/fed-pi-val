@@ -6,6 +6,8 @@
     	<option v-for="thing in things" v-bind:value="thing" @>{{ thing }}</option>
     </select>
     
+    
+    <button @click="postData">Enviar</button>
 <pre>@{{ $data }}</pre>
 
   </div>
@@ -30,16 +32,9 @@ export default {
 		return {			addToSchema: '',
 							things: ['checkbox','checklist','input','label','radios','select','submit','textArea'],
 					        model: {
-					            id: 1,
-					            name: "John Doe",
-					            password: "J0hnD03!x4",
-								age: 35,
-					            skills: ["Javascript", "VueJS"],
-					            email: "john.doe@gmail.com",
-					            status: true
 					        },
-					        schema: {
-
+					        schema: {fields:[]},
+					        schemaa: {
 					            fields: [{
 					                type: "input",
 									inputType: "text",
@@ -127,8 +122,17 @@ export default {
 	        var vm = this;
 	        this.$http.get(apiUrl)
 	        .then(function (response) {
-	            vm.struct = response.data;
-	            console.log(vm.struct);
+	            vm.schema.fields = response.data;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	    },
+	    postData: function() {
+	        var vm = this;
+	        this.$http.post('/jugador', vm.model)
+	        .then(function (response) {
+	        	
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -136,7 +140,7 @@ export default {
 	    }
 	},
 	mounted: function () {
-		//if(this.struct == '') this.getData('/struct');
+		this.getData('/schema/jugador');
 	}}
 </script>
 

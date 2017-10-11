@@ -3,7 +3,7 @@
 	    <div class="teaser" >
 			<picture v-bind:style="{ 'background-image': 'url(' + newsTeaser.imatge + ')' }">
 				<aside>
-					<h1>{{ newsTeaser.titol }}</h1>
+					<h2>{{ newsTeaser.titol }}</h2>
 				</aside>
 			</picture>
 	    </div>
@@ -63,7 +63,7 @@ export default {
 		    bottom: 0;
 		    background-image: linear-gradient(to right, rgb(135, 33, 46) 0%, rgba(255, 255, 255, 0) 100%);
 		    padding: 15px 50px 25px 0;
-			h1 {
+			h2 {
 				padding: 0px 5vw;
 			    //font-family: 'Rambla', cursive;
 			    margin: 0;

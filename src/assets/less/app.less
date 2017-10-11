@@ -85,6 +85,36 @@ input[type="submit"]::-moz-focus-inner {
 }
 
 
+h1 {
+	margin: 1em 0 .5em 1em;
+	text-transform: capitalize;
+	&:after {
+	    bottom: 10px;
+	    display: block;
+	    height: 3px;
+	    width: 100%;
+	    content: "";
+	    background-color: #87212e;
+	    box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+	}
+}
+
+
+
+//generic clases
+
+.buttonLeft {
+			margin: 0 32px;
+}
+.buttonRight {
+		margin: 0 32px;
+		float:right;
+}
+.textPositioned {
+	margin: 0 0 .5em 5%;
+	text-transform: capitalize;
+}
+
 //vuejs transitions
 
 .fade-enter-active, .fade-leave-active {

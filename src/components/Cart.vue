@@ -2,8 +2,9 @@
     <transition name="fade">
     	
 		<div class="shop" v-if=" type=='slider' ">
+			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.online_shop') }}</h1>
+			
 			<div class="cart">
-			  <h1>{{ $t('cart.basket') }}</h1>
 			  <h2>{{count}} / {{total}} €</h2>
 			  <div class="cart_item" v-for="item,i in cart" v-if="item.qty &gt; 0"><b>{{ item.qty }}</b> &times; {{ item.name }} {{ item.price }}
 			    <button @click="item.qty += 1">+1</button>
@@ -11,7 +12,9 @@
 			    <button @click="del(i, item.id)">X</button>
 			  </div>
 			</div>
-		  <carousel :perPageCustom="[[0, 1],[480, 2],[768, 3],[992, 4], [1200, 5]]" :minSwipeDistance=30 class="products">
+			
+			
+		  <carousel :perPageCustom="[[0, 1],[480, 2],[768, 3],[992, 4], [1200, 5]]" :minSwipeDistance=30 :paginationPadding=5 class="products">
 		  	<slide v-for="product in products">
 			    <div class="item" ><img :src="'//zupra.github.io/t-shirt_shop/img/test-2/'+product.id+'.png'"/>
 			      <div class="name">{{ product.name }}</div>
@@ -26,8 +29,9 @@
 		</div>
 		
 		<div class="shop full" v-else="v-else">
+			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.online_shop') }}</h1>
+			
 			<div class="cart">
-			  <h1>{{ $t('cart.basket') }}</h1>
 			  <h2>{{count}} / {{total}} €</h2>
 			  <div class="cart_item" v-for="item,i in cart" v-if="item.qty &gt; 0"><b>{{ item.qty }}</b> &times; {{ item.name }} {{ item.price }}
 			    <button @click="item.qty += 1">+1</button>
@@ -169,7 +173,7 @@ export default {
 	}
 	
 	.cart {
-	  margin: 1em 0 0;
+	  margin: 1em 0 0 3em;
 	  width: 270px;
 	}
 	&.full {

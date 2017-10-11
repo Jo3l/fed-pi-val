@@ -4,6 +4,7 @@ import VueI18n from 'vue-i18n'
 import VueRouter from 'vue-router'
 import VueCarousel from 'vue-carousel'
 import KeenUI from 'keen-ui'
+import VueAuthenticate from 'vue-authenticate'
 import axios from 'axios'
 import { routes } from './routes'
 import es_ES from './lang/es-ES.js'
@@ -21,8 +22,14 @@ Vue.use(VueRouter)
 Vue.use(KeenUI)
 Vue.use(VueCarousel)
 
+
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.baseURL = '/api/index.php';  //set the baseurl from api
+
+Vue.use(VueAuthenticate, {
+  tokenName: 'access_token',
+  baseUrl: '',
+})
 
 Vue.prototype.$http = axios;
 //Vue.http.options.emulateJSON = true; 
@@ -75,10 +82,13 @@ new Vue({
   	//	window.location.href = "/404";
   	}
   },
-  mounted: function () {
-		//this.getData();
+	mounted: function () {
+		console.log('start-autenticat: '+this.$auth.isAuthenticated());
   },
-   watch: {
-
-   }
+	computed: {
+          isAuthenticated: function () {
+            console.log(this.$auth.isAuthenticated());
+            return this.$auth.isAuthenticated();
+          }
+    },
 })

@@ -1,8 +1,12 @@
 <template>
 	<div class="componentContainer">
 
-		<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
-		<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
+		<h1>{{ $t('calendar.events') }}</h1>
+		<div class="buttonContainer">
+			<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
+			<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
+		</div>
+
 
 		<div class="calendarContainer">
 			<div class="calendar" v-for="n in 4">
@@ -26,17 +30,17 @@
 				</div>
 			</div>
 		</div>
-						<ui-modal ref="events" size="normal" title="titol">
-		                    <div slot="header">
-		                        {{selected.day}} - {{selected.month+1}} - {{selected.year}}
-		                        
-					
-		                    </div>
-							<article v-for="event in modalEvent">
-								<h4>{{event.titol}}</h4>
-								<p v-html="event.contingut"></p>
-							</article>
-			            </ui-modal>
+		<ui-modal ref="events" size="normal" title="titol">
+            <div slot="header">
+                {{selected.day}} - {{selected.month+1}} - {{selected.year}}
+                
+	
+            </div>
+			<article v-for="event in modalEvent">
+				<h4>{{event.titol}}</h4>
+				<p v-html="event.contingut"></p>
+			</article>
+        </ui-modal>
 	</div>
 </template>
 
@@ -110,7 +114,6 @@ module.exports = {
 	        this.$http.get('acte/'+current+'/i/'+this.$i18n.locale)
 	        .then(function (response) {
 		        while (squareIndex < lastDate) {
-		        	console.log(squareIndex+" - "+lastDate+" - "+firstDayIndex)
 					var week = [];
 					
 					for (var d = 0; d < 7; d++) {
@@ -245,13 +248,7 @@ module.exports = {
 
 @import "../assets/less/defines.less";
 
-.buttonLeft, .buttonRight {
-		margin: 0 15px;
-}
 
-.buttonRight {
-		float:right;
-}	
 .calendarContainer {
 	display:flex;
 	position: relative;

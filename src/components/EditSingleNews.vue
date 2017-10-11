@@ -65,9 +65,9 @@ export default {
 
 				var tempLabel;
 				if(this.$i18n.locale===lang) {
-					tempLabel = this.$i18n.t('common.save_on_other_lang')+availableLanguages[lang].common.language_name;
+					tempLabel = this.$i18n.t('common.save_on_other_lang')+availableLanguages[lang].common.label;
 				} else {
-					tempLabel = this.$i18n.t('common.duplicate_on_other_lang')+availableLanguages[lang].common.language_name;
+					tempLabel = this.$i18n.t('common.duplicate_on_other_lang')+availableLanguages[lang].common.label;
 				}
 				
 				this.menuOptions.unshift({
