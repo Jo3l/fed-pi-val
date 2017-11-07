@@ -31,6 +31,7 @@ class FedpivalAPI {
     private $order= null; // ordre definit
     private $id= null; // id del registre que se va a editar
     private $mes= null; // mes a partir del qual es consulten dades
+    private $idioma= 'val'; // idioma actual
      
     // Function to make connection to database 
     public function init(){
@@ -157,9 +158,11 @@ class FedpivalAPI {
 		if ( $pos ) {
 		    array_push( $this->wheres, "instr('".$request[$pos+1]."',tags)>=0" );
     	}
+    	$idioma=null;
 		$pos= array_search('i', $request);
 		if (empty($pos)) $pos= array_search('idioma',$request);
 		if ( $pos ) {
+		    $idioma= $this->idioma= $request[$pos+1];
 		    array_push( $this->wheres, "idioma='".$request[$pos+1]."'" );
     	}
 		$pos= array_search('u', $request);
@@ -194,6 +197,9 @@ class FedpivalAPI {
 		    case 'schema':
         		$this->columnes();
         		$schema= array();
+        		if ($request[3]=='noticia') $request[3]='_noticia_val';
+        		if ($request[3]=='acte') $request[3]='_acte_val';
+        		if ($request[3]=='producte') $request[3]='_producte_val';
         		foreach($this->tots[$request[3]] as $nom=>$typ) {
         		    $tipo= 'text';
         		    $min= 0;
@@ -225,20 +231,25 @@ class FedpivalAPI {
         		    ));
         		}
         		/*
-        		                {
                     type: "input",
                     inputType: "number",
                     id: "current_age",
                     label: "Age",
                     model: "age"
                 }*/
-		        header('Content-Type: application/json');
-                echo json_encode( $schema );		        
+                $this->render( $schema );		        
 		        exit;
 		    case 'struct':
         		$this->columnes();
-		        echo json_encode($this->tots);
-		        exit;
+        		$this->render($this->tots,true);
+        		exit;
+		    break;
+		    case "competicio":
+		        if(!isset($request[3])) {
+		            $this->render($this->jerarquia(),true);
+		            exit;
+		        }
+		        $this->nom='_jerarquia_'.$idioma;
 		    break;
 			case "usuari":
 			case "auth":
@@ -261,6 +272,8 @@ class FedpivalAPI {
 		    	//array_push( $this->wheres, "instr('pagina',categoria)>0" );
 			break;
 			case "producte": // tenda
+			    if(empty($idioma)) $idioma='val';
+			    $this->nom='_producte_'.$idioma;
 			break;
 			case "partida":
 			break;
@@ -310,6 +323,40 @@ class FedpivalAPI {
 		} while ($this->db->numRows()!=0);
 		return substr($propos,0,-1); // està correcte el proposat
 	}
+
+    // funció que converteix un text a slug
+    // alternativa: https://gist.github.com/james2doyle/9158349
+    private function slugify($string,$space="-") {
+        if (function_exists('iconv')) $string = @iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+        $string = preg_replace("/[^a-zA-Z0-9 -]/", "", $string);
+        $string = strtolower($string);
+        $string = str_replace(" ", $space, $string);
+        return $string;
+    }
+
+    // funció que torna un array amb la estructura de competicions
+    private function jerarquia() {
+    	$this->db->sql("select * from _jerarquia order by id asc;");
+    	$estructura= array();
+		$result= $this->db->getResult();
+		foreach($result as $r) { // en cada registre...
+		    $r['nom']= $r['nom_'.$this->idioma];
+		    $r['slug']= $this->slugify($r['nom_'.$this->idioma]);
+		    unset($r['nom_es']);
+		    unset($r['nom_val']);
+		    $r['fills']= array();
+		    if (empty($r['pare'])) $estructura[$r['id']]= $r;
+		    else $estructura[$r['pare']]['fills'][$r['id']]= $r;
+		}
+		echo '<pre>',json_encode($estructura);
+		exit;
+    	
+    	do {
+    		$this->db->sql("select slug from pagina where slug='".$propos."';");
+    		$propos.= $sufixe;
+		} while ($this->db->numRows()!=0);
+		return substr($propos,0,-1); // està correcte el proposat
+	}
     
     private function exe() {
 		// si únicament estem consultant:
@@ -353,11 +400,12 @@ echo '/*SLUG*/',$camps['slug'];
 		return $this->render($result);
     }
     
-    private function render($result) {
+    private function render($result,$doexit=false) {
 		header('Content-Type: application/json, charset=utf-8');
 		// si només hi ha un element, el torna sense array
 		//if (is_array($result) && count($result)==1) $result= $result[0];
 		echo json_encode($result);
+		if ($doexit) exit;
 		return $result;
     }
     

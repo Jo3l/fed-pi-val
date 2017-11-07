@@ -1,3 +1,4 @@
+
 /user ? POST auth=pwd // authenticate
 /object ? // listall
 /object ? POST {id:"id"} // list one
@@ -33,6 +34,7 @@ He d'ignorar les opcions d'actualització i el que es transmet per $_POST en aqu
 Separació de les consultes amb caràcters ( millor opcio: // )
 /api/index.php/noticia/id/112//api/index.php/noticia/id/113
 ----
+
 
 
 
