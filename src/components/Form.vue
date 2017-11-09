@@ -1,5 +1,6 @@
 <template>
   <div class="form">
+  	
     <vue-form-generator :schema="schema" :model="model" :options="formOptions"></vue-form-generator>
     
     <select v-model="addToSchema" @change="add()">
@@ -168,9 +169,8 @@ export default {
 	}
 	
 	fieldset {
-		border: 1px solid #cacaca;
-	    border-radius: 5px;
-	    margin-bottom: 20px;
+		border: none;
+	    margin: 20px 0;
 	}
 	
 	.panel {
@@ -326,8 +326,15 @@ export default {
 .vue-form-generator .form-group {
     display: inline-block;
     vertical-align: top;
-    width: 100%;
-    margin-bottom: 1rem
+    width: ~"calc(33% - 20px)";
+    margin: 10px;
+    @media(max-width:@screenTablet) {
+		width: ~"calc(50% - 20px)";
+	}
+	@media(max-width:@screenMobile) {
+			width:~"calc(100% - 20px)";
+	}
+
 }
 .vue-form-generator .form-group label {
     font-weight: 400

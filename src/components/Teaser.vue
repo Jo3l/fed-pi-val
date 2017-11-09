@@ -1,6 +1,11 @@
 <template>
     <transition name="fade">
-	    <div class="teaser" >
+	    <div class="teaser">
+		   	<div class="fancyEnd">
+				<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+					<path stroke="null" id="svg_1" fill="rgba(45,85,170,0.5)" d="m0,2.21516c29.9,0 57.8,14.53465 87.5,14.53465c30.2,0 58.1,-14.53465 87.1,-14.53465c29.9,0 57.8,14.53465 87.7,14.53465c29.9,0 57.8,-14.53465 87.7,-14.53465l0,-2.46494l-350,0l0,2.46494z"/>
+				</svg>
+			</div>
 			<picture v-bind:style="{ 'background-image': 'url(' + newsTeaser.imatge + ')' }">
 				<aside>
 					<h2>{{ newsTeaser.titol }}</h2>
@@ -61,10 +66,11 @@ export default {
 	    aside {
 			position: absolute;
 		    bottom: 0;
-		    background-image: linear-gradient(to right, rgb(135, 33, 46) 0%, rgba(255, 255, 255, 0) 100%);
+		    background-image: linear-gradient(to top, rgba(14, 2, 4, 0.61) 0%, rgba(255, 255, 255, 0) 100%);
 		    padding: 15px 50px 25px 0;
+		    width:100%;
 			h2 {
-				padding: 0px 5vw;
+				padding: 0px 2vw;
 			    //font-family: 'Rambla', cursive;
 			    margin: 0;
 			    color: white;

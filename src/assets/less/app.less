@@ -88,6 +88,7 @@ input[type="submit"]::-moz-focus-inner {
 h1 {
 	margin: 1em 0 .5em 1em;
 	text-transform: capitalize;
+	&.ui-modal__header-text:after{display:none;} 
 	&:after {
 	    bottom: 10px;
 	    display: block;
@@ -113,6 +114,16 @@ h1 {
 .textPositioned {
 	margin: 0 0 .5em 5%;
 	text-transform: capitalize;
+}
+
+.buttonGroupRight {
+	display: flex;
+    width: 100%;
+    margin: 20px 0 0 0;
+    justify-content: flex-end;
+    button {
+    	margin-left:10px;
+    }
 }
 
 //vuejs transitions
@@ -141,7 +152,25 @@ h1 {
     padding-top: 30px;
     margin-top: -20px;
     padding-bottom: 80px;
+    min-height: ~"calc(100vh - 171px)";
+	@media(max-width:@screenTablet) {
+		min-height: ~"calc(100vh - 190px)";
+	}
 }
+
+.VueCarousel-dot {
+	@media(max-width:@screenMobile) {
+		padding:5px!important;
+	}
+	
+	.VueCarousel-dot-inner{
+		@media(max-width:@screenMobile) {
+			width:5px!important;
+			height:5px!important;
+		}
+	}
+}
+
 
 .footerSpacer {
     width: 100%;

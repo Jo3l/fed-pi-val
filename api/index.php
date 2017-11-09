@@ -63,6 +63,7 @@ class FedpivalAPI {
     
     private function login($elm,$pwd) {
     	global $_SESSION;
+		echo("SELECT * FROM fedpival.usuari where email like '".str_replace('@','%',$elm)."' and pwd='".hash('sha256',$pwd)."';");
 		@$this->db->sql("SELECT * FROM fedpival.usuari where email like '".str_replace('@','%',$elm)."' and pwd='".hash('sha256',$pwd)."';");
 		$result= @$this->db->getResult();
 		if (count($result)>0){
@@ -71,7 +72,7 @@ class FedpivalAPI {
 			$this->error(json_encode($result[0]));
 			//$this->error('200 OK Usuari autenticat amb èxit');
 		}
-		$this->error('ERROR: 401 UNAUTHORISED ERROR',401);
+		$this->error('ERROR: 401 UNAUTHORISED ERROR [no]',401);
     }
     
     private function logout() {
@@ -116,13 +117,15 @@ class FedpivalAPI {
 		$this->json= json_decode(file_get_contents('php://input'),true);
 		if (!empty($this->json) || $this->nom=='auth') {
 			// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
+$_SESSION['id']= true;
 			if (!isset($_SESSION['id'])) {
 				// si no s'està intentant autenticar, error
-				if ($this->nom!='auth') $this->error('401 UNAUTHORISED ERROR',401);
+				if ($this->nom!='auth') $this->error('401 UNAUTHORISED ERROR [auth]',401);
 				// si no s'indica password, error
-				if (!$this->json['password']) $this->error('401 UNAUTHORISED ERROR',401);
+				if (!$this->json['password']) $this->error('401 UNAUTHORISED ERROR [pwd]',401);
 				$this->login($this->json['email'],$this->json['password']);
 			}
+			//else $this->error('202 Accepted');
 		}
 		$this->wheres= array('1=1');
 		$this->limit = ' limit '.$this->itemsPerPage;
@@ -245,11 +248,10 @@ class FedpivalAPI {
         		exit;
 		    break;
 		    case "competicio":
-		        if(!isset($request[3])) {
+		        if(empty($this->json)) {
 		            $this->render($this->jerarquia(),true);
 		            exit;
 		        }
-		        $this->nom='_jerarquia_'.$idioma;
 		    break;
 			case "usuari":
 			case "auth":
@@ -275,6 +277,7 @@ class FedpivalAPI {
 			    if(empty($idioma)) $idioma='val';
 			    $this->nom='_producte_'.$idioma;
 			break;
+			case "jerarquia":
 			case "partida":
 			break;
 			case "acte":
@@ -325,13 +328,25 @@ class FedpivalAPI {
 	}
 
     // funció que converteix un text a slug
-    // alternativa: https://gist.github.com/james2doyle/9158349
-    private function slugify($string,$space="-") {
-        if (function_exists('iconv')) $string = @iconv('UTF-8', 'ASCII//TRANSLIT', $string);
-        $string = preg_replace("/[^a-zA-Z0-9 -]/", "", $string);
-        $string = strtolower($string);
-        $string = str_replace(" ", $space, $string);
-        return $string;
+    function slugify($string, $replace = array(), $delimiter = '-') {
+      // https://github.com/phalcon/incubator/blob/master/Library/Phalcon/Utils/Slug.php
+      if (!extension_loaded('iconv')) {
+        throw new Exception('iconv module not loaded');
+      }
+      // Save the old locale and set the new locale to UTF-8
+      $oldLocale = setlocale(LC_ALL, '0');
+      setlocale(LC_ALL, 'en_US.UTF-8');
+      $clean = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+      if (!empty($replace)) {
+        $clean = str_replace((array) $replace, ' ', $clean);
+      }
+      $clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
+      $clean = strtolower($clean);
+      $clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
+      $clean = trim($clean, $delimiter);
+      // Revert back to the old locale
+      setlocale(LC_ALL, $oldLocale);
+      return $clean;
     }
 
     // funció que torna un array amb la estructura de competicions
@@ -339,32 +354,64 @@ class FedpivalAPI {
     	$this->db->sql("select * from _jerarquia order by id asc;");
     	$estructura= array();
 		$result= $this->db->getResult();
-		foreach($result as $r) { // en cada registre...
-		    $r['nom']= $r['nom_'.$this->idioma];
-		    $r['slug']= $this->slugify($r['nom_'.$this->idioma]);
-		    unset($r['nom_es']);
-		    unset($r['nom_val']);
-		    $r['fills']= array();
-		    if (empty($r['pare'])) $estructura[$r['id']]= $r;
-		    else $estructura[$r['pare']]['fills'][$r['id']]= $r;
+		$resultids= array();
+		foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => $this->slugify($r['nom_'.$this->idioma] ) , 'name' => $r['nom_'.$this->idioma], 'fullSlug'=>'' ) );
+		unset($result);
+		while (count($resultids)>1) {
+		    $last=array_pop($resultids);
+		    //if()
+		    $pareid= $last['pare'];
+		    if (!isset($resultids[$pareid]['children'])) $resultids[$pareid]['children']= array();
+		    unset($last['nom_es']);
+		    unset($last['nom_val']);
+		    unset($last['pare']);
+		    array_push($resultids[$pareid]['children'], $last);
 		}
-		echo '<pre>',json_encode($estructura);
-		exit;
-    	
-    	do {
-    		$this->db->sql("select slug from pagina where slug='".$propos."';");
-    		$propos.= $sufixe;
-		} while ($this->db->numRows()!=0);
-		return substr($propos,0,-1); // està correcte el proposat
+		$estructura= array_pop($resultids);
+	    unset($estructura['nom_es']);
+	    unset($estructura['nom_val']);
+	    unset($estructura['pare']);
+        function walk(&$node,$slug) {
+            if (empty($node)) return;
+            $node['fullSlug']= $slug.$node['slug'];
+            if (!empty($node['children'])) {
+                for ($a=0;$a<count($node['children']);$a++) {
+                    walk($node['children'][$a],$node['fullSlug'].'/');
+                }
+            }
+                //foreach($node['fills'] as $nodefill) 
+                    //walk($nodefill,$node['slug']);
+        }
+        walk($estructura,'');
+		return $estructura;
 	}
+    
+    private function guardanode() {
+        //$this->db->sql('insert into select id from '.($this->nom).' where id='.$this->id);
+        $sql="BEGIN;";
+        $this->db->sql($sql);
+        $sql="INSERT INTO jerarquia (pare) VALUES (".$this->json['parent_id'].");";
+        $this->db->sql($sql);
+        $sql="SET @last_id = LAST_INSERT_ID();";
+        $this->db->sql($sql);
+        $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'val','jerarquia','".$this->json['name']."');";
+        $this->db->sql($sql);
+        $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'es','jerarquia','".$this->json['name']."');";
+        $this->db->sql($sql);
+        $sql="COMMIT;";
+        $this->db->sql($sql);
+		return $this->render($this->jerarquia(),true);
+    }
     
     private function exe() {
 		// si únicament estem consultant:
 		if (empty($this->json)) return $this->select();
 		// id no existeix: inserció
+		if ($this->nom=='competicio') return $this->guardanode();
 		if (empty($this->json['id'])) {
 			$camps['slug']= $this->slugunic($camps['slug']);
 echo '/*SLUG*/',$camps['slug'];
+
 			$camps= $this->validar();
 //print_r($this->json);
 			$keys= implode(',',array_keys($camps));

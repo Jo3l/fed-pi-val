@@ -19,7 +19,7 @@
     	
     	<newsCarousel></newsCarousel>
     	
-		<Calendar></Calendar>
+		<Calendar type="slider"></Calendar>
 		
 		<cart type="slider"></cart>
 		

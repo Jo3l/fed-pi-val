@@ -22,7 +22,6 @@ Vue.use(VueRouter)
 Vue.use(KeenUI)
 Vue.use(VueCarousel)
 
-
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.baseURL = '/api/index.php';  //set the baseurl from api
 

@@ -23,5 +23,16 @@ export default {
 		save_on_other_lang: 'Guardar en ',
 		duplicate_on_other_lang: 'Duplicar en ',
 		page: 'página',
+		calendar: 'calendario',
+		save: 'Guardar',
+		cancel: 'Cancelar',
+	}, 
+	node : {
+		insert_node : 'Insertar nuevo nodo',
+		write_node : 'Escribe aquí el nombre del nodo',
+		remember_node: 'Recuerda usar un nombre claro y sencillo',
+		rename_node: 'Renombrar nodo',
+		insert_game: 'Insertar partida',
+		
 	}
 }

@@ -32,17 +32,18 @@ export default {
 	methods: {
 		incPage: function() {
 			this.pagina++;
+			this.$router.push({ path: `/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.pagina}` });
 		},
 		decPage: function() {
 			if(this.pagina >= 1) this.pagina--;
-
+			this.$router.push({ path: `/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.pagina}` });
 		},
 	},
 	mounted: function () {
-
+		if(this.$route.params.page>0) this.pagina = this.$route.params.page;
 	},
-	watch: {
-	
+	beforeRouteUpdate (to, from, next) {
+		next();
 	}
 }
 </script>

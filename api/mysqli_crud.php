@@ -66,7 +66,7 @@ class Database{
     public function sql($sql){ 
         $query = @mysqli_query($GLOBALS["___mysqli_ston"], $sql); 
         $this->myQuery = $sql; // Pass back the SQL 
-        if($query){ 
+        if(!is_bool($query)){ 
             // If the query returns >= 1 assign the number of rows to numResults 
             $this->numResults = mysqli_num_rows($query); 
             // Loop through the query results by the number of rows returned 
