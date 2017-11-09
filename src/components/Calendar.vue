@@ -1,59 +1,106 @@
 <template>
 	<div class="componentContainer">
-
-		<h1>{{ $t('calendar.events') }}</h1>
-		<div class="buttonContainer">
-			<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
-			<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
-		</div>
-
-
-		<div class="calendarContainer">
-			<div class="calendar" v-for="n in 4">
-				<nav class="calendarHead">
+		<div v-if=" type=='slider' ">
+			<h1>{{ $t('common.calendar') }}</h1>
+			<div class="buttonContainer">
+				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
+				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
+			</div>
 	
-					<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
-					<b>{{ getYear(n-1+increment)}}</b>
 	
-				</nav>
-				<div class="labels">
-					<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
-				</div>
-				<div class="calendarMonth">
-					<div v-for="week in events[eventos(n-1+increment)]">
-						<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]">
-							<span v-if="day.date" v-bind:class="day.data.cssClass"  @click="openModal( day )">
-								{{ day.date }}
+			<div class="calendarContainer">
+				<div class="calendar" v-for="n in 4">
+					<nav class="calendarHead">
+		
+						<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
+						<b>{{ getYear(n-1+increment)}}</b>
+		
+					</nav>
+					<div class="labels">
+						<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
+					</div>
+					<div class="calendarMonth">
+						<div v-for="week in events[eventos(n-1+increment)]">
+							<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]">
+								<span v-if="day.date" v-bind:class="day.data.cssClass"  @click="openModal( day )">
+									{{ day.date }}
+								</span>
 							</span>
-						</span>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		<ui-modal ref="events" size="normal" title="titol">
-            <div slot="header">
-                {{selected.day}} - {{selected.month+1}} - {{selected.year}}
-                
+			<ui-modal ref="events" size="normal" title="titol">
+	            <div slot="header">
+	                {{selected.day}} - {{selected.month+1}} - {{selected.year}}
+	                
+		
+	            </div>
+				<article v-for="event in modalEvent">
+					<h4>{{event.titol}}</h4>
+					<p v-html="event.contingut"></p>
+				</article>
+	        </ui-modal>
+        </div>
+        
+        
+        
+        
+		<div v-else="v-else">
+			<h1>{{ $t('common.calendar') }}</h1>
+			<div class="buttonContainer">
+				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
+				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
+			</div>
 	
-            </div>
-			<article v-for="event in modalEvent">
-				<h4>{{event.titol}}</h4>
-				<p v-html="event.contingut"></p>
-			</article>
-        </ui-modal>
+	
+			<div class="calendarContainer">
+				<div class="calendar" v-for="n in 4">
+					<nav class="calendarHead">
+		
+						<b>{{ monthArray[getMonth(n-1+increment)] }}</b>
+						<b>{{ getYear(n-1+increment)}}</b>
+		
+					</nav>
+					<div class="labels">
+						<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
+					</div>
+					<div class="calendarMonth">
+						<div v-for="week in events[eventos(n-1+increment)]">
+							<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]">
+								<span v-if="day.date" v-bind:class="day.data.cssClass" @click="openEvent( day )">
+									{{ day.date }}
+								</span>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="eventSelected">
+				<article v-for="event in todayEvent">
+					<h4>{{event.titol}}</h4>
+					<p v-html="event.contingut"></p>
+				</article>
+			</div>
+			
+		</div>
+		
 	</div>
 </template>
 
-
-
 <script>
 
-
-module.exports = {
+export default {
 	name: 'Calendar',
   	components: {
-
-  	},
+  	}, 
+  	props: {
+        type: {
+            type: String,
+            default: 'fullPage'
+        }
+	},
 	'data': function(){ 
 		return {
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
@@ -66,7 +113,8 @@ module.exports = {
 				month : false,
 				year : false
 			},
-			modalEvent: []
+			modalEvent: [],
+			todayEvent: []
 		}
 	},
 	'computed': {
@@ -79,6 +127,10 @@ module.exports = {
 		}
 	},
 	methods: {
+		openEvent: function(day) {
+        	this.todayEvent = day.data.events;
+        	console.log(this.todayEvent);
+        },
         openModal: function(day) {
         	this.modalEvent = day.data.events;
         	this.select(day);
@@ -248,15 +300,17 @@ module.exports = {
 
 @import "../assets/less/defines.less";
 
-
+.eventSelected {
+	margin: 2em;
+    min-height: 30px;
+}
+	
 .calendarContainer {
 	display:flex;
 	position: relative;
     width: 100%;
     justify-content:space-around;
     
-
-	
 	.calendarNav {
 		cursor: pointer;
 	}
