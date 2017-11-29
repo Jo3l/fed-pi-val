@@ -13,7 +13,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.less$/,
+        test: /\.less$|\.css$/,
         use: [
           'style-loader',
           { loader: 'css-loader', options: { importLoaders: 1 } },

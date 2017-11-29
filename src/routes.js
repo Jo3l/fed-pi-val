@@ -6,7 +6,6 @@ import Cart from './components/Cart.vue'
 import Clubs from './components/Clubs.vue'
 import Tournament from './components/Tournament.vue'
 import Form from './components/Form.vue'
-import Tree from './components/Tree.vue'
 import SubRoutes from './components/SubRoutes.vue'
 import PageNotFound from './components/PageNotFound.vue'
 
@@ -73,6 +72,7 @@ export const routes = [
     name: 'Noticia-es',
     component: SingleNews,
   },
+/*
   {
     path: '/val/noticia/edit/:slug',
     name: 'NoticiaEdit',
@@ -87,6 +87,7 @@ export const routes = [
              require(['./components/EditSingleNews.vue'], resolve);
         },
   },
+*/
   {
     path: '/val/calendari',
     name: 'Calendari',
@@ -112,37 +113,38 @@ export const routes = [
     lang:'es'
   },
   {
-    path: '/val/clubs',
-    name: 'Clubs',
-    component: Clubs,
-    lang:'val'
-  },
-  {
-    path: '/es/clubs',
-    name: 'Clubes',
-    component: Clubs,
-    lang:'es'
-  },
-  {
     path: '/val/competicions',
     name: 'Competicions',
+    props: {node:'competicions'},
     component: SubRoutes,
     lang:'val'
   },
   {
     path: '/es/competiciones',
     name: 'Competiciones',
+    props: {node:'competiciones'},
+    component: SubRoutes,
+    lang:'es'
+  },  {
+    path: '/val/federacio',
+    name: 'Federacio',
+    component: SubRoutes,
+    lang:'val'
+  },
+  {
+    path: '/es/federacion',
+    name: 'Federación',
     component: SubRoutes,
     lang:'es'
   },
   {
     path: '/val/*',
-    name: 'Competicions*',
+    name: 'nodes',
     component: SubRoutes,
   },
   {
     path: '/es/*',
-    name: 'Competiciones*',
+    name: 'nodos',
     component: SubRoutes,
   },
   {
@@ -154,18 +156,6 @@ export const routes = [
     path: '/login',
     name: 'login',
     component: Start,
-  },
-  {
-    path: '/val/form',
-    name: 'ProvaFormulari',
-    component: Form,
-    lang:'val'
-  },
-  {
-    path: '/val/tree',
-    name: 'Arbre',
-    component: Tree,
-    lang:'val'
   },
   {
     path: '/404',

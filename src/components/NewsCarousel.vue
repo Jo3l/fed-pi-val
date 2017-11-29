@@ -87,15 +87,15 @@ export default {
     mounted: function () {
     	
     	if(this.pagina==null) {
-    		this.getData('/noticia/'+this.$i18n.locale);
+    		this.getData('/noticia/i/'+this.$i18n.locale);
     	}else {
-    		this.getData('/noticia/p/'+this.pagina+'/'+this.$i18n.locale);
+    		this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale);
     	}
 	
     },
 	watch: {
 	    pagina: function (newVal, oldVal) {
-	      this.getData('/noticia/p/'+newVal+'/'+this.$i18n.locale);
+	      this.getData('/noticia/p/'+newVal+'/i/'+this.$i18n.locale);
 	    }
 	},
 }

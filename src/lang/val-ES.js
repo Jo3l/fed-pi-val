@@ -4,7 +4,12 @@ export default {
 		weekShort : [ 'Diu', 'Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss'],
 		weekLong : [ 'Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
 		months : ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'],
+		monthsShort: ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Sete', 'Oct', 'Nov', 'Des'],
 		events : 'Events',
+		year:'Any',
+		hourTip: 'Sel·lecciona hora',
+    	minuteTip: 'Sel·lecciona minut',
+        secondTip: 'Sel·lecciona segon',
 	},
 	cart : {
 		addToBasket : 'Afegir a la cistella',

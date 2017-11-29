@@ -4,7 +4,12 @@ export default {
 		weekShort : [ 'Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
 		weekLong : ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
 		months : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-		events : 'Eventos',
+		monthsShort: ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Sete', 'Oct', 'Nov', 'Des'],
+		events : 'Events',
+		year:'Año',
+		hourTip: 'Selecciona hora',
+    	minuteTip: 'Selecciona minuto',
+        secondTip: 'Selecciona segundo',
 	},
 	cart : {
 		addToBasket : 'Añadir al carrito',

@@ -85,6 +85,15 @@ input[type="submit"]::-moz-focus-inner {
 }
 
 
+a {
+	color: #232323;
+	text-decoration:none;
+	&:hover {
+		text-decoration:underline;
+		color:#000000;
+	}
+}
+
 h1 {
 	margin: 1em 0 .5em 1em;
 	text-transform: capitalize;
@@ -125,6 +134,19 @@ h1 {
     	margin-left:10px;
     }
 }
+
+hr {
+	margin: 20px 0 0 0;
+	border:0;
+    bottom: 10px;
+    display: block;
+    height: 3px;
+    width: 100%;
+    content: "";
+    background-color: #87212e;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
 
 //vuejs transitions
 

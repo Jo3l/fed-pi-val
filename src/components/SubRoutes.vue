@@ -1,24 +1,30 @@
 <template>
   <div class="tree">
 
-		<ul class="breadcrumb-wrapper" v-if="!selectYear">
-			<li v-for="bread in breadCrumb" @click="updateBreadcrumb">    
+		<ul class="breadcrumb-wrapper">
+			<li v-for="bread in breadCrumb" @click="updateBreadcrumb" v-bind:class="[ bread.id==currentPageId && treeLevel.children && treeLevel.children.length!=0 ? 'lastLi' : '']">    
     			<router-link  class="breadcrumb" v-bind:to="bread.link">{{ bread.name }}</router-link><span class="breadcrumb-separator"></span>
+					<ul class="vertical-menu" @click="updateBreadcrumb" v-if="bread.id==currentPageId">
+						
+						<draggable v-model="treeLevel.children" :options="{draggable:'li'}" @end="setOrder(true)">
+							<li v-for="leaf in treeLevel.children" :key="leaf.order">
+					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> -->
+					    	</li>
+						</draggable>
+
+					</ul>
 		    </li>
 		</ul>
 
-		<ul class="vertical-menu" v-if="!selectYear" @click="updateBreadcrumb">
-			<li v-if="treeLevel.children" v-for="leaf in treeLevel.children">
-	    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link>
-	    	</li>
-		</ul>
-		
 		<div class="flexWrap">
-                <ui-fab icon="add" size="small" @click="$refs.insertNode.open()"></ui-fab>
-                <ui-fab icon="edit" size="small" @click="$refs.renameNode.open()"></ui-fab>
-                <ui-fab icon="directions_walk" size="small" @click="$refs.insertGame.open()"></ui-fab>
+                <ui-icon-button tooltip="Crear Nodo" icon="create_new_folder" size="small" @click="$refs.insertNode.open()"></ui-icon-button>
+                <ui-icon-button tooltip="Renombrar Nodo" icon="format_size" size="small" @click="$refs.renameNode.open()"></ui-icon-button>
         </div>
 		
+		
+		<node-content :nodeId='currentPageId'></node-content>
+		
+	
 		<ui-modal ref="insertNode" size="normal" v-bind:title="$t('node.insert_node')">
 			<div class="ui-autocomplete__content" v-if="!newNode">
 				<label class="ui-autocomplete__label">
@@ -39,55 +45,42 @@
 		<ui-modal ref="renameNode" size="normal" v-bind:title="$t('node.rename_node')">
 			<div class="ui-autocomplete__content" v-if="!newNode">
 				<label class="ui-autocomplete__label">
-					<input v-model="newNodeName" v-bind:placeholder="$t('node.write_node')" class="ui-autocomplete__input"> 
+					<input v-model="currentNodeName.name" v-bind:placeholder="$t('node.write_node')" class="ui-autocomplete__input"> 
 				</label> 
 				<div class="ui-autocomplete__feedback">
 					<div class="ui-autocomplete__feedback-text">{{ $t('node.remember_node') }}</div>
 				</div>
-				<br>
+				
+				<div class="buttonGroupRight">
+					<ui-button :loading="buttonLoading" size="small" @click="updateNode()">{{ $t('common.save') }}</ui-button>
+					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
+				</div>
 			</div>
         </ui-modal>
   
-  		<ui-modal ref="insertGame" size="normal" v-bind:title="$t('node.insert_game')">
-			<div class="ui-autocomplete__content" v-if="!newNode">
-				<label class="ui-autocomplete__label">
-					<input v-model="newNodeName" v-bind:placeholder="$t('node.write_node')" class="ui-autocomplete__input"> 
-				</label> 
-				<div class="ui-autocomplete__feedback">
-					<div class="ui-autocomplete__feedback-text">{{ $t('node.remember_node') }}</div>
-				</div>
-				<br>
-			</div>
-        </ui-modal>      
-        
-	<pre>
-		
-		{{newNodeName}}
-		{{currentPageId}}
-		
-	</pre>
-		
-		
 
   </div>
 </template>
 
 <script>
 
+import draggable from 'vuedraggable'
+import Content from './Content.vue';
 export default {
     components: {
-
+		draggable, 'node-content':Content
     },
-  	props: {
-        selectYear: {
-            type: Boolean,
-            default: false
-        }
-	},
+  	props: ['node'],
     data () {
       return {
+      	newOrder: [],
       	newNode: false,
       	buttonLoading: false,
+      	currentNodeName: {
+      		id:'',
+      		name:'', 
+      		idioma: this.$i18n.locale
+      	},
       	newNodeName: {
       		parent_id: '',
       		name:''
@@ -102,16 +95,59 @@ export default {
       }
     },
     methods: {
-    saveNode: function(){
-    	this.postData('competicio', this.newNodeName);
+	test: function() {
+		console.log(this.$auth.isAuthenticated());
+	},
+	setOrder: function(manual){
+		var vm=this;
+		
+		vm.newOrder = [];
+		
+		if(vm.treeLevel.children) {
+		    for (var node = 0; node < vm.treeLevel.children.length; node++){
+					vm.newOrder.push( { 'id': vm.treeLevel.children[node].id, 'ordre' : node } );
+		    }
+		}
+		if (manual) this.postOrder('nodes/ordre', vm.newOrder);
+	},
+	postOrder: function(apiUrl, order) {
+        var vm = this;
+        vm.$http.post(apiUrl, order)
+        .then(function (response) {
+			//res
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
     },
-    postData: function(apiUrl, node) {
+    saveNode: function(){
+    	var root = this.$route.path.split('/')[2];
+    	this.postData('nodes/'+root, this.newNodeName, false);
+    },
+    updateNode: function(){
+    	var vm=this;
+    	//calculem el slug del pare a partir del route path
+		var parent = vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/');
+		var root = this.$route.path.split('/')[2];
+		parent.pop();
+    	this.postData('nodes/'+root, this.currentNodeName, parent.join('/') );
+    },
+    postData: function(apiUrl, node, redirect) {
         var vm = this;
         vm.buttonLoading = true;
         vm.$http.post(apiUrl, node)
         .then(function (response) {
             vm.tree = [response.data];
-            vm.updateBreadcrumb();
+            
+            //si es false, no fa el redirect, soles fa update del breadcrumb
+            if(!redirect) {
+            	vm.updateBreadcrumb();
+            }
+            //else fa la redireccio al pare, ja que no tenim el nom "slug" que genera el backend
+            else { 
+            	vm.$router.push(redirect);
+            	vm.updateBreadcrumb();
+            }
             vm.buttonLoading = false;
             
             //tancar qualsevol modal
@@ -146,9 +182,11 @@ export default {
     	var vm=this;
     	this.basePath = this.$route.path+'/',
 		this.breadCrumb = this.createBreadcrumb();
-		var lastBread = vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').slice(vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').indexOf(vm.tree[0].name)).join('/');
+		var lastBread = vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').slice(vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').indexOf(vm.tree[0].slug)).join('/');
 		this.currentPageId = this.findNodeBySlug(this.tree, lastBread).id;
 		this.newNodeName.parent_id = this.currentPageId;
+		this.currentNodeName.id = this.currentPageId;
+		this.currentNodeName.name = this.findNodeBySlug(this.tree, lastBread).name;
     },
 	findNodeBySlug: function (tree, slug) {
 		var vm=this;
@@ -169,27 +207,45 @@ export default {
     	var incPath = '';
     	var breadCrumb = [];
     	//                          el route path, llevant el trailing slash, convertit a array, i fent slice dels elements a partir del nom del tree, que dependrà del idioma, naturalment
-    	var tempBreadCrumb = vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').slice(vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').indexOf(vm.tree[0].name));
+    	var tempBreadCrumb = vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').slice(vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/').indexOf(vm.tree[0].slug));
     	var baseUrl = vm.$route.path.replace(tempBreadCrumb.join('/'), '');
 
     	for (var bread in tempBreadCrumb) {
     		incPath = incPath+tempBreadCrumb[bread]+'/';
     		if(!vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") )) vm.$router.push('/404'); //si el slug no esta en el tree, ens envia a 404
-		    breadCrumb.push({'name': vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") ).name,'slug': tempBreadCrumb[bread], 'link':baseUrl+incPath.replace(/^(.+?)\/*?$/, "$1")});
+		    breadCrumb.push({'id':vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") ).id, 'name': vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") ).name,'slug': tempBreadCrumb[bread], 'link':baseUrl+incPath.replace(/^(.+?)\/*?$/, "$1")});
 		}
 		
 		vm.treeLevel = vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1"));
+		if(vm.treeLevel.children) vm.treeLevel.children.sort((a, b) => a.ordre - b.ordre); //ordenar per ordre
+		vm.setOrder(false);
 		
 		return breadCrumb;
 		
 		
       }
-    },    
+    },
+    watch: { 
+      	node: function(newVal, oldVal) { // watch it
+      	
+          console.log('Prop changed: ', newVal, ' | was: ', oldVal);
+          var root = this.$route.path.split('/')[2];
+		  console.log(this.$route.path);
+	      this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
+          
+          
+        }
+    },
     created: function () {
-    	this.getData('competicio/i/'+this.$i18n.locale);
+    	var root = this.$route.path.split('/')[2];
+    	this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
     },
 	beforeRouteUpdate (to, from, next) {
-		next();
+    	next();
+		if(to.params.slug) {
+			var root = to.params.slug.split('/')[2];
+	    	this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
+		}
 	}
 }
 
@@ -199,35 +255,24 @@ export default {
 
 @import "../assets/less/defines.less";
 	
-.tree{padding: 2em 0 1em 2em;}
+.tree{padding: 1em 2em;}
 .flexWrap {
 	display:flex;
+	flex-wrap: wrap;
 	button {margin:10px;}
 }
-.vertical-menu {
-	list-style: disc;
-	margin: 20px 0;
-	
-		li{
-	  		margin:10px 0;
-			a {
-				color:#232323;
-				text-decoration:none;
-				&:hover {
-					color: #fff;
-				    background-color: #87212e;
-				    padding: 3px 9px;
-				    border-radius: 20px;
-				}
-			}
-		}
+.icon-separator {
+	width:20px;
 }
+
 
 .breadcrumb-wrapper {
   list-style: none;
   margin: 0;
   padding: 0;
-  
+  display:flex;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
 	.breadcrumb {
 		color: #232323;
 		border: 2px solid #87212e;
@@ -255,10 +300,60 @@ export default {
     display: inline-block;
     transform: rotate(41deg);
 	}
+
+  li { 
+  	display: inline-block;
+  	margin-bottom: 16px;
+  	&.lastLi {
+	  	border: 1px dashed #87212e;
+	    padding: 7px;
+	    margin: -8px 0 0 0;
+	    border-radius: 20px;
+  	}
+  }
   
-  li { display: inline-block }
   li:last-of-type{ span{display:none;}}
   a { text-decoration: none }
+  
+
+  
+	.vertical-menu {
+		&>div{display:flex;flex-wrap: wrap;}
+		list-style: none;
+		margin: 0;
+		padding: 0px 11px 0 11px;
+			li{
+		  		margin:10px 0;
+		  		display:list-item;
+		  		padding: 3px 10px;
+				a {
+					color:#232323;
+					text-decoration:none;
+
+					&:hover {
+						color: #fff;
+					    background-color: #87212e;
+					    padding: 3px 10px;
+    					margin-left: -10px;
+    					margin-right: -10px;
+					    border-radius: 20px;
+					}
+				}
+				i {
+				    cursor: n-resize;
+				    width: 5px;
+				    height: 5px;
+				    display: inline-block;
+				    margin-bottom: 2px;
+				    margin-left: 10px;
+				    border-top: 1px solid #87212e;
+				    border-bottom: 1px solid #87212e;
+				    float:right;
+				    margin-top:8px;
+				}
+			}
+	}
+  
 }
 
 

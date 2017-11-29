@@ -9,7 +9,6 @@ import axios from 'axios'
 import { routes } from './routes'
 import es_ES from './lang/es-ES.js'
 import val_ES from './lang/val-ES.js'
-
 //import Date from 'datejs'
 
 import css from './assets/less/app.less'
