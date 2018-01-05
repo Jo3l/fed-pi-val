@@ -31,6 +31,8 @@ export default {
 		calendar: 'calendari',
 		save: 'Desar',
 		cancel: 'Cancelar',
+		delete: 'Borrar',
+		uploadPdf: 'Pujar document PDF',
 	},
 	node : {
 		insert_node : 'Insertar nou node',
@@ -38,5 +40,14 @@ export default {
 		remember_node: 'Recorda insertar un nom clar y senzill',
 		rename_node: 'Renombrar node',
 		insert_game: 'Insertar partida',
+	}, 
+	image : {
+		uploadAndCut: 'Pujar imatge i  retallar',
+		uploadImages: 'Pujar imatges',
+		cutImages: 'Retallar Imatge'
+	},
+		modal: {
+		ok: 'Acceptar',
+		cancel: 'Cancelar'
 	}
 }

@@ -6,7 +6,7 @@
 					<path stroke="null" id="svg_1" fill="rgba(45,85,170,0.5)" d="m0,2.21516c29.9,0 57.8,14.53465 87.5,14.53465c30.2,0 58.1,-14.53465 87.1,-14.53465c29.9,0 57.8,14.53465 87.7,14.53465c29.9,0 57.8,-14.53465 87.7,-14.53465l0,-2.46494l-350,0l0,2.46494z"/>
 				</svg>
 			</div>
-			<picture v-bind:style="{ 'background-image': 'url(' + newsTeaser.imatge + ')' }">
+			<picture v-bind:style="{ 'background-image': 'url(' + newsTeaser.url + ')' }">
 				<aside>
 					<h2>{{ newsTeaser.titol }}</h2>
 				</aside>

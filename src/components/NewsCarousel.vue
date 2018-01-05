@@ -5,7 +5,7 @@
 			<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" :paginationPadding=5 paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
 	
 			  <slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
-			    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
+			    <article v-bind:style="{ 'background-image': 'url(' + noticia.url + ')' }">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
 					    	<small>{{ fixDate(noticia.alta) }}</small>
@@ -22,7 +22,7 @@
 		<div class="flex" v-else="v-else">
 
 			  <div class="multipleNews" v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale">
-			    <article v-bind:style="{ 'background-image': 'url(' + noticia.imatge + ')' }">
+			    <article v-bind:style="{ 'background-image': 'url(' + noticia.url + ')' }">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
 					    	<small>{{ fixDate(noticia.alta) }}</small>

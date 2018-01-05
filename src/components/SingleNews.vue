@@ -3,7 +3,7 @@
     <div id="news">
 	
 	<div class="news">
-		<picture v-bind:style="{ 'background-image': 'url(' + news.imatge + ')' }"  v-bind:class="{ active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
+		<picture v-bind:style="{ 'background-image': 'url(' + news.url + ')' }"  v-bind:class="{ active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
 		</picture>
 		
             <div class="page__demo-group icon-right">

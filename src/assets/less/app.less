@@ -3,6 +3,7 @@
 @import "defines.less";
 //@import "fluidable.less";
 @import "toolbar.less";
+@import "table.less";
 
 html { 
 	//margin-left: ~"calc(100vw - 100%);" 
@@ -212,3 +213,10 @@ hr {
     }
 }
 
+//fix keen ui switch button css
+.ui-switch__thumb{
+	z-index:1;	
+}
+.ui-switch__track {
+	z-index:0;
+}

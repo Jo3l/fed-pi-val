@@ -323,12 +323,14 @@ export default {
 		margin: 0;
 		padding: 0px 11px 0 11px;
 			li{
-		  		margin:10px 0;
-		  		display:list-item;
-		  		padding: 3px 10px;
+	  		    margin: 5px 0 0 0;
+			    display: list-item;
+			    padding: 3px 16px 0 0px;
+			    white-space: nowrap;
 				a {
 					color:#232323;
 					text-decoration:none;
+					text-transform: capitalize;
 
 					&:hover {
 						color: #fff;
