@@ -1,5 +1,8 @@
 
+tipus d'elements:  P agina | N oticia | A cte | I matge | H TML | F itxer | J oc
+
 /user ? POST auth=pwd // authenticate
+/usuari ? POST auth=pwd // authenticate
 /object ? // listall
 /object ? POST {id:"id"} // list one
 /object ? POST { data:{} } // insert
@@ -24,15 +27,52 @@
 /noticia/d/{20170524} // torna totes les noticies d'una data
 /noticia/i/{val|es}
 /noticia/search ? POST {"search":"text"} // busca les noticies que continguen el text
-
 /noticia/p/4/u/32
 
 - el mateix canviant noticia per pagina
+
+/club // llistat clubes
+/club/id/{id} // dades club
+/club/ ? POST // insert club
+/club/id/{id} ? POST // update club
+
+/equip // llistat equips
+/equip/id/{id} // dades equip
+/equip/ ? POST // insert equip
+/equip/id/{id} ? POST // update equip
+
+/jugador // llistat jugadors
+/jugador/id/{id} // dades jugador
+/jugador/ ? POST // insert jugador
+/jugador/id/{id} ? POST // update jugador
+
+
+/partida // llistat partides
+/partida/id/{id} // dades partida
+/partida/j/{id} // llistat partides de la jerarquia
+/partida/ ? POST // insert partida (indicar node jerarquia !)
+/partida/id/{id} ? POST // update partida
+
+// nodes fa referència al sistema jeràrquic... a les carpetes. El contingut s'emmagatzema en "pagines"
+//  i s'accedirà a cada element per separat per tal de poder-lo editar
+
+/node // jerarquia completa
+/node/federacio // jerarquia de federació
+/node/competicio // jerarquia de competicions
+/node/{id} // obtindre els elements/blocs del node {id} de la jerarquia
+/node/{id} ? POST // insertar element/bloc de contingut en aquest node (indicant tipus ! )
+/node/{id}/element/{id2} ? POST // update element/bloc de contingut concret (tmb per a canviar l'ordre)
+  tipus: Html - Imatge - Joc
+
+---------------------------------
+
 
 COM FER MULTICONSULTES AMB UNA MATEIXA URL
 He d'ignorar les opcions d'actualització i el que es transmet per $_POST en aquest cas, si no, serà impossible saber de quin és
 Separació de les consultes amb caràcters ( millor opcio: // )
 /api/index.php/noticia/id/112//api/index.php/noticia/id/113
+
+
 ----
 
 

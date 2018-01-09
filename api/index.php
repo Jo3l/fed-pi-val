@@ -5,12 +5,6 @@
  * @Package FedpivalAPI 
  */
 
-/*
-PENDENTS
-- sanititzar entrades api
-- emulador jugadors i campionats
-*/
-
 include('mysqli_crud.php');
 
 /// mostrar errors
@@ -88,30 +82,7 @@ class FedpivalAPI {
     //
     private function parse($path) {
     	global $_SESSION, $_POST;
-    	/*
-    	// MULTIREQUEST begin
-    	if (strpos($path,'?')) {
-    		$requests= explode('?',$path);
-    		array_shift($requests);
-    		$results= array();
-    		foreach ( $requests as $request ) {
-	    		ob_start();
-	    		//$request= trim($request,'/');
-	    		//if (substr($request,0,13)!='api/index.php') $request= '/api/index.php/'.$request;
-    			$this->parse('/index.php'.$request);
-				$oneresult= $oneresult= $this->exe();
-	    		ob_end_clean();
-				if (count($oneresult)==1) $oneresult= $oneresult[0]; // un array d'un sol element
-				if (!isset($results[$this->nom])) $results[$this->nom]= array();
-				// un element o llista:
-				if (isset($oneresult[id])) $results[$this->nom][$oneresult[id]]= $oneresult;
-				else $results[$this->nom.'s']= $oneresult; // plural
-    		}
-    		echo json_encode($results);
-    		exit;
-    	}
-    	// MULTIREQUEST end
-    	*/
+    	
 		$request= explode('/',$path);
 		$this->nom= $request[2];
 		$this->json= json_decode(file_get_contents('php://input'),true);
@@ -161,11 +132,10 @@ $_SESSION['id']= true;
 		if ( $pos ) {
 		    array_push( $this->wheres, "instr('".$request[$pos+1]."',tags)>=0" );
     	}
-    	$idioma=null;
 		$pos= array_search('i', $request);
 		if (empty($pos)) $pos= array_search('idioma',$request);
 		if ( $pos ) {
-		    $idioma= $this->idioma= $request[$pos+1];
+		    $this->idioma= $request[$pos+1];
 		    array_push( $this->wheres, "idioma='".$request[$pos+1]."'" );
     	}
 		$pos= array_search('u', $request);
@@ -175,6 +145,12 @@ $_SESSION['id']= true;
 		    	array_push( $this->wheres, "autor=".$request[$pos+1] );
 		    else // usuari com a nom (seguretat?)
 		    	array_push( $this->wheres, "autor=(select id from fedpival.usuari where nom like '%".$request[$pos+1]."%'" );
+		}
+		//j = jerarquia
+		$pos= array_search('j', $request);
+		if ( $pos ) {
+			if ( is_numeric($request[$pos+1]) ) // jerarquia com a id
+		    	array_push( $this->wheres, "jerarquia=".($this->jerarquia=$request[$pos+1]) );
 		}
 		
 		$pos= array_search('acte', $request);
@@ -242,54 +218,66 @@ $_SESSION['id']= true;
                 }*/
                 $this->render( $schema );		        
 		        exit;
+		    case 'arxius':
+		    case 'archivo':
+		    case 'arxiu':
+		    	
+		    	echo 'lolailo';
+		    	break;
+		    	
 		    case 'struct':
         		$this->columnes();
         		$this->render($this->tots,true);
         		exit;
-		    break;
-		    case "competicio":
-		        if(empty($this->json)) {
-		            $this->render($this->jerarquia(),true);
-		            exit;
-		        }
-		    break;
+		        break;
+		    case "nodes":
+		    case "node":
+		        $this->branca= $request[3]; // null=all | competicio | federacio | {id}
+		        if (!empty($this->json)) $this->editaelement($this->branca);
+		        // si no es post/json, obtin nodes:
+		        if (is_numeric($this->branca)) $this->render($this->contingutnode($this->branca), true);
+		        $this->render($this->jerarquia($this->branca), true);
+		        break;
 			case "usuari":
+			case "user":
 			case "auth":
 				if ($request[3]=='logout') $this->logout();
 				if ($request[3]=='login') $this->login($this->json['email'],$this->json['password']);
-			break;
-			case "jugador":
+			    break;
+			case "trinquet":
 			case "equip":
+			case "equips":
+			case "jugador":
 			case "club":
-			break;
+			    break;
 			case "noticia":
 				// select
 		    	array_push( $this->wheres, "instr('noticies',categoria)>0" );
-		    	$this->nom= 'pagina';
+		    	$this->nom= '_noticia_'.$this->idioma;
+		    	if (array_search('slug', $request)) $this->nom= '_noticia';
 		    	$this->nomorg= 'noticia';
 		    	$this->order= ' order by publicacio, alta desc ';
-			break;
+			    break;
 			case "pagina":
 				// select
 		    	//array_push( $this->wheres, "instr('pagina',categoria)>0" );
-			break;
+			    break;
 			case "producte": // tenda
-			    if(empty($idioma)) $idioma='val';
-			    $this->nom='_producte_'.$idioma;
-			break;
+			    $this->nom='_producte_'.$this->idioma;
+			    break;
 			case "jerarquia":
 			case "partida":
-			break;
+			    break;
 			case "acte":
-		    	array_push( $this->wheres, "instr('acte',categoria)>0" );
+		    	array_push( $this->wheres, "tipus='A'" );
 		    	$mes= strtotime( substr($this->mes,0,4).'-'.substr($this->mes,4,2) );
 		    	$mes0= date('Ym',$mes);
 		    	/*$mes1= date('Ym',strtotime('+1 month',$mes));*/
 		    	array_push( $this->wheres, "(publicacio like '".$mes0."%')" );
-		    	$this->nom= 'pagina';
+		    	$this->nom= '_acte_'.$this->idioma;
 		    	$this->order= ' order by publicacio, alta desc ';
 		    	$this->limit='';
-			break;
+			    break;
 			// objecte no identificat:
 			default:
 				$this->error('501 NOT IMPLEMENTED ERROR '.$this->nom,501);
@@ -350,13 +338,13 @@ $_SESSION['id']= true;
     }
 
     // funció que torna un array amb la estructura de competicions
-    private function jerarquia() {
+    private function jerarquia($fill='competicions') {
     	$this->db->sql("select * from _jerarquia order by id asc;");
-    	$estructura= array();
 		$result= $this->db->getResult();
 		$resultids= array();
 		foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => $this->slugify($r['nom_'.$this->idioma] ) , 'name' => $r['nom_'.$this->idioma], 'fullSlug'=>'' ) );
 		unset($result);
+    	$estructura= array();
 		while (count($resultids)>1) {
 		    $last=array_pop($resultids);
 		    //if()
@@ -371,6 +359,10 @@ $_SESSION['id']= true;
 	    unset($estructura['nom_es']);
 	    unset($estructura['nom_val']);
 	    unset($estructura['pare']);
+        // comprove si m'estan demanant el primer fill competicions o el primer fill federacio (param $fill)
+        foreach($estructura['children'] as $elm) { 
+            if ($elm['slug']==$fill) $estructura= $elm;
+        }
         function walk(&$node,$slug) {
             if (empty($node)) return;
             $node['fullSlug']= $slug.$node['slug'];
@@ -379,15 +371,147 @@ $_SESSION['id']= true;
                     walk($node['children'][$a],$node['fullSlug'].'/');
                 }
             }
-                //foreach($node['fills'] as $nodefill) 
-                    //walk($nodefill,$node['slug']);
         }
         walk($estructura,'');
 		return $estructura;
 	}
+	
+	private function editaelement($id) {
+	    $data= $this->json;
+	    if (isset($data[id])) { // UPDATE!
+	        $camps= [];
+	        foreach($data as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."='".$val."'");
+	        $camps= implode(',',$camps);
+	        $sql= "START TRANSACTION;";
+	        $this->db->sql( $sql );
+	        $sql= "UPDATE pagina SET ".$camps." where id=".$data['id']."; ";
+	        $this->db->sql( $sql );
+	        if (isset($data['titol'])) {
+	            $sql= " UPDATE idioma SET text= '".$data['titol']."' WHERE registreid=".$data['id']." AND idioma='".$this->idioma."' AND tipus='element' AND camp='titol';";
+	            $this->db->sql( $sql );
+	        }
+	        if (isset($data['contingut'])) {
+	            $sql= " UPDATE idioma SET text= '".$data['contingut']."' WHERE registreid=".$data['id']." AND idioma='".$this->idioma."' AND tipus='element' AND camp='contingut';";
+	            $this->db->sql( $sql );
+	        }
+	        $sql= 'COMMIT;';
+    		$this->db->sql( $sql );
+    		$result= $this->db->getResult();
+	    } else { // INSERT!
+	        $sql= "START TRANSACTION;";
+	        $this->db->sql( $sql );
+	        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta) values ('".$data['tipus']."',".$id.",".$data['ordre'].",'".$data['url']."','".date('YmdHis')."'); ";
+	        $this->db->sql( $sql );
+            $sql= "SET @last_id = LAST_INSERT_ID(); ";
+            $this->db->sql( $sql );
+	        if ($data['tipus']=='H') { // contingut en es i val
+	            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','contingut','".$data['contingut']."'); ";
+	            $this->db->sql( $sql );
+	            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','contingut','".$data['contingut']."'); ";
+	            $this->db->sql( $sql );
+	        }
+	        if (in_array($data['tipus'],array('H','F'))) { // titol en es i val
+	            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','titol','".$data['titol']."'); ";
+	            $this->db->sql( $sql );
+	            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','titol','".$data['titol']."'); ";
+	            $this->db->sql( $sql );
+	        }
+	        $sql= "COMMIT;";
+    		$this->db->sql( $sql );
+    		$result= $this->db->getResult();
+	    }
+		$this->render($this->jerarquia($id), true);
+	    exit;
+	}
+    
+    private function contingutnode($id) {
+		$sql= "SELECT * FROM pagina where jerarquia=".$id." and ".implode(' and ',$this->wheres).$this->order;
+		$this->db->sql( $sql );
+		$result= $this->db->getResult();
+		$sql= "select * from partida where jerarquia=".$id;
+		$this->db->sql( $sql );
+		$result2= $this->db->getResult();
+		array_push($result,array('id'=>0,'tipus'=>'-','partides'=>$result2));
+        return $result;
+        /*
+			nodeContent:[
+			{
+				type:'image',
+				url:'/static/img/noticies/foto5961.jpg',
+				id:1
+			}, 
+			{
+				type:'html',
+				title:'Esto es el titulo',
+				content:'Esto es el <b>contenido</b>',
+				id:2
+			},
+			{
+				type:'file',
+				title:'Esto es un archivo',
+				url:'/static/img/noticies/foto5961.jpg',
+				id:3
+			},
+			{
+				type:'partida',
+				id:6,
+				partides: [
+				{
+					data:'1111',
+					lloc: {nom:'1 el lloc', id:45},
+					local: {nom:'1 local', id:45},
+					visitant: {nom:'1 visitant', id:45},
+					resVisitant:'5555',
+					resLocal:'666',
+					id:12,
+					bloc:6
+				},
+				{
+					data:'2222',
+					lloc: {nom:'2 el lloc', id:45},
+					local: {nom:'2 local', id:45},
+					visitant: {nom:'2 visitant', id:45},
+					resVisitant:'5555',
+					resLocal:'666',
+					id:13,
+					bloc:6
+				},
+				{
+					data:'3333',
+					lloc: {nom:'3el lloc', id:45},
+					local: {nom:'3 local', id:45},
+					visitant: {nom:'3 visitant', id:45},
+					resVisitant:'5555',
+					resLocal:'666',
+					id:14,
+					bloc:6
+				}
+				]
+			}
+			],
+			
+		}
+	},
+        
+        */
+    }
     
     private function guardanode() {
         //$this->db->sql('insert into select id from '.($this->nom).' where id='.$this->id);
+        if ($this->branca=='ordre') {
+            foreach( $this->json as $elm ) {
+                $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+                $this->db->sql($sql);
+            }
+            return $this->render( $this->jerarquia($this->branca) , true);
+        }
+        // Si està definit ID és un update...
+        if (isset($this->json['id'])) {
+            $sql= "UPDATE idioma set text='".str_replace("'","\\'",$this->json['name'])."' where registreid=".$this->json['id']." and idioma='".$this->json['idioma']."' and tipus='jerarquia';";
+            $this->db->sql($sql);
+            return $this->render( $this->jerarquia($this->branca) , true);
+        }
+        // Si no està definit és un insert...
         $sql="BEGIN;";
         $this->db->sql($sql);
         $sql="INSERT INTO jerarquia (pare) VALUES (".$this->json['parent_id'].");";
@@ -400,14 +524,14 @@ $_SESSION['id']= true;
         $this->db->sql($sql);
         $sql="COMMIT;";
         $this->db->sql($sql);
-		return $this->render($this->jerarquia(),true);
+		return $this->render($this->jerarquia($this->branca),true);
     }
     
     private function exe() {
 		// si únicament estem consultant:
 		if (empty($this->json)) return $this->select();
 		// id no existeix: inserció
-		if ($this->nom=='competicio') return $this->guardanode();
+		if ($this->nom=='nodes') return $this->guardanode();
 		if (empty($this->json['id'])) {
 			$camps['slug']= $this->slugunic($camps['slug']);
 echo '/*SLUG*/',$camps['slug'];
@@ -434,7 +558,11 @@ echo '/*SLUG*/',$camps['slug'];
     }
     
     private function select() {
-		$sql= "SELECT * FROM fedpival.".($this->nom)." where ".implode(' and ',$this->wheres).$this->order.$this->limit;
+        $database='fedpival';
+        //if ($this->nom=='equips') $database='fedpival_old';
+        if ($this->nom=='equips') $this->nom='equip';
+		$sql= "SELECT * FROM ".$database.".".($this->nom)." where ".implode(' and ',$this->wheres).$this->order.$this->limit;
+//echo $sql;exit;
 		$this->db->sql( $sql );
 		$result= $this->db->getResult();
 		// si no és llistar un id, retalle camps llargs i pose el·lipsi "..."
