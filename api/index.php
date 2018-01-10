@@ -8,9 +8,9 @@
 include('mysqli_crud.php');
 
 /// mostrar errors
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);	
-error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);	
+//error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
 
 class FedpivalAPI {
 	
@@ -378,26 +378,37 @@ $_SESSION['id']= true;
 	
 	private function editaelement($id) {
 	    $data= $this->json;
+	    if (isset($data[delete_id])) {
+	        $this->db->sql(" START TRANSACTION;");
+	        $this->db->sql(" DELETE FROM idioma WHERE registreid=".$data[delete_id]);
+	        $this->db->sql(" DELETE FROM pagina WHERE id=".$data[delete_id]);
+	        $this->db->sql(" COMMIT;");
+	        $this->render($this->contingutnode($id), true);
+	        exit;
+	    }
 	    if (isset($data[id])) { // UPDATE!
 	        $camps= [];
 	        foreach($data as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."='".$val."'");
 	        $camps= implode(',',$camps);
 	        $sql= "START TRANSACTION;";
 	        $this->db->sql( $sql );
-	        $sql= "UPDATE pagina SET ".$camps." where id=".$data['id']."; ";
-	        $this->db->sql( $sql );
 	        if (isset($data['titol'])) {
 	            $sql= " UPDATE idioma SET text= '".$data['titol']."' WHERE registreid=".$data['id']." AND idioma='".$this->idioma."' AND tipus='element' AND camp='titol';";
 	            $this->db->sql( $sql );
+	            unset($data['titol']);
 	        }
 	        if (isset($data['contingut'])) {
 	            $sql= " UPDATE idioma SET text= '".$data['contingut']."' WHERE registreid=".$data['id']." AND idioma='".$this->idioma."' AND tipus='element' AND camp='contingut';";
 	            $this->db->sql( $sql );
+	            unset($data['contingut']);
 	        }
+	        $sql= "UPDATE pagina SET ".$camps." where id=".$data['id']."; ";
+	        $this->db->sql( $sql );
 	        $sql= 'COMMIT;';
     		$this->db->sql( $sql );
     		$result= $this->db->getResult();
 	    } else { // INSERT!
+	        if (empty($data['ordre'])) $data['ordre']=0;
 	        $sql= "START TRANSACTION;";
 	        $this->db->sql( $sql );
 	        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta) values ('".$data['tipus']."',".$id.",".$data['ordre'].",'".$data['url']."','".date('YmdHis')."'); ";
@@ -420,18 +431,37 @@ $_SESSION['id']= true;
     		$this->db->sql( $sql );
     		$result= $this->db->getResult();
 	    }
-		$this->render($this->jerarquia($id), true);
+		$this->render($this->contingutnode($this->branca), true);
 	    exit;
 	}
     
     private function contingutnode($id) {
-		$sql= "SELECT * FROM pagina where jerarquia=".$id." and ".implode(' and ',$this->wheres).$this->order;
+		$sql= "SELECT * FROM _element_".$this->idioma." WHERE jerarquia=".$id." and ".implode(' and ',$this->wheres).$this->order;
 		$this->db->sql( $sql );
 		$result= $this->db->getResult();
-		$sql= "select * from partida where jerarquia=".$id;
+		foreach($result as $i=>$elm) if ($elm['tipus']=='J') { 
+		    // als de tipus J (partides) predefinisc camp partides com array i detecte el primer per assignar-li les partides del node
+		    $bloquepartidas= $i;
+		    $result[$i]['partides']= array();
+		    break;
+		}
+		$sql= "SELECT *, (select id from FROM partida WHERE jerarquia=".$id;
+		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and p.jerarquia=".$id;
 		$this->db->sql( $sql );
 		$result2= $this->db->getResult();
-		array_push($result,array('id'=>0,'tipus'=>'-','partides'=>$result2));
+		foreach($result2 as $i=>$elm) {
+		    $result2[$i]['lloc']= array('id'=>$result2[$i]['lloc'], 'nom'=>$result2[$i]['nomlloc']);
+		    unset($result2[$i]['nomlloc']);
+		    $result2[$i]['local']= array('id'=>$result2[$i]['local'], 'nom'=>$result2[$i]['nomlocal']);
+		    unset($result2[$i]['nomlocal']);
+		    $result2[$i]['visitant']= array('id'=>$result2[$i]['visitant'], 'nom'=>$result2[$i]['nomvisitant']);
+		    unset($result2[$i]['nomvisitant']);
+		}
+		if (!empty($result2)) { // nomes si hi ha partides...
+    		if (!isset($bloquepartidas)) array_push($result,array('id'=>0,'tipus'=>'H','contingut'=>'Error: hi ha partides orfes en aquest node'));
+		    else $result[$bloquepartidas]['partides']= $result2;
+		}
+		//array_push($result,array('id'=>0,'tipus'=>'J','partides'=>$result2));
         return $result;
         /*
 			nodeContent:[
@@ -533,9 +563,7 @@ $_SESSION['id']= true;
 		// id no existeix: inserció
 		if ($this->nom=='nodes') return $this->guardanode();
 		if (empty($this->json['id'])) {
-			$camps['slug']= $this->slugunic($camps['slug']);
-echo '/*SLUG*/',$camps['slug'];
-
+			if (!empty($camps['slug'])) $camps['slug']= $this->slugunic($camps['slug']);
 			$camps= $this->validar();
 //print_r($this->json);
 			$keys= implode(',',array_keys($camps));
@@ -552,9 +580,9 @@ echo '/*SLUG*/',$camps['slug'];
 			$pairs= implode(', ',$pairs);
 			$sql='update '.($this->nom).' set '.$pairs.' where id='.($this->id);
 		}
+		//die($sql);
 		$res= @$this->db->sql( $sql );
-		die($sql);
-		if ($res) $this->error('OK'); else $this->error('500 ERROR '.$sql,500);
+		if ($res || strtoupper(substr($sql,0,6))!='SELECT') $this->error('OK'); else $this->error('500 ERROR '.$sql,500);
     }
     
     private function select() {

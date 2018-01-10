@@ -61,7 +61,7 @@ tipus d'elements:  P agina | N oticia | A cte | I matge | H TML | F itxer | J oc
 /node/competicio // jerarquia de competicions
 /node/{id} // obtindre els elements/blocs del node {id} de la jerarquia
 /node/{id} ? POST // insertar element/bloc de contingut en aquest node (indicant tipus ! )
-/node/{id}/element/{id2} ? POST // update element/bloc de contingut concret (tmb per a canviar l'ordre)
+/node/{id} ? POST // update element/bloc de contingut concret (tmb per a canviar l'ordre)
   tipus: Html - Imatge - Joc
 
 ---------------------------------
@@ -108,3 +108,10 @@ la selecció.
 
 Hola Alfons, ho he comentat en Josep, Fran i Rixard i ens sembla bé si el primer graó és el jugador, de baix cap a dalt, ja que pot haver molts canvis enmig d'un campionat respecte els jugadors, la resta de info és manté estable.
 En quant a marcar un inici i final de temporada (p.e.2016-2017) no ho vegem important, de fet és més interessant el número d'edició de la competició que no l'any ja que alguns varien de dates o solpaen a dos anys diferents. Per tant si es puguera ficar manualment l'inici i finalització d'una edició de X campionat ens sobra.
+
+
+
+
+
+
+{"id":"18807","tipus":"I","jerarquia":"1","ordre":"0","titol_es":null,"titol_val":null,"contingut_es":null,"contingut_val":null,"url":"/static/upload/2018/01/16112451473_b56e8a3ff9_o.jpg","json":null,"alta":"20180109190937","modificacio":null,"publicacio":null,"baixa":null}

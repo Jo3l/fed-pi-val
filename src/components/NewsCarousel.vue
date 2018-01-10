@@ -133,6 +133,7 @@ export default {
 	    border-right: 2px solid white;
     	border-left: 2px solid white;
 		cursor:e-resize;
+		background-color:grey;
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;

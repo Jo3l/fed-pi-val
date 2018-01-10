@@ -22,15 +22,15 @@
 		<!-- aço es admin -->
 		<div class="nodeContentEditable" v-if="!show">
 			<draggable v-model="nodeContent"  :options="{handle:'.drag',chosenClass:'floating'}" @end="setOrder()" preventOnFilter="true">
-				<div class="nodeContentElement" v-for="(element, key) in nodeContent">
+				<div class="nodeContentElement" v-for="(element, key) in nodeContent" v-if="nodeContent!=null">
 					
-					<i class="remove" @click="removeContent(key)"></i>
+					<i class="remove" @click="removeContent(element)"></i>
 					<i class="drag"></i>
 					
 					<img class="teaserImg" v-if="element.tipus == 'I' && element.url" :src="element.url">
 					<div class="buttonContainer" v-if="element.tipus == 'I'">
 	                	<ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', element, element.url, 'img')">{{$i18n.t('image.uploadImages')}}</ui-button>
-						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveContent(element)">{{$i18n.t('common.save')}}</ui-button>
+						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
 					</div>
 
 					
@@ -47,7 +47,7 @@
     				
 					</article>
 					<div class="buttonContainer" v-if="element.tipus == 'H'">
-						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveContent(element)">Desar</ui-button>
+						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">Desar</ui-button>
 					</div>
 					<div class="partida" v-if="element.tipus == 'J'">
 						<table class="table results">
@@ -63,7 +63,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="(element, key) in nodeContent[key].partides">
+								<tr v-for="(element, key) in nodeContent[key].partides" v-if="nodeContent[key].partides.length > 0">
 									<td>{{element.data.toString('M/d/yyyy') }}</td>
 									<td>{{element.lloc.nom}}</td>
 									<td>{{element.local.nom}}</td>
@@ -162,7 +162,7 @@
 					<span v-if="element.tipus == 'F'">{{element.url}}</span>
 					<div class="buttonContainer" v-if="element.tipus == 'F'">
 						<ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', element, element.url, 'pdf')">{{$i18n.t('common.uploadPdf')}}</ui-button>
-						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveContent(element)">Desar</ui-button>
+						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">Desar</ui-button>
 					</div>
 					
 				</div>
@@ -186,6 +186,13 @@
                 <ui-button @click="closeModal('uploadModal')">{{$i18n.t('modal.cancel')}}</ui-button>
             </div>
         </ui-modal>
+
+<pre>
+	
+	{{nodeContent}}
+	
+</pre>
+
 
 	    </div>
     </transition>
@@ -241,7 +248,7 @@ export default {
                 result: () => {
                 
                   //const url = window.prompt('Enter the image URL')
-                  this.openModal('uploadImage', {url:''}, '');
+                  this.openModal('uploadModal', {url:''}, '', 'img');
                   //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
                 }
               },
@@ -324,6 +331,18 @@ export default {
 		}
 	},
 	methods: {
+		delEmptyNodes:function(array) {
+		
+			var newArray = [];
+			for(var i = 0; i < array.length; i++) {
+				
+					if(array[i].tipus) {
+						newArray.push(array[i]);
+					}
+			}
+			
+			return newArray;
+		},
 		openModal:function(ref, object, cancel, tipo) {
 			this.$refs.upload.activate(tipo);
 			this.selectedCancel = cancel;
@@ -378,17 +397,31 @@ export default {
 		*/
 		
 		},
-		getMatch: function(){
+		getNode: function(){
+			
 	        var vm = this;
 	        
-	        vm.nodeContent = vm.deleteMe;
-	        
-			for(var i = 0; i < vm.nodeContent.length; i++) {
-				if(vm.nodeContent[i].tipus == 'J') {
-					vm.nodeContent[i].newGame = { data:new Date(), lloc:'', local:'', visitant:'', resVisitant:'', resLocal:'', blocId:''};
-				}
-			}
+	    	vm.$http.get('/node/'+vm.nodeId)
+	        .then(function (response) {
 
+	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	            
+		        for(var i = 0; i < vm.nodeContent.length; i++) {
+
+					if(vm.nodeContent[i].tipus == 'J') {
+						vm.nodeContent[i].newGame = { data:new Date(), lloc:'', local:'', visitant:'', resVisitant:'', resLocal:'', blocId:''};
+					}
+				}
+				
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+
+
+
+				
 		},
 		getPlaces: function(){
 	        var vm = this;
@@ -429,13 +462,47 @@ export default {
 			this.textbox_resLocal=false;
 			*/
 		},
+		saveBlock: function(block){
+			
+			var vm = this;
+	        
+	        vm.$http.post('/node/'+vm.nodeId, block)
+	        .then(function (response) {
+	        	
+	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	            
+		        for(var i = 0; i < vm.nodeContent.length; i++) {
+
+					if(vm.nodeContent[i].tipus == 'J') {
+						vm.nodeContent[i].newGame = { data:new Date(), lloc:'', local:'', visitant:'', resVisitant:'', resLocal:'', blocId:''};
+					}
+				}
+	
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+
+		},
 		saveMatch: function(gameBlock){
 			gameBlock.partides.push(gameBlock.newGame);
 			//POST al block gameBlock.id de this.newGame
 			this.resetMatch(gameBlock);
 		},
-		removeContent: function(index) {
-			this.nodeContent.splice( index, 1 );
+		removeContent: function(element) {
+
+			var vm=this;
+			vm.$http.post('/node/'+vm.nodeId, {'delete_id': element.id})
+	        .then(function (response) {
+	        	
+	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+	        
 		},
 		setOrder: function(){
 			var vm=this;
@@ -452,27 +519,31 @@ export default {
 			this.show = !this.show;
 		}, 
 		addContentImage: function() {
-			this.nodeContent.push({ tipus:'I', url:'' });
+			this.saveBlock({ tipus:'I', url:'' });
 		},
 		addContentHtml: function() {
-			this.nodeContent.push({ tipus:'H', titol:'', contingut:'' });
+			this.saveBlock({ tipus:'H', titol:'', contingut:'' });
 		},
 		addContentFile: function() {
-			this.nodeContent.push({ tipus:'F', titol:'', url:'' });
+			this.saveBlock({ tipus:'F', titol:'', url:'' });
 		},
 		addContentPartida: function() {
-			this.nodeContent.push({ tipus:'J', partides: [], newGame:{ data:new Date(), lloc:'', local:'',	visitant:'', resVisitant:'', resLocal:'', blocId:''} });
+			//this.saveBlock({ tipus:'J', partides: [], newGame:{ data:new Date(), lloc:'', local:'',	visitant:'', resVisitant:'', resLocal:'', blocId:''} });
+			this.saveBlock({ tipus:'J', partides: []});
 		}
 	},
 	mounted: function () {
-		this.getMatch();
-		this.setOrder();
+
 		//if authicathed
 		this.getTeams();
 		this.getPlaces();
+		
 	},
-	watch: {
-	
+	watch: { 
+      	nodeId: function(newVal, oldVal) {
+          this.getNode();
+          this.setOrder();
+        }
 	}
 }
 </script>

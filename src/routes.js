@@ -8,7 +8,6 @@ import Tournament from './components/Tournament.vue'
 import Form from './components/Form.vue'
 import SubRoutes from './components/SubRoutes.vue'
 import PageNotFound from './components/PageNotFound.vue'
-import FileManager from './components/FileManager.vue'
 
 export const routes = [
   {
@@ -156,11 +155,6 @@ export const routes = [
     path: '/login',
     name: 'login',
     component: Start,
-  },
-  {
-    path: '/filemanager',
-    name: 'filemanager',
-    component: FileManager,
   },
   {
     path: '/404',

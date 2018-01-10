@@ -63,6 +63,7 @@ export default {
     	max-height: 480px;
 	    background-size: cover;
 	    background-position: 50% 33%;
+	    background-color: grey;
 	    aside {
 			position: absolute;
 		    bottom: 0;
