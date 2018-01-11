@@ -47,11 +47,9 @@ tipus d'elements:  P agina | N oticia | A cte | I matge | H TML | F itxer | J oc
 /jugador/id/{id} ? POST // update jugador
 
 
-/partida // llistat partides
-/partida/id/{id} // dades partida
-/partida/j/{id} // llistat partides de la jerarquia
+/partida/{id} // llistat de partides de la jerarquia id (de moment no implementat)
 /partida/ ? POST // insert partida (indicar node jerarquia !)
-/partida/id/{id} ? POST // update partida
+/partida/ ? POST indicant id // update partida id
 
 // nodes fa referència al sistema jeràrquic... a les carpetes. El contingut s'emmagatzema en "pagines"
 //  i s'accedirà a cada element per separat per tal de poder-lo editar

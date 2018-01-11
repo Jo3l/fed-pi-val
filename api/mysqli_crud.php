@@ -69,6 +69,7 @@ class Database{
         if(!is_bool($query)){ 
             // If the query returns >= 1 assign the number of rows to numResults 
             $this->numResults = mysqli_num_rows($query); 
+            $this->result= array();
             // Loop through the query results by the number of rows returned 
             for($i = 0; $i < $this->numResults; $i++){ 
                 $r = mysqli_fetch_array($query); 
@@ -236,7 +237,7 @@ class Database{
      
     // Public function to return the data to the user 
     public function getResult(){ 
-        $val = $this->result; 
+        $val = $this->result;
         $this->result = array(); 
         return $val; 
     } 

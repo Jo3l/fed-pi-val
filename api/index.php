@@ -266,7 +266,14 @@ $_SESSION['id']= true;
 			    $this->nom='_producte_'.$this->idioma;
 			    break;
 			case "jerarquia":
+			    break;
 			case "partida":
+			    if(!empty($this->json)) {
+			        // reconvertisc els objectes lloc, visitant i local en els seus ids per a guardar bé
+			        if (is_array($this->json['lloc'])) $this->json['lloc']= $this->json['lloc']['id'];
+			        if (is_array($this->json['local'])) $this->json['local']= $this->json['local']['id'];
+			        if (is_array($this->json['visitant'])) $this->json['visitant']= $this->json['visitant']['id'];
+			    }
 			    break;
 			case "acte":
 		    	array_push( $this->wheres, "tipus='A'" );
@@ -383,7 +390,7 @@ $_SESSION['id']= true;
 	        $this->db->sql(" DELETE FROM idioma WHERE registreid=".$data[delete_id]);
 	        $this->db->sql(" DELETE FROM pagina WHERE id=".$data[delete_id]);
 	        $this->db->sql(" COMMIT;");
-	        $this->render($this->contingutnode($id), true);
+	        $this->render($this->contingutnode($this->branca), true);
 	        exit;
 	    }
 	    if (isset($data[id])) { // UPDATE!
@@ -439,12 +446,7 @@ $_SESSION['id']= true;
 		$sql= "SELECT * FROM _element_".$this->idioma." WHERE jerarquia=".$id." and ".implode(' and ',$this->wheres).$this->order;
 		$this->db->sql( $sql );
 		$result= $this->db->getResult();
-		foreach($result as $i=>$elm) if ($elm['tipus']=='J') { 
-		    // als de tipus J (partides) predefinisc camp partides com array i detecte el primer per assignar-li les partides del node
-		    $bloquepartidas= $i;
-		    $result[$i]['partides']= array();
-		    break;
-		}
+		if (empty($result)) return [];
 		$sql= "SELECT *, (select id from FROM partida WHERE jerarquia=".$id;
 		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and p.jerarquia=".$id;
 		$this->db->sql( $sql );
@@ -458,72 +460,9 @@ $_SESSION['id']= true;
 		    unset($result2[$i]['nomvisitant']);
 		}
 		if (!empty($result2)) { // nomes si hi ha partides...
-    		if (!isset($bloquepartidas)) array_push($result,array('id'=>0,'tipus'=>'H','contingut'=>'Error: hi ha partides orfes en aquest node'));
-		    else $result[$bloquepartidas]['partides']= $result2;
+    		array_push($result,array('id'=>0,'tipus'=>'J','partides'=>$result2));
 		}
-		//array_push($result,array('id'=>0,'tipus'=>'J','partides'=>$result2));
         return $result;
-        /*
-			nodeContent:[
-			{
-				type:'image',
-				url:'/static/img/noticies/foto5961.jpg',
-				id:1
-			}, 
-			{
-				type:'html',
-				title:'Esto es el titulo',
-				content:'Esto es el <b>contenido</b>',
-				id:2
-			},
-			{
-				type:'file',
-				title:'Esto es un archivo',
-				url:'/static/img/noticies/foto5961.jpg',
-				id:3
-			},
-			{
-				type:'partida',
-				id:6,
-				partides: [
-				{
-					data:'1111',
-					lloc: {nom:'1 el lloc', id:45},
-					local: {nom:'1 local', id:45},
-					visitant: {nom:'1 visitant', id:45},
-					resVisitant:'5555',
-					resLocal:'666',
-					id:12,
-					bloc:6
-				},
-				{
-					data:'2222',
-					lloc: {nom:'2 el lloc', id:45},
-					local: {nom:'2 local', id:45},
-					visitant: {nom:'2 visitant', id:45},
-					resVisitant:'5555',
-					resLocal:'666',
-					id:13,
-					bloc:6
-				},
-				{
-					data:'3333',
-					lloc: {nom:'3el lloc', id:45},
-					local: {nom:'3 local', id:45},
-					visitant: {nom:'3 visitant', id:45},
-					resVisitant:'5555',
-					resLocal:'666',
-					id:14,
-					bloc:6
-				}
-				]
-			}
-			],
-			
-		}
-	},
-        
-        */
     }
     
     private function guardanode() {
@@ -569,16 +508,17 @@ $_SESSION['id']= true;
 			$keys= implode(',',array_keys($camps));
 			$values= "'".implode("','",array_values($camps))."'";
 			$sql="insert into ".$this->nom." (".$keys.") values (".$values.");";
+//echo $sql;
 		} else {
 		// id existeix: edició
 			// comprovar q id existeix
 			if (empty($this->json['modificacio'])) $this->json['modificacio']= date('YmdHis');
-			$this->db->sql('select id from '.($this->nom).' where id='.$this->id);
+			$this->db->sql('select id from '.($this->nom).' where id='.$this->json['id']);
 			if ($this->db->numRows()!=1) die('ERROR: No existeix la fila o hi ha més d\'una');
 			$pairs= array();
 			foreach($this->json as $key=>$value) array_push($pairs,$key."='".$value."'");
 			$pairs= implode(', ',$pairs);
-			$sql='update '.($this->nom).' set '.$pairs.' where id='.($this->id);
+			$sql='update '.($this->nom).' set '.$pairs.' where id='.($this->json['id']);
 		}
 		//die($sql);
 		$res= @$this->db->sql( $sql );
@@ -616,6 +556,3 @@ $_SESSION['id']= true;
 
 $api= new FedpivalAPI();
 $api->init();
-	
-
-
