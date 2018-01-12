@@ -20,7 +20,7 @@
 			    :text="$i18n.t('image.uploadAndCut')"
 			    class="uploader"
 				crop="local"
-				cropRatio="auto"
+				cropRatio="2.26: 1"
 				compress="50"
 			    url="/api/filemanager.php"
 				@imageuploaded="getData(uploadFolder)"

@@ -7,7 +7,7 @@
 		<div class="nodeContentEditable" v-if="show">
 				<div v-bind:class="{ nodeContentElement:true, autenticated: show }" v-for="(element, key) in nodeContent">
 					
-					<img v-if="element.tipus == 'I'" :src="element.url">
+					<img v-if="element.tipus == 'I'" :src="element.url" class="wide">
 
 					<article v-if="element.tipus == 'H'">
 						<h2 v-if="nodeContent[key].titol !== null">{{nodeContent[key].titol}}</h2>
@@ -27,7 +27,9 @@
 					<i class="remove" @click="removeContent(element)"></i>
 					<i class="drag"></i>
 					
-					<img class="teaserImg" v-if="element.tipus == 'I' && element.url" :src="element.url">
+					
+					<img class="teaserImg wide" v-if="element.tipus == 'I' && element.url" :src="element.url">
+					
 					<div class="buttonContainer" v-if="element.tipus == 'I'">
 	                	<ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', element, element.url, 'img')">{{$i18n.t('image.uploadImages')}}</ui-button>
 						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
@@ -81,7 +83,7 @@
 							 <h3>Nova Partida</h3>
 							 <label>Data
 							
-							 <vue-datepicker-local v-model="element.newGame.data" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
+							 <vue-datepicker-local v-model="newGame.data" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
 							 </label>
 							 
 							<ui-select
@@ -90,9 +92,9 @@
 				                label="Lloc"
 				                :keys="{ label: 'nom'}"
 				                :options="places"
-				                v-model="element.newGame.lloc"
+				                v-model="newGame.lloc"
 				                error="This field is required"
-				                :invalid="textbox_lloc && element.newGame.lloc.length === 0"
+				                :invalid="textbox_lloc && newGame.lloc.length === 0"
 				                @touch="textbox_lloc = true"
 				                searchPlaceholder=""
 				            ></ui-select>
@@ -103,9 +105,9 @@
 				                label="Local"
 				                :keys="{ label: 'nom'}"
 				                :options="teams"
-				                v-model="element.newGame.local"
+				                v-model="newGame.local"
 				                error="This field is required"
-				                :invalid="textbox_local && element.newGame.local.length === 0"
+				                :invalid="textbox_local && newGame.local.length === 0"
 				                @touch="textbox_local = true"
 				                searchPlaceholder=""
 				            ></ui-select>
@@ -116,9 +118,9 @@
 				                label="Visitant"
 				                :keys="{ label: 'nom'}"
 				                :options="teams"
-				                v-model="element.newGame.visitant"
+				                v-model="newGame.visitant"
 				                error="This field is required"
-				                :invalid="textbox_visitant && element.newGame.visitant.length === 0"
+				                :invalid="textbox_visitant && newGame.visitant.length === 0"
 				                @touch="textbox_visitant = true"
 				                searchPlaceholder=""
 				            ></ui-select>
@@ -130,7 +132,7 @@
 				                label="Resultat visitant"
 				                :min="0"
 								type="number"
-				                v-model="element.newGame.resVisitant"
+				                v-model="newGame.resVisitant"
 				            ></ui-textbox>
 				            
 							 <ui-textbox
@@ -140,11 +142,11 @@
 				                label="Resultat local"
 								type="number"
 								:min="0"
-				                v-model="element.newGame.resLocal"
+				                v-model="newGame.resLocal"
 				            ></ui-textbox>
 							<div class="buttonContainer">
 								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Netejar</ui-button>
-								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(nodeContent[key])">Desar Partida</ui-button>
+								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(newGame)">Desar Partida</ui-button>
 							</div>
 
 						</div>
@@ -176,7 +178,7 @@
                 <ui-icon-button @click="addContentHtml" tooltip="Insertar Contenido" size="small" icon="font_download" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentFile" tooltip="Insertar archivo" size="small" icon="file_upload" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
-                <ui-icon-button @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>
+                <ui-icon-button @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary" v-if="!gameOn"></ui-icon-button>
         </div>
         
         <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
@@ -247,7 +249,6 @@ export default {
                 name: 'image',
                 result: () => {
                 
-                  //const url = window.prompt('Enter the image URL')
                   this.openModal('uploadModal', {url:''}, '', 'img');
                   //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
                 }
@@ -260,9 +261,7 @@ export default {
                 }
               }
             ],
-			
-			
-			
+
 			show:false,
 			newOrder:[],
 			customToolbar: [
@@ -275,62 +274,20 @@ export default {
 			  ['clean']                                         // remove formatting button
 			],
 			nodeContent:[],
-			deleteMe:[
-			{
-				tipus:'I',
-				url:'/static/img/noticies/foto5961.jpg',
-				ordre:1
-			}, 
-			{
-				tipus:'H',
-				titol:'Esto es el titulo',
-				contingut:'Esto es el <b>contenido</b>',
-				ordre:2
-			},
-			{
-				tipus:'F',
-				titol:'Esto es un archivo',
-				url:'/static/img/noticies/foto5961.jpg',
-				ordre:3
-			},
-			{
-				tipus:'J',
-				ordre:4,
-				partides: [
-				{
-					data:'1111',
-					lloc: {nom:'1 el lloc', id:45},
-					local: {nom:'1 local', id:45},
-					visitant: {nom:'1 visitant', id:45},
-					resVisitant:'5555',
-					resLocal:'666',
-					id:12,
-				},
-				{
-					data:'2222',
-					lloc: {nom:'2 el lloc', id:45},
-					local: {nom:'2 local', id:45},
-					visitant: {nom:'2 visitant', id:45},
-					resVisitant:'5555',
-					resLocal:'666',
-					id:13,
-				},
-				{
-					data:'3333',
-					lloc: {nom:'3el lloc', id:45},
-					local: {nom:'3 local', id:45},
-					visitant: {nom:'3 visitant', id:45},
-					resVisitant:'5555',
-					resLocal:'666',
-					id:14,
-				}
-				]
-			}
-			],
+			newGame:{}
 			
 		}
 	},
 	methods: {
+		addNewGame: function(content) {
+			var vm=this;
+	        for(var i = 0; i < content.length; i++) {
+
+				if(content[i].tipus == 'J') {
+					vm.newGame = { data:new Date(), lloc:'', local:'', visitant:'', resVisitant:'0', resLocal:'0', blocId:content[i].id, jerarquia: vm.nodeId};
+				}
+			}
+		},
 		delEmptyNodes:function(array) {
 		
 			var newArray = [];
@@ -364,6 +321,7 @@ export default {
 			console.log(element);
 			var vm = this;
 	        
+	    	if(!Number.isInteger(vm.nodeId)) return false; //evitem que faça posts a node si no tenim el nodeId del prop
 	        vm.$http.post('/node/'+this.nodeId, element)
 	        .then(function (response) {
 	            
@@ -405,30 +363,19 @@ export default {
 	        .then(function (response) {
 
 	            vm.nodeContent = vm.delEmptyNodes(response.data);
-	            
-		        for(var i = 0; i < vm.nodeContent.length; i++) {
-
-					if(vm.nodeContent[i].tipus == 'J') {
-						vm.nodeContent[i].newGame = { data:new Date(), lloc:'', local:'', visitant:'', resVisitant:'', resLocal:'', blocId:''};
-					}
-				}
+	            vm.addNewGame(vm.nodeContent);
 				
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-	        
-
-
-
-				
 		},
 		getPlaces: function(){
 	        var vm = this;
 	        vm.$http.get('trinquet')
 	        .then(function (response) {
 	            vm.places = response.data;
-
+	            vm.places.unshift({id:null, nom:'---'});
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -445,38 +392,28 @@ export default {
 	            console.log(error);
 	        });
 		},
-		resetMatch: function(gameBlock) {
-			/*
-			gameBlock.newGame={
-					data:new Date(),
-					lloc:'',
-					local:'',
-					visitant:'',
-					resVisitant:'',
-					resLocal:''
-			};
-			this.textbox_lloc=false;
-			this.textbox_local=false;
-			this.textbox_visitant=false;
-			this.textbox_resVisitant=false;
-			this.textbox_resLocal=false;
-			*/
+		resetMatch: function() {
+			var vm = this;
+			
+			vm.addNewGame(vm.nodeContent);
+
+			vm.textbox_lloc=false;
+			vm.textbox_local=false;
+			vm.textbox_visitant=false;
+			vm.textbox_resVisitant=false;
+			vm.textbox_resLocal=false;
+			
 		},
 		saveBlock: function(block){
 			
 			var vm = this;
-	        
+
+	        if(!Number.isInteger(vm.nodeId)) return false; //evitem que faça posts a node si no tenim el nodeId del prop
 	        vm.$http.post('/node/'+vm.nodeId, block)
 	        .then(function (response) {
 	        	
 	            vm.nodeContent = vm.delEmptyNodes(response.data);
-	            
-		        for(var i = 0; i < vm.nodeContent.length; i++) {
-
-					if(vm.nodeContent[i].tipus == 'J') {
-						vm.nodeContent[i].newGame = { data:new Date(), lloc:'', local:'', visitant:'', resVisitant:'', resLocal:'', blocId:''};
-					}
-				}
+	            vm.addNewGame(vm.nodeContent);
 	
 	        })
 	        .catch(function (error) {
@@ -485,13 +422,32 @@ export default {
 
 		},
 		saveMatch: function(gameBlock){
-			gameBlock.partides.push(gameBlock.newGame);
-			//POST al block gameBlock.id de this.newGame
-			this.resetMatch(gameBlock);
+			var vm = this;
+			
+			gameBlock.data = gameBlock.data.toString('yyyyMMddHHmmss');
+			
+	        for(var i = 0; i < vm.nodeContent.length; i++) {
+				if(vm.nodeContent[i].tipus == 'J') {
+
+			        vm.$http.post('/partida', gameBlock)
+			        .then(function (response) {
+			        	
+			            vm.nodeContent = vm.delEmptyNodes(response.data);
+						vm.addNewGame(vm.nodeContent);
+			
+			        })
+			        .catch(function (error) {
+			            console.log(error);
+			        });
+				}
+			}
+			vm.resetMatch(gameBlock);
 		},
 		removeContent: function(element) {
 
 			var vm=this;
+			if(!Number.isInteger(vm.nodeId)) return false; //evitem que faça posts a node si no tenim el nodeId del prop
+
 			vm.$http.post('/node/'+vm.nodeId, {'delete_id': element.id})
 	        .then(function (response) {
 	        	
@@ -544,6 +500,18 @@ export default {
           this.getNode();
           this.setOrder();
         }
+	},
+	 computed: {
+	    gameOn: function () {
+	    	var vm = this;
+	      	for(var i = 0; i < vm.nodeContent.length; i++) {
+				if(vm.nodeContent[i].tipus=="J") {
+					return true;
+				}
+
+			}
+			return false;
+	    }
 	}
 }
 </script>
@@ -662,6 +630,9 @@ export default {
 	height:initial!important;
 	min-height:100px;
 	border-bottom: 1px dashed #ccc;
+	img{
+		max-width:100%;
+	}
 }
 
 .nodeContentEditable {
@@ -685,6 +656,7 @@ export default {
 	    &.autenticated {
 		margin:0;
 		border:none;
+		padding:0;
 		}
 		&.floating {
 		    border: 2px dashed #87212e;
@@ -695,11 +667,19 @@ export default {
 		}
 		
 		.teaserImg, &>img {
-			object-fit: cover;
 		    max-width: 100%;
 		    max-height: 480px;
 		    margin: 0 auto 20px auto;
-		    display: block;
+
+		    &.wide {
+		    	margin:0;
+		    	max-width:initial;
+		    	object-fit: cover;
+			    max-height: 480px;
+			    width: 100%;
+			    object-position: 50% 50%;
+		    }
+		    
 		}
 		
 		.ql-editor {
