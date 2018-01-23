@@ -8,9 +8,9 @@
 include('mysqli_crud.php');
 
 /// mostrar errors
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);	
-//error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
 
 class FedpivalAPI {
 	
@@ -83,8 +83,9 @@ class FedpivalAPI {
     private function parse($path) {
     	global $_SESSION, $_POST;
     	
-		$request= explode('/',$path);
+		$this->request= $request= explode('/',$path);
 		$this->nom= $request[2];
+        $this->branca= $request[3];
 		$this->json= json_decode(file_get_contents('php://input'),true);
 		if (!empty($this->json) || $this->nom=='auth') {
 			// només deixa continuar si s'està autenticat o si no ho està però està intentant (usuari)
@@ -221,19 +222,47 @@ $_SESSION['id']= true;
 		    case 'arxius':
 		    case 'archivo':
 		    case 'arxiu':
-		    	
 		    	echo 'lolailo';
 		    	break;
-		    	
 		    case 'struct':
         		$this->columnes();
         		$this->render($this->tots,true);
         		exit;
 		        break;
+			case "partida":
+			    if (!empty($this->json)) {
+			        // reconvertisc els objectes lloc, visitant i local en els seus ids per a guardar bé
+			        if (is_array($this->json['lloc'])) $this->json['lloc']= $this->json['lloc']['id'];
+			        if (is_array($this->json['local'])) $this->json['local']= $this->json['local']['id'];
+			        if (is_array($this->json['visitant'])) $this->json['visitant']= $this->json['visitant']['id'];
+			        //$this->json['resultatlocal']= $this->json['resLocal'];
+			        //$this->json['resultatvisitant']= $this->json['resVisitant'];
+			        unset($this->json['blocId']);
+			        //unset($this->json['resLocal']);
+			        //unset($this->json['resVisitant']);
+			    }
+			    break;
 		    case "nodes":
 		    case "node":
-		        $this->branca= $request[3]; // null=all | competicio | federacio | {id}
-		        if (!empty($this->json)) $this->editaelement($this->branca);
+                //node // jerarquia completa
+                //node/federacio // jerarquia de federació
+                //node/competicio // jerarquia de competicions
+                //node/{id} // obtindre els elements/blocs del node {id} de la jerarquia
+                //node/{id} ? POST // insertar nou node (no indicar tipus i s'enten que es node de jerarquia)
+                //node/{id} ? POST // insertar element/bloc de contingut en aquest node (indicant tipus ! )
+                //node/{id} ? POST // update node existent (no indicar tipus i s'enten que es node de jerarquia)
+                //node/{id} ? POST // update element/bloc de contingut concret (tmb per a canviar l'ordre)		        
+		        if (!empty($this->json)) {
+		            // delete or update or insert (node o element o ordre)
+		            if ($request[4]=='ordre' || $request[3]=='ordre') $this->canviaordre($request[3]);
+    		        //if (isset($this->json['parent_id'])) $this->branca= $this->json['parent_id'];
+    		        if (!empty($this->json['delete_id'])) { // eliminar un element o un node
+    		            if (is_numeric($this->branca)) return $this->editaelement($this->branca); // es un element
+    		            else return $this->guardanode(); // es un node
+    		        }
+		            if ( empty($this->json['tipus']) ) return $this->guardanode(); // es un node de jerarquia
+		            return $this->editaelement($this->branca); // es un element de node
+		        }
 		        // si no es post/json, obtin nodes:
 		        if (is_numeric($this->branca)) $this->render($this->contingutnode($this->branca), true);
 		        $this->render($this->jerarquia($this->branca), true);
@@ -246,9 +275,17 @@ $_SESSION['id']= true;
 			    break;
 			case "trinquet":
 			case "equip":
-			case "equips":
 			case "jugador":
 			case "club":
+			    break;
+			case "equips":
+			    $this->nom= '_equip';
+			    break;
+			case "jugadors":
+			    $this->nom= '_jugador';
+			    break;
+			case "clubs":
+			    $this->nom= '_club';
 			    break;
 			case "noticia":
 				// select
@@ -266,14 +303,6 @@ $_SESSION['id']= true;
 			    $this->nom='_producte_'.$this->idioma;
 			    break;
 			case "jerarquia":
-			    break;
-			case "partida":
-			    if(!empty($this->json)) {
-			        // reconvertisc els objectes lloc, visitant i local en els seus ids per a guardar bé
-			        if (is_array($this->json['lloc'])) $this->json['lloc']= $this->json['lloc']['id'];
-			        if (is_array($this->json['local'])) $this->json['local']= $this->json['local']['id'];
-			        if (is_array($this->json['visitant'])) $this->json['visitant']= $this->json['visitant']['id'];
-			    }
 			    break;
 			case "acte":
 		    	array_push( $this->wheres, "tipus='A'" );
@@ -346,21 +375,26 @@ $_SESSION['id']= true;
 
     // funció que torna un array amb la estructura de competicions
     private function jerarquia($fill='competicions') {
-    	$this->db->sql("select * from _jerarquia order by id asc;");
+    	$this->db->sql("select *, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
 		$result= $this->db->getResult();
 		$resultids= array();
 		foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => $this->slugify($r['nom_'.$this->idioma] ) , 'name' => $r['nom_'.$this->idioma], 'fullSlug'=>'' ) );
 		unset($result);
     	$estructura= array();
+    	//echo '<pre>',print_r($resultids),'</pre>';
+    	$antilock=1500; // màxim de 1500 nodes
 		while (count($resultids)>1) {
-		    $last=array_pop($resultids);
+		    $last= array_pop($resultids);
 		    //if()
 		    $pareid= $last['pare'];
+		    //echo $last[id],' pare:',$last[pare],'<br/>';
 		    if (!isset($resultids[$pareid]['children'])) $resultids[$pareid]['children']= array();
 		    unset($last['nom_es']);
 		    unset($last['nom_val']);
 		    unset($last['pare']);
 		    array_push($resultids[$pareid]['children'], $last);
+		    //echo '<hr/><pre>',count($resultids),'-',$last[id],'-resultids:',implode(',',array_keys($resultids)),'</pre>';
+		    if ($antilock--<0) break;
 		}
 		$estructura= array_pop($resultids);
 	    unset($estructura['nom_es']);
@@ -387,7 +421,7 @@ $_SESSION['id']= true;
 	    $data= $this->json;
 	    if (isset($data[delete_id])) {
 	        $this->db->sql(" START TRANSACTION;");
-	        $this->db->sql(" DELETE FROM idioma WHERE registreid=".$data[delete_id]);
+	        $this->db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$data[delete_id]);
 	        $this->db->sql(" DELETE FROM pagina WHERE id=".$data[delete_id]);
 	        $this->db->sql(" COMMIT;");
 	        $this->render($this->contingutnode($this->branca), true);
@@ -443,37 +477,69 @@ $_SESSION['id']= true;
 	}
     
     private function contingutnode($id) {
+        $this->order= " order by ordre";
 		$sql= "SELECT * FROM _element_".$this->idioma." WHERE jerarquia=".$id." and ".implode(' and ',$this->wheres).$this->order;
+		//echo '/* ',$sql,' */';
 		$this->db->sql( $sql );
 		$result= $this->db->getResult();
-		if (empty($result)) return [];
-		$sql= "SELECT *, (select id from FROM partida WHERE jerarquia=".$id;
-		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and p.jerarquia=".$id;
-		$this->db->sql( $sql );
-		$result2= $this->db->getResult();
-		foreach($result2 as $i=>$elm) {
-		    $result2[$i]['lloc']= array('id'=>$result2[$i]['lloc'], 'nom'=>$result2[$i]['nomlloc']);
-		    unset($result2[$i]['nomlloc']);
-		    $result2[$i]['local']= array('id'=>$result2[$i]['local'], 'nom'=>$result2[$i]['nomlocal']);
-		    unset($result2[$i]['nomlocal']);
-		    $result2[$i]['visitant']= array('id'=>$result2[$i]['visitant'], 'nom'=>$result2[$i]['nomvisitant']);
-		    unset($result2[$i]['nomvisitant']);
-		}
-		if (!empty($result2)) { // nomes si hi ha partides...
-    		array_push($result,array('id'=>0,'tipus'=>'J','partides'=>$result2));
+		$ids_elements_partides= array();
+		if (!empty($result))
+    		foreach($result as $i=>$elm) if ($elm['tipus']='J') {
+    		    //$result[$i]['partides']= array();
+    		    array_push($ids_elements_partides,$elm['id']);
+    		}
+		if (count($ids_elements_partides)>0) {
+    		$sql= "SELECT *, (select id from FROM partida WHERE registreid in (".implode(',',$ids_elements_partides).");";
+    		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and registreid in (".implode(',',$ids_elements_partides).");";
+    		//echo '/*',$sql,'*/';
+    		$this->db->sql( $sql );
+    		$result2= $this->db->getResult();
+    		$partides= array();
+    		foreach($result2 as $i=>$elm) {
+    		    @$result2[$i]['lloc']= array('id'=>$result2[$i]['lloc'], 'nom'=>$result2[$i]['nomlloc']);
+    		    if (isset($result2[$i]['nomlloc'])) unset($result2[$i]['nomlloc']);
+    		    @$result2[$i]['local']= array('id'=>$result2[$i]['local'], 'nom'=>$result2[$i]['nomlocal']);
+    		    if (isset($result2[$i]['nomlocal'])) unset($result2[$i]['nomlocal']);
+    		    @$result2[$i]['visitant']= array('id'=>$result2[$i]['visitant'], 'nom'=>$result2[$i]['nomvisitant']);
+    		    if (isset($result2[$i]['nomvisitant'])) unset($result2[$i]['nomvisitant']);
+    		    if (!isset($partides[$result2[$i]['registreid']])) $partides[$result2[$i]['registreid']]= array();
+    		    array_push( $partides[$result2[$i]['registreid']], $result2[$i] );
+    		}
+    		//if (empty($result2)) $result2= array();
+    		foreach($result as $i=>$elm) {
+    		    if($elm['tipus']=='J') 
+    		        $result[$i]['partides']= $partides[$elm['id']];
+    		}
 		}
         return $result;
     }
     
-    private function guardanode() {
-        //$this->db->sql('insert into select id from '.($this->nom).' where id='.$this->id);
-        if ($this->branca=='ordre') {
+    private function canviaordre($nodeid) {
+        if ($nodeid=='ordre') { // canviant ordre de nodes
             foreach( $this->json as $elm ) {
                 $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
                 $this->db->sql($sql);
             }
             return $this->render( $this->jerarquia($this->branca) , true);
         }
+        foreach( $this->json as $elm) {
+            if ($elm['id']==0) continue;
+            $sql= "UPDATE pagina set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+            $this->db->sql($sql);
+        }
+        return $this->render( $this->contingutnode($this->branca) , true);
+    }
+    
+    private function guardanode() {
+        //$this->db->sql('insert into select id from '.($this->nom).' where id='.$this->id);
+	    if (isset($this->json['delete_id'])) {
+	        $this->db->sql(" START TRANSACTION;");
+	        $this->db->sql(" DELETE FROM idioma WHERE tipus='jerarquia' and registreid=".$this->json[delete_id]);
+	        $this->db->sql(" DELETE FROM jerarquia WHERE id=".$this->json[delete_id]);
+	        $this->db->sql(" COMMIT;");
+	        $this->render($this->jerarquia($this->branca), true);
+	        exit;
+	    }
         // Si està definit ID és un update...
         if (isset($this->json['id'])) {
             $sql= "UPDATE idioma set text='".str_replace("'","\\'",$this->json['name'])."' where registreid=".$this->json['id']." and idioma='".$this->json['idioma']."' and tipus='jerarquia';";
@@ -497,10 +563,10 @@ $_SESSION['id']= true;
     }
     
     private function exe() {
+		//echo '/*EXE ',print_r($this->json),'*/';
 		// si únicament estem consultant:
 		if (empty($this->json)) return $this->select();
 		// id no existeix: inserció
-		if ($this->nom=='nodes') return $this->guardanode();
 		if (empty($this->json['id'])) {
 			if (!empty($camps['slug'])) $camps['slug']= $this->slugunic($camps['slug']);
 			$camps= $this->validar();
@@ -522,13 +588,16 @@ $_SESSION['id']= true;
 		}
 		//die($sql);
 		$res= @$this->db->sql( $sql );
-		if ($res || strtoupper(substr($sql,0,6))!='SELECT') $this->error('OK'); else $this->error('500 ERROR '.$sql,500);
+		//if ($res || strtoupper(substr($sql,0,6))!='SELECT') $this->error('OK'); else $this->error('500 ERROR '.$sql,500);
+		//echo '/* ',$this->json['blocId'],',',$this->json['jerarquia'],'*/';
+		if ($this->nom=='partida') return $this->render( $this->contingutnode($this->json['jerarquia']) , true);
     }
-    
+     
     private function select() {
         $database='fedpival';
         //if ($this->nom=='equips') $database='fedpival_old';
-        if ($this->nom=='equips') $this->nom='equip';
+        //if ($this->nom=='equips') $this->nom='equip';
+        if (is_numeric($this->branca)) array_push($this->wheres,'id='.$this->branca);
 		$sql= "SELECT * FROM ".$database.".".($this->nom)." where ".implode(' and ',$this->wheres).$this->order.$this->limit;
 //echo $sql;exit;
 		$this->db->sql( $sql );

@@ -58,7 +58,9 @@ tipus d'elements:  P agina | N oticia | A cte | I matge | H TML | F itxer | J oc
 /node/federacio // jerarquia de federació
 /node/competicio // jerarquia de competicions
 /node/{id} // obtindre els elements/blocs del node {id} de la jerarquia
+/node/{id} ? POST // insertar nou node (no indicar tipus i s'enten que es node de jerarquia)
 /node/{id} ? POST // insertar element/bloc de contingut en aquest node (indicant tipus ! )
+/node/{id} ? POST // update node existent (no indicar tipus i s'enten que es node de jerarquia)
 /node/{id} ? POST // update element/bloc de contingut concret (tmb per a canviar l'ordre)
   tipus: Html - Imatge - Joc
 
