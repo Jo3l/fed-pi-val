@@ -1,10 +1,11 @@
 <template>
+	<transition name="fade">
 	<div class="componentContainer">
 		<div v-if=" type=='slider' ">
 			<h1>{{ $t('common.calendar') }}</h1>
 			<div class="buttonContainer">
-				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
-				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
+				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonFloatLeft"></ui-icon-button>
+				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonFloatRight"></ui-icon-button>
 			</div>
 	
 	
@@ -49,8 +50,8 @@
 		<div v-else="v-else">
 			<h1>{{ $t('common.calendar') }}</h1>
 			<div class="buttonContainer">
-				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonLeft"></ui-icon-button>
-				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonRight"></ui-icon-button>
+				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonFloatLeft"></ui-icon-button>
+				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonFloatRight"></ui-icon-button>
 			</div>
 	
 	
@@ -87,6 +88,7 @@
 		</div>
 		
 	</div>
+	</transition>
 </template>
 
 <script>

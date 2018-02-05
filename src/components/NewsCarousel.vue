@@ -5,7 +5,8 @@
 			<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" :paginationPadding=5 paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
 	
 			  <slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
-			    <article v-bind:style="{ 'background-image': 'url(' + noticia.url + ')' }">
+			  	
+			    <progressive-background class="articleP" :src="noticia.url">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
 					    	<small>{{ fixDate(noticia.alta) }}</small>
@@ -15,14 +16,16 @@
 					    	</section>
 				    	</div>
 			    	</router-link>
-			    </article>
+			    </progressive-background>
+			    
 			  </slide>
 			</carousel>
 		</div>
 		<div class="flex" v-else="v-else">
 
 			  <div class="multipleNews" v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale">
-			    <article v-bind:style="{ 'background-image': 'url(' + noticia.url + ')' }">
+			  	
+			    <progressive-background class="articleP" :src="noticia.url">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
 					    	<small>{{ fixDate(noticia.alta) }}</small>
@@ -32,7 +35,8 @@
 					    	</section>
 				    	</div>
 			    	</router-link>
-			    </article>
+			    </progressive-background>
+			    
 			  </div>
 		</div>
 
@@ -121,7 +125,8 @@ export default {
 }
 .newsCarousel {
 	a {text-decoration:none;color:black;}
-	article {
+	.articleP {
+		&>div{padding-bottom:initial!important;}
 	    min-height: 370px;
 	    overflow: hidden;
 	    background-size: 130%;
@@ -133,7 +138,6 @@ export default {
 	    border-right: 2px solid white;
     	border-left: 2px solid white;
 		cursor:e-resize;
-		background-color:grey;
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;
@@ -171,7 +175,8 @@ export default {
 	}
 	
 	a {text-decoration:none;color:black;}
-	article {
+	.articleP {
+		&>div{padding-bottom:initial!important;}
 		padding-top:50%;
 	    overflow: hidden;
 	    background-size: 130%;
@@ -194,6 +199,7 @@ export default {
 			margin:0;
 			line-height:1em;
 			font-size:1em;
+			text-shadow: 1px 1px 1px white;
 		}
 		
 		p {

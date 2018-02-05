@@ -3,11 +3,15 @@ import News from './components/News.vue'
 import SingleNews from './components/SingleNews.vue'
 import Calendar from './components/Calendar.vue'
 import Cart from './components/Cart.vue'
-import Clubs from './components/Clubs.vue'
-import Tournament from './components/Tournament.vue'
-import Form from './components/Form.vue'
+
 import SubRoutes from './components/SubRoutes.vue'
 import PageNotFound from './components/PageNotFound.vue'
+import OldBrowser from './components/OldBrowser.vue'
+
+import Jugadors from './components/admin/Jugadors.vue'
+import Jugador from './components/admin/Jugador.vue'
+import Clubs from './components/admin/Clubs.vue'
+import Equips from './components/admin/Equips.vue'
 
 export const routes = [
   {
@@ -155,6 +159,36 @@ export const routes = [
     path: '/login',
     name: 'login',
     component: Start,
+  },
+    {
+    path: '/admin/jugadors',
+    name: 'Jugadors',
+    component: Jugadors
+  },
+    {
+    path: '/admin/jugador/:jugadorId',
+    name: 'Jugador',
+    component: Jugador
+  },
+    {
+    path: '/admin/jugador/',
+    name: 'Nou Jugador',
+    component: Jugador
+  },
+    {
+    path: '/admin/equips',
+    name: 'Equips',
+    component: Equips
+  },
+    {
+    path: '/admin/clubs',
+    name: 'Clubs',
+    component: Clubs
+  },
+  {
+    path: '/oldBrowser',
+    name: 'oldBrowser',
+    component: OldBrowser
   },
   {
     path: '/404',

@@ -1,4 +1,5 @@
 <template>
+<transition name="fade">
   <div class="tree">
 
 		<ul class="breadcrumb-wrapper">
@@ -7,8 +8,8 @@
 					<ul class="vertical-menu" @click="updateBreadcrumb" v-if="bread.id==currentPageId">
 						
 						<draggable v-model="treeLevel.children" :options="{draggable:'li'}" @end="setOrder(true)">
-							<li v-for="leaf in treeLevel.children" :key="leaf.order">
-					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> -->
+							<li v-for="leaf in treeLevel.children" :key="leaf.order" v-bind:class="{ deleteable: !leaf.children && leaf.elements==0 }">
+					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> --> <em v-if="!leaf.children && leaf.elements==0" class="remove" @click="removeNode(leaf)"></em>
 					    	</li>
 						</draggable>
 
@@ -60,6 +61,7 @@
   
 
   </div>
+</transition>
 </template>
 
 <script>
@@ -95,8 +97,22 @@ export default {
       }
     },
     methods: {
-	test: function() {
-		console.log(this.$auth.isAuthenticated());
+	removeNode: function(node) {
+
+		var vm=this;
+		var root = this.$route.path.split('/')[2];
+		
+		vm.$http.post('/nodes/'+root, {'delete_id': node.id})
+        .then(function (response) {
+        	
+	        vm.tree = [response.data];
+            vm.updateBreadcrumb();
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+	        
 	},
 	setOrder: function(manual){
 		var vm=this;
@@ -228,12 +244,9 @@ export default {
     watch: { 
       	node: function(newVal, oldVal) { // watch it
       	
-          console.log('Prop changed: ', newVal, ' | was: ', oldVal);
           var root = this.$route.path.split('/')[2];
-		  console.log(this.$route.path);
 	      this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
-          
-          
+
         }
     },
     created: function () {
@@ -327,19 +340,11 @@ export default {
 			    display: list-item;
 			    padding: 3px 16px 0 0px;
 			    white-space: nowrap;
+
 				a {
 					color:#232323;
 					text-decoration:none;
 					text-transform: capitalize;
-
-					&:hover {
-						color: #fff;
-					    background-color: #87212e;
-					    padding: 3px 10px;
-    					margin-left: -10px;
-    					margin-right: -10px;
-					    border-radius: 20px;
-					}
 				}
 				i {
 				    cursor: n-resize;
@@ -352,6 +357,50 @@ export default {
 				    border-bottom: 1px solid #87212e;
 				    float:right;
 				    margin-top:8px;
+				}
+				
+				em.remove {
+					display:none;
+					cursor: pointer;
+				    width: 10px;
+				    height: 10px;
+				    margin-top: 5px;
+				    position: absolute;
+				    margin-left: 5px;
+					&:hover {
+					    &:before, &:after {	width: 2px; }
+					}
+				    &:before, &:after {
+					    position: absolute;
+					    left: 5px;
+					    content: ' ';
+					    height: 10px;
+					    width: 1px;
+					    background-color: white;
+					}
+					&:before {
+					  transform: rotate(45deg);
+					}
+					&:after {
+					  transform: rotate(-45deg);
+					}
+				}
+				
+
+				&:hover {
+					&.deleteable {
+						padding: 3px 25px 3px 10px;
+					}
+					a{color: #fff;}
+				    background-color: #87212e;
+				    padding: 3px 10px 3px 10px;
+					margin-left: -10px;
+					margin-right: 5px;
+				    border-radius: 20px;
+
+					em.remove {
+							display:inline;
+					}
 				}
 			}
 	}

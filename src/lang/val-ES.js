@@ -33,6 +33,7 @@ export default {
 		cancel: 'Cancelar',
 		delete: 'Borrar',
 		uploadPdf: 'Pujar document PDF',
+		search: 'Buscar',
 	},
 	node : {
 		insert_node : 'Insertar nou node',

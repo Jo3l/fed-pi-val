@@ -4,6 +4,7 @@
 //@import "fluidable.less";
 @import "toolbar.less";
 @import "table.less";
+@import "vue-transitions.less";
 
 html { 
 	//margin-left: ~"calc(100vw - 100%);" 
@@ -117,10 +118,16 @@ h1 {
 .buttonLeft {
 			margin: 0 32px;
 }
-.buttonRight {
+.buttonFloatLeft {
+		margin: 0 32px;
+		float:left;
+}
+.buttonFloatRight {
 		margin: 0 32px;
 		float:right;
 }
+
+
 .textPositioned {
 	margin: 0 0 .5em 5%;
 	text-transform: capitalize;
@@ -149,15 +156,6 @@ hr {
 }
 
 
-//vuejs transitions
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .2s
-}
-.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
-  opacity: 0
-}
-
 #container {
 	width: 100%;
     max-width: 1200px;
@@ -175,7 +173,7 @@ hr {
     padding-top: 30px;
     margin-top: -20px;
     padding-bottom: 80px;
-    min-height: ~"calc(100vh - 171px)";
+    min-height: ~"calc(100vh - 160px)";
 	@media(max-width:@screenTablet) {
 		min-height: ~"calc(100vh - 190px)";
 	}
@@ -195,23 +193,49 @@ hr {
 }
 
 
-.footerSpacer {
+.footer {
+    transform: rotate(0deg);
+    bottom: 0px;
+    z-index: 19;
+    margin-top: -20px;
+    display: block!important;
+    position: fixed;
     width: 100%;
-    height: 61px;
-    background-color: white;
-    position: absolute;
-    padding: 5px;
-    display: flex!important;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    box-shadow: 0px -32px 80px rgba(198,198,198,0.4);
-    img {
-    	width:3vw;
-    	height:auto;
-    	min-width:32px;
+    svg {
+    	path{
+    		fill: rgba(255, 255, 255, 0.5)!important;
+    	}
     }
+    
+    .waveHorizontals {
+    	transform: rotate(0deg);
+    }
+    .footerSpacer {
+	    width: 100%;
+	    background-color: white;
+	    //position: absolute;
+	    padding: 5px;
+	    display: flex!important;
+	    justify-content: space-around;
+	    align-items: center;
+	    flex-wrap: wrap;
+	    position: relative;
+	    z-index: 11;
+	    box-shadow: 0px -20px 34px rgba(254, 254, 254, 0.8);
+	    img {
+	    	width: auto;
+		    height: 100%;
+		    max-height: 25px;
+		    z-index:20;
+		    transition: transform .5s ease;
+		    &:hover{
+		    	transform:scale(2) translateY(-20%);
+		    }
+	    }
+	}
 }
+
+
 
 //fix keen ui switch button css
 .ui-switch__thumb{
@@ -219,4 +243,39 @@ hr {
 }
 .ui-switch__track {
 	z-index:0;
+}
+
+
+
+.three-quarters-loader:not(:required) {
+	animation: three-quarters-loader 1250ms infinite linear;
+    border: 10px solid #87212e8f;
+    border-right-color: transparent;
+    border-radius: 75px;
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    text-indent: -9999px;
+    width: 100px;
+    height: 100px;
+}
+
+@keyframes three-quarters-loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

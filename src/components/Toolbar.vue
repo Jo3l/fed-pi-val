@@ -56,8 +56,13 @@
 	  	</label>
 	    <ul class="menu">
 	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen"><router-link v-bind:to="menu.path">{{ menu.name }}</router-link></li>
+	    	<li>||</li>
+			<li><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
+			<li><router-link :to="{ path: '/admin/equips' }">Equips</router-link></li>
+			<li><router-link :to="{ path: '/admin/Clubs' }">Clubs</router-link></li>
 	    </ul>
 	</div>
+
 
 	
 	<ui-modal ref="login" size="normal" title="Login">
@@ -154,13 +159,17 @@ export default {
 </script>
 
 <style lang="less">
-	
-.menu {
-	a {
-		text-decoration: none;
-		color: #232323;
-	&:visited {color: #232323;}
+
+#toolbarContainer {
+	.menu {
+		a {
+			text-decoration: none;
+			color: #232323;
+		&:hover {text-decoration:underline;}
+		&:visited {color: #232323;}
+		}
 	}
 }
+
 
 </style>

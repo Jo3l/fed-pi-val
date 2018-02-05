@@ -3,8 +3,9 @@
     <div id="news">
 	
 	<div class="news">
-		<picture v-bind:style="{ 'background-image': 'url(' + news.url + ')' }"  v-bind:class="{ active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
-		</picture>
+		
+		<progressive-background :src="news.url" v-bind:class="{ pictureP: true, active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
+		</progressive-background>
 		
             <div class="page__demo-group icon-right">
                 <ui-icon-button color="primary" has-dropdown icon="code" ref="dropdownButton">
@@ -129,7 +130,7 @@ export default {
 		font-weight:bolder;
 		text-transform:cursive;
 	}
-	& > picture {
+	& > .pictureP {
 		width: 100%;
 	    display: block;
 	    margin: 0 auto;
@@ -138,7 +139,7 @@ export default {
 	    height: 100vw;
 	    max-height: 480px;
 	    background-size: cover;
-	    background-position: 50% 33%;
+	    &>div>div{background-position: 50% 33%!important;}
 	    margin-bottom: 20px;
 	    transition: max-height 1s ease;
 	    cursor:zoom-in;

@@ -3,7 +3,6 @@
     <div id="page404">
     	
 	<p>Error 404<br>Disculpe, no hem trobat la pàgina.</p>
-	<img src="/static/img/404.png">
 
     </div>
     </transition>
@@ -49,6 +48,7 @@ export default {
 		}
 	}
 	p{
+		margin-top:25%;
 		text-align: center;
 	    font-size: 2em;
 	    color: #87212e;
