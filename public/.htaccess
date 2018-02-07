@@ -8,11 +8,13 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^api/(.*)$ index.php [L]
 
-  RewriteCond %{REQUEST_URI} !^api/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^old_api/(.*)$ /old_api/index.php [L]
+
+  RewriteCond %{REQUEST_URI} !^(api|old_api)/ 
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 
 </IfModule>
-
-

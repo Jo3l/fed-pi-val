@@ -27,11 +27,13 @@ axios.defaults.withCredentials = true;
 //axios.defaults.crossDomain = true;
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
-//axios.defaults.headers.common['authorization'] = 'Bearer token';
 
-//axios.defaults.baseURL = '/api/index.php';  //set the baseurl from api
-axios.defaults.baseURL = '/api';
-
+if(window.location.hostname=="fedpival2.indiza.com") {
+	axios.defaults.baseURL = '/old_api/index.php';
+}
+else {
+	axios.defaults.baseURL = '/api';
+}
 
 Vue.use(VueAuthenticate, {
   tokenName: 'access_token',
