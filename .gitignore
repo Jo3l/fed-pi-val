@@ -1,0 +1,15 @@
+/vendor
+/public/node_modules
+/public/dist
+/public/static/img/noticies
+/public/static/jugadors
+/public/static/upload
+/public/static/pdf
+/public/old_api
+/public/js/*
+npm-debug.log
+.idea
+composer.phar
+.DS_Store
+desktop.ini
+package-lock.json
