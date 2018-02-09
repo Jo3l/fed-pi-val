@@ -2,13 +2,14 @@
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+use \app\Fun as Fun;
+
+//require_once "../Fun.php";
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
-
-require_once "fun.php";
-
+error_reporting(E_ALL);
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
@@ -23,16 +24,21 @@ $app->add(function ($req, $res, $next) {
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
+/**
+ * Verify if token is valid on database
+ * If token isn't valid, must throw an UnauthorizedExceptionInterface
+ */
+
 /*
 * @description
 * Route to handle login for  users.
 */
-$app->post('/auth/login', auth_login);
+$app->post('/api/auth/login', '\app\Fun::auth_login');
 /*
 * @description
 * Route to handle registration for new users.
 */
-$app->post('/auth/register', auth_register); // <-- end of Register Route
+$app->post('/api/auth/register', '\app\Fun::auth_register'); // <-- end of Register Route
 /**
 * @description
 * Request to handle loggin outs. Right now, it's not doing anything as the
@@ -40,24 +46,32 @@ $app->post('/auth/register', auth_register); // <-- end of Register Route
 * initiated, the application should request a valid Token. Thus, causing the user
 * to log in again.
 */
-$app->post('/auth/logout', auth_logout);
+$app->post('/api/auth/logout', '\app\Fun::auth_logout');
 
 //'/news[/{params:.*}[/details]]'
-$app->get('/acte/{id}', acte_id);
+$app->get('/api/acte/{id}', '\app\Fun::acte_id');
 
-$app->post('/acte[/]', acte_insert);
+$app->post('/api/acte[/]', 'Fun::acte_insert');
 
-$app->post('/acte/{id}', acte_update);
+$app->post('/api/acte/{id}', 'Fun::acte_update');
 
-$app->get('/acte[/{params:.*}]', acte);
+$app->get('/api/acte[/{params:.*}]', 'Fun::acte');
 
-$app->get('/jugador/{id}', acte_id);
+$app->get('/api/jugador/{id}', 'Fun::jugador_id');
 
-$app->post('/jugador[/]', acte_insert);
+$app->post('/api/jugador[/]', 'Fun::jugador_insert');
 
-$app->post('/jugador/{id}', acte_update);
+$app->post('/api/jugador/{id}', 'Fun::jugador_update');
 
-$app->get('/jugador[/{params:.*}]', acte);
+$app->get('/api/jugador[/{params:.*}]', 'Fun::jugador');
+
+$app->get('/api/equip/{id}', 'Fun::equip_id');
+
+$app->post('/api/equip[/]', 'Fun::equip_insert');
+
+$app->post('/api/equip/{id}', 'Fun::equip_update');
+
+$app->get('/api/equip[/{params:.*}]', 'Fun::equip');
 
 
 
@@ -125,13 +139,13 @@ $app->get('/api/noticies', function(Request $request, Response $response){
 
 
 // ruta predeterminada
-$app->get('/api/{elm}', function(Request $q, Response $r){
+/*$app->get('/api/{elm}', function(Request $q, Response $r){
     $elm= $q->getAttribute('elm');
     // si és una de les taules predefinides previament, podria fer llistat d'elements
     if (in_array($elm,array('palo'))) echo 'SE! ',$elm;
     else echo 'NOSE';
 });
-
+*/
 
 ///////// A CONTINUACIÓ, EXEMPLES ORIGINALS DE RUTES D'EXEMPLE D'SLIM
 

@@ -3,8 +3,8 @@
 class db{
     // Properties
     private $dbhost = 'localhost';
-    private $dbuser = 'editor';
-    private $dbpass = 'extrabot22';
+    private $dbuser = '****';
+    private $dbpass = '****';
     private $dbname = 'fedpival';
     private $pdo = null;
     private $result = null;

@@ -23,7 +23,7 @@
 		</div>
 		<div class="flex" v-else="v-else">
 
-			  <div class="multipleNews" v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale">
+			  <div class="multipleNews" v-for="(noticia, index) in newsCarousel" v-if="noticia.idioma==$i18n.locale">
 			  	
 			    <progressive-background class="articleP" :src="noticia.url">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
@@ -127,6 +127,7 @@ export default {
     margin: 0 auto;
 }
 .newsCarousel {
+	min-height:374px;
 	a {text-decoration:none;color:black;}
 	.articleP {
 		&>div{padding-bottom:initial!important;}

@@ -6,7 +6,8 @@
     },
     "autoload": {
         "classmap": [
-          "app"
+          "app",
+          "app/Fun.php"
         ]
     }
 }

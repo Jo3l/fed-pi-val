@@ -2,7 +2,8 @@
     <transition name="fade">
     <div id="page404">
     	
-	<p>Error 404<br>Disculpe, no hem trobat la pàgina.</p>
+	<p><span>{--:+</span> 404 NOT FOUND <span>++:--}</span><br>
+	Disculpe, no hem trobat la pàgina.</p>
 
     </div>
     </transition>
@@ -53,6 +54,7 @@ export default {
 	    font-size: 2em;
 	    color: #87212e;
 	    font-family: 'Rambla', sans-serif;
+	    span{color:#ff6f00;}
 		@media(max-width:@screenTablet) {
     		font-size: 1.5em;
 		}

@@ -23,6 +23,7 @@ $app = new App($config);
 require '../app/routes/authRoutes.php';
 
 // Customer Routes
+
 require '../app/routes/api.php';
 
 $app->run();

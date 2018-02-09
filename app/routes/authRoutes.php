@@ -29,5 +29,5 @@ $app->add(new TokenAuthentication([
     'path' =>   '/restrict',
     'authenticator' => $authenticator,
     'secure' => true,
-    'relaxed' => ['localhost', 'api-fedpival.indiza.com'] // ignora no tindre https
+    'relaxed' => ['localhost', 'fedpival.indiza.com', 'fedpival2.indiza.com', 'api-fedpival.indiza.com'] // ignora no tindre https
 ]));

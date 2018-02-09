@@ -1,9 +1,15 @@
 <?php
 
+namespace app;
+
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+use db;
 
-function auth_login() /*use($app)*/{
+class Fun
+{
+    
+static public function auth_login() /*use($app)*/{
     $json = json_decode(file_get_contents("php://input"));
     $email = (isset($json->email)) ? trim($json->email) : "";
     $clau = (isset($json->clau)) ? trim($json->clau) : "";
@@ -46,14 +52,14 @@ function auth_login() /*use($app)*/{
 }
 
 //  //  //  //  //  //  //  //
-function auth_logout() /*use ($app, $db)*/{
+static public function auth_logout() /*use ($app, $db)*/{
     echo '{"status":"OK", "message":"Signed out!"}';
     //$_SESSION['tokens']
     session_destroy();
 }
 
 //  //  //  //  //  //  //  //
-function auth_register() /*use ($app, $db)*/{
+static public function auth_register() /*use ($app, $db)*/{
     if($app->request->getMethod() == "POST"){       
         // initialize array of errors.
         $errors = array();
@@ -154,8 +160,68 @@ function auth_register() /*use ($app, $db)*/{
     }
 }
 
+    
 //  //  //  //  //  //  //  //
-function acte(Request $in, Response $out, $args) {
+private function render($result,$doexit=false) {
+	header('Content-Type: application/json, charset=utf-8');
+	// si només hi ha un element, el torna sense array
+	//if (is_array($result) && count($result)==1) $result= $result[0];
+    if (in_array($this->nom,array('noticia','club','equip','jugador','clubs','equips','jugadors','_club','_equip','_jugador')))
+        $result= array(
+            "data"=>$result,
+            "per_page"=>$this->itemsPerPage,
+            "current_page"=> ( $this->page ?: 1 ),
+            "from"=> ($this->page * $this->itemsPerPage) + 1,
+            "to"=> ($this->page+1) * $this->itemsPerPage,
+            "total"=> ($this->rowcount ?: null )
+        );
+	echo json_encode($result);
+	if ($doexit) exit;
+	return $result;
+}
+
+//  //  //  //  //  //  //  //
+private function list($source,$params=null) {
+    $db = new db();
+    $db->sql("SELECT * FROM ".$source." limit 100");
+    $elements = $db->all();
+    echo json_encode($elements);
+
+    $database='fedpival';
+    //if ($this->nom=='equips') $database='fedpival_old';
+    //if ($this->nom=='equips') $this->nom='equip';
+    if ( $this->nom!='acte' && is_numeric($this->branca) ) array_push($this->wheres,'id='.$this->branca);
+	try {
+	    $sql= "SELECT count(*) as num FROM ".$database.".".($this->nom)." where ".implode(' and ',$this->wheres);
+	    $this->db->sql( $sql );
+	    $num= $this->db->getResult();
+	    $this->rowcount= $num[0]['num'];
+	} catch(Exception $e) {}
+	$sql= "SELECT * FROM ".$database.".".($this->nom)." where ".implode(' and ',$this->wheres).$this->order.$this->limit;
+//echo '/*',$sql,'*/';
+//echo $this->nom,',',$sql;
+	$this->db->sql( $sql );
+	$result= $this->db->getResult();
+	// si no és llistar un id, retalle camps llargs i pose el·lipsi "..."
+	// validacions
+	foreach($result as $i=>$r) { // en cada registre...
+		foreach($r as $k=>$v) { // en cada parell de valors
+			if (empty($this->id) && strlen(strval($v))>100 && ($this->nomorg=='noticia')) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
+		}
+	}
+	return $this->render($result);    
+}
+
+//  //  //  //  //  //  //  //
+private function update($source,$id,$data) {
+    $db = new db();
+    $db->sql("UPDATE ".$source." limit 100");
+    $elements = $db->all();
+    echo json_encode($elements);
+}
+
+//  //  //  //  //  //  //  //
+static public function acte(Request $in, Response $out, $args) {
     $db = new db();
     $db->sql("SELECT * FROM _acte_val limit 100");
     $customers = $db->all();
@@ -166,7 +232,7 @@ function acte(Request $in, Response $out, $args) {
 //  //  //  //  //  //  //  //
 
 //  //  //  //  //  //  //  //
-function acte_id(Request $in, Response $out){
+static public function acte_id(Request $in, Response $out){
     $db = new db();
     $db->sql("SELECT * FROM _acte_val where id=".$in->getAttribute('id') );
     $customers = $db->all();
@@ -174,17 +240,43 @@ function acte_id(Request $in, Response $out){
 }
 
 //  //  //  //  //  //  //  //
-function acte_insert() { echo 'insert'; }
+static public function acte_insert() { echo 'insert'; }
 
 //  //  //  //  //  //  //  //
-function acte_update() { echo 'update'; }
-
-//  //  //  //  //  //  //  //
+static public function acte_update() { echo 'update'; }
 
 
 //  //  //  //  //  //  //  //
 
+//  //  //  //  //  //  //  //
+static public function jugador_id(Request $in, Response $out){
+}
 
+//  //  //  //  //  //  //  //
+static public function jugador_insert() { echo 'insert'; }
+
+//  //  //  //  //  //  //  //
+static public function jugador_update() { echo 'update'; }
+
+//  //  //  //  //  //  //  //
+static public function jugador(Request $in, Response $out, $args) {
+}
+
+//  //  //  //  //  //  //  //
+
+//  //  //  //  //  //  //  //
+static public function equip_id(Request $in, Response $out){
+}
+
+//  //  //  //  //  //  //  //
+static public function equip_insert() { echo 'insert'; }
+
+//  //  //  //  //  //  //  //
+static public function equip_update() { echo 'update'; }
+
+//  //  //  //  //  //  //  //
+static public function equip(Request $in, Response $out, $args) {
+}
 //  //  //  //  //  //  //  //
 
 
@@ -198,3 +290,9 @@ function acte_update() { echo 'update'; }
 
 
 //  //  //  //  //  //  //  //
+
+
+//  //  //  //  //  //  //  //
+
+    
+}

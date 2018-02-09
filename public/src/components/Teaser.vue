@@ -116,11 +116,13 @@ export default {
 	    background-position: 50% 33%;
 	    z-index:5;
 
-		&+.three-quarters-loader {
+		& + .three-quarters-loader {
 		    position: absolute;
 		    top: ~"calc(50% - 50px)";
 		    left: ~"calc(50% - 50px)";
 		    z-index:1;
+		    border:1em solid rgba(135, 33, 46, 0.56);
+		    border-right-color: transparent;
 		}
 	}
 	.competicions {

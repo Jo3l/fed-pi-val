@@ -4,7 +4,7 @@
 	
 	<div class="news">
 		
-		<progressive-background :src="news.url" v-bind:class="{ pictureP: true, active: showMobileMenu }" v-on:click="showMobileMenu = !showMobileMenu">
+		<progressive-background :src="news.url" v-bind:class="{ pictureP: true, active: showMobileMenu }" @click.native="showMobileMenu = !showMobileMenu">
 		</progressive-background>
 		
             <div class="page__demo-group icon-right">
@@ -59,6 +59,9 @@ export default {
 		}
 	},
 	methods: {
+		cli: function() {
+			console.log('ewrwerw');	
+		},
 		menuSelection: function(e) {
 			if(e.label == 'Editar')  this.$router.push('/'+this.$i18n.locale+'/'+this.$i18n.t('common.news')+'/edit/'+this.$store.news.slug);
 		},
@@ -139,18 +142,23 @@ export default {
 	    height: 100vw;
 	    max-height: 480px;
 	    background-size: cover;
-	    &>div>div{background-position: 50% 33%!important;}
 	    margin-bottom: 20px;
-	    transition: max-height 1s ease;
+	    transition: max-height 1.5s ease;
 	    cursor:zoom-in;
-	    &.active {
+	    
+	    & > div > div {
+	    	background-position: 50% 33%!important;
+			transition: all 1.5s ease;
+		}
+	    
+	    &.active > div > div {
 	    	max-height: 100vh;
 		    position: fixed;
 		    height: 100vh;
 		    top: 0;
 		    z-index: 99;
 		    left: 0;
-		    background-size: contain;
+		    background-size: contain!important;
 		    background-repeat: no-repeat;
 		    background-color: black;
 		    background-position: center;
