@@ -1,179 +1,86 @@
 <?php
 
+/* 
+ * @Author alsanan <alsanan@gmail.com> 
+ * @Version 2.0 (slim)
+ * @Package FedpivalAPI 
+ */
+ 
 namespace app;
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+use \Firebase\JWT\JWT;
 use db;
+use \app\Auth;
 
 class Fun
 {
-    
-static public function auth_login() /*use($app)*/{
-    $json = json_decode(file_get_contents("php://input"));
-    $email = (isset($json->email)) ? trim($json->email) : "";
-    $clau = (isset($json->clau)) ? trim($json->clau) : "";
-    try {
-        
-        // query the database
-        $sql = "SELECT id, nom, pwd, email, rol FROM usuari WHERE email = '".$email."';";
-        
-        // Get DB Object
-        $db = new db;
-        $db = $db->connect();
-        $stmt = $db->query($sql);
-        $result = $stmt->fetchAll(PDO::FETCH_OBJ)[0];
-        
-        // we have user. I saw that it might not be a good practice to do this check.
-        if(count($result) > 0){
-            // let's verify the credentials.
-            $dbpwd = $result->pwd;
-            //$result= $result[0];
-            $id= $result->id;
-            
-            if ($dbpwd==hash('sha256',$clau)) { // coincideix la clau
-                if (session_status() == PHP_SESSION_NONE) session_start();
-                $token= hash('sha256',$id.'_'.$clau);
-                $_SESSION[$token]= $id;
-                echo json_encode(array('access_token' => $token ));
-            } else {
-                header("HTTP/1.0 401 Not Authorized");
-                echo '{"status":"fail", "message":"1 Unable to log you in. Please try again!"}';
-            }
-        }
-        else{
-            header("HTTP/1.0 401 Not Authorized");
-            echo '{"status":"fail", "message":"2 Unable to log you in. Please try again!"}';
-        }
-    } catch(Exception $ex) {
-        header("HTTP/1.0 401 Not Authorized");
-        echo '{"status":"fail", "message":"3 Unable to log you in. Please contact your system administrator"}';
-    } 
+
+    private static $itemsPerPage = 20;	// elements per pàgina 
+    private static $page = null;	// pàgina actual 
+    private static $db= null; //objecte de base de dades
+    private static $json= null; // objecte json per a dades de consulta o guardar en db
+    private static $nom= null; // nom de l'objecte principal de consulta
+    private static $wheres= array(); // clàusules de filtrat where per a sql
+    private static $minims= array(); // camps obligatoris a omplir per cada taula de la db
+    private static $tots= array(); // tots els camps existents a cada taula de la db
+    private static $limit= null; // màxims elements
+    private static $order= null; // ordre definit
+    private static $id= null; // id del registre que se va a editar
+    private static $mes= null; // mes a partir del qual es consulten dades
+    private static $idioma= 'val'; // idioma actual
+    private static $rowcount= null; 
+
+//  //  //  //  //  //  //  //
+// funció que verifica que l'slug es unic
+private static function slugunic($propos) {
+	$sufixe= '-';
+	Fun::$db= new db();
+	do {
+		Fun::$db->sql("select slug from pagina where slug='".$propos."';");
+		$propos.= $sufixe;
+	} while (Fun::$db->numRows()!=0);
+	return substr($propos,0,-1); // està correcte el proposat
 }
 
 //  //  //  //  //  //  //  //
-static public function auth_logout() /*use ($app, $db)*/{
-    echo '{"status":"OK", "message":"Signed out!"}';
-    //$_SESSION['tokens']
-    session_destroy();
-}
-
-//  //  //  //  //  //  //  //
-static public function auth_register() /*use ($app, $db)*/{
-    if($app->request->getMethod() == "POST"){       
-        // initialize array of errors.
-        $errors = array();
-        $user_role = "admin"; // <-- no need for this since this was done with user roles in mind.
-        $json = json_decode(file_get_contents("php://input"));
-
-        if($user_role === "admin") {
-            
-            $username = (isset($json->username)) ? trim($json->username) : "";
-            $password = (isset($json->password)) ? trim($json->password) : "";
-            $pwdConfirm = (isset($json->confirmPassword)) ? trim($json->confirmPassword) : "";
-            $email = (isset($json->email)) ? trim($json->email) : "" ;
-            
-            $userRole = 'basic';
-            // create instance to database
-            $db = new DbConnection();
-    
-            if(empty($username)){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail", "message":"Username field cannot be empty"}';
-            }
-            elseif(strlen($username) < 6){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail","message": "Make sure username is at least 6 characters long."}';
-            }
-            elseif(empty($password) || empty($pwdConfirm)){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail", "message":"Password or confirm password fields cannot be empty."}';
-            }
-            elseif(empty($email)){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail", "message":"Email field cannot be empty, or it is not a valid email address"}';               
-            }
-            elseif($password !== $pwdConfirm){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail","message":"Passwords donot match."}';
-            }
-            elseif(strlen($password) < 7){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail", "message":"Passwords should be at least 7 characters long."}';
-            }
-            elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)){
-                header("HTTP/1.0 401 Invalid submitted data");
-                echo '{"status":"fail", "message":"Please input valid email address!"}';
-            }
-            elseif($db->isConnected()){
-                // let's make sure user doesn't exists
-                $pdo = $db->getConnection();
-                
-                $query = $pdo->prepare("SELECT user_name from users WHERE user_name = :username");
-                $query->bindValue(':username', $username, PDO::PARAM_STR);
-                $query->execute();
-                $result = $query->fetchAll();   
-                if(count($result) > 0 || count($errors) > 0) {
-                    header("HTTP/1.0 401 Invalid submitted data");
-                    echo '{"status":"fail", "message":"Please make sure your password or username are valids"}';
-                } else {
-                    // check to see if we don't have errors
-                    try {
-                        $options = ['cost' => 12,];
-                        $user_password_hash = password_hash($password, PASSWORD_BCRYPT, $options);
-                        $new_user = $pdo->prepare("INSERT INTO users (user_name, user_password_hash, user_email, user_registration_datetime) VALUES (:username, :user_password_hash, :email, NOW())");
-                        $new_user->bindValue(':username', $username, PDO::PARAM_STR);
-                        $new_user->bindValue(':user_password_hash', $user_password_hash, PDO::PARAM_STR);
-                        $new_user->bindValue(':email', $email, PDO::PARAM_STR);
-                
-                        $new_result = $new_user->execute();
-            
-                        if($new_result){
-                            // we have succeded in adding the user.
-                            echo '{"status":"OK", "message":"User created succesfully. Please check your email address for confirmation.", "email":"'.$email.'"}';
-                        }
-                        else {
-                            // we have failed :(
-                            header("HTTP/1.0 403 Not enough credentials");
-                            echo '{"status":"fail","message":"Registration failed. Not your fault. Please try again!"}';
-                        }
-                    }
-                    catch(PDOException $ex){
-                        $ex->getMessage();
-                    }
-                }
-            }
-            else {
-                header("HTTP/1.0 401 Not enough credentials");      
-                echo json_encode($errors);
-            }
-        }
-        else {
-            header("HTTP/1.0 403 Not enough credentials");
-            $errors[] = ["status" => "fail", "message" => "You don't have enough credentials to complete this task"];
-            echo json_encode($errors);
-        }
-    }
-    else {
-        // method is not post
-        header("HTTP/1.0 405 Method Not Allowed");
-    }
+// funció que converteix un text a slug
+private static function slugify($string, $replace = array(), $delimiter = '-') {
+  // https://github.com/phalcon/incubator/blob/master/Library/Phalcon/Utils/Slug.php
+  if (!extension_loaded('iconv')) {
+    throw new Exception('iconv module not loaded');
+  }
+  // Save the old locale and set the new locale to UTF-8
+  $oldLocale = setlocale(LC_ALL, '0');
+  setlocale(LC_ALL, 'en_US.UTF-8');
+  $clean = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+  if (!empty($replace)) {
+    $clean = str_replace((array) $replace, ' ', $clean);
+  }
+  $clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
+  $clean = strtolower($clean);
+  $clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
+  $clean = trim($clean, $delimiter);
+  // Revert back to the old locale
+  setlocale(LC_ALL, $oldLocale);
+  return $clean;
 }
 
     
 //  //  //  //  //  //  //  //
-private function render($result,$doexit=false) {
+static private function render($result,$doexit=false) {
 	header('Content-Type: application/json, charset=utf-8');
 	// si només hi ha un element, el torna sense array
 	//if (is_array($result) && count($result)==1) $result= $result[0];
-    if (in_array($this->nom,array('noticia','club','equip','jugador','clubs','equips','jugadors','_club','_equip','_jugador')))
+    if (in_array(Fun::$nom,array('noticia','club','equip','jugador','clubs','equips','jugadors','_club','_equip','_jugador')))
         $result= array(
             "data"=>$result,
-            "per_page"=>$this->itemsPerPage,
-            "current_page"=> ( $this->page ?: 1 ),
-            "from"=> ($this->page * $this->itemsPerPage) + 1,
-            "to"=> ($this->page+1) * $this->itemsPerPage,
-            "total"=> ($this->rowcount ?: null )
+            "per_page"=>Fun::$itemsPerPage,
+            "current_page"=> ( Fun::$page ?: 1 ),
+            "from"=> (Fun::$page * Fun::$itemsPerPage) + 1,
+            "to"=> (Fun::$page+1) * Fun::$itemsPerPage,
+            "total"=> (Fun::$rowcount ?: null )
         );
 	echo json_encode($result);
 	if ($doexit) exit;
@@ -188,28 +95,28 @@ private function list($source,$params=null) {
     echo json_encode($elements);
 
     $database='fedpival';
-    //if ($this->nom=='equips') $database='fedpival_old';
-    //if ($this->nom=='equips') $this->nom='equip';
-    if ( $this->nom!='acte' && is_numeric($this->branca) ) array_push($this->wheres,'id='.$this->branca);
+    //if (Fun::$nom=='equips') $database='fedpival_old';
+    //if (Fun::$nom=='equips') Fun::$nom='equip';
+    if ( Fun::$nom!='acte' && is_numeric(Fun::$branca) ) array_push(Fun::$wheres,'id='.Fun::$branca);
 	try {
-	    $sql= "SELECT count(*) as num FROM ".$database.".".($this->nom)." where ".implode(' and ',$this->wheres);
-	    $this->db->sql( $sql );
-	    $num= $this->db->getResult();
-	    $this->rowcount= $num[0]['num'];
+	    $sql= "SELECT count(*) as num FROM ".$database.".".(Fun::$nom)." where ".implode(' and ',Fun::$wheres);
+	    $db->sql( $sql );
+	    $num= $db->getResult();
+	    Fun::$rowcount= $num[0]['num'];
 	} catch(Exception $e) {}
-	$sql= "SELECT * FROM ".$database.".".($this->nom)." where ".implode(' and ',$this->wheres).$this->order.$this->limit;
+	$sql= "SELECT * FROM ".$database.".".(Fun::$nom)." where ".implode(' and ',Fun::$wheres).Fun::$order.Fun::$limit;
 //echo '/*',$sql,'*/';
-//echo $this->nom,',',$sql;
-	$this->db->sql( $sql );
-	$result= $this->db->getResult();
+//echo Fun::$nom,',',$sql;
+	$db->sql( $sql );
+	$result= $db->getResult();
 	// si no és llistar un id, retalle camps llargs i pose el·lipsi "..."
 	// validacions
 	foreach($result as $i=>$r) { // en cada registre...
 		foreach($r as $k=>$v) { // en cada parell de valors
-			if (empty($this->id) && strlen(strval($v))>100 && ($this->nomorg=='noticia')) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
+			if (empty(Fun::$id) && strlen(strval($v))>100 && (Fun::$nomorg=='noticia')) $result[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
 		}
 	}
-	return $this->render($result);    
+	return Fun::render($result);    
 }
 
 //  //  //  //  //  //  //  //
@@ -221,15 +128,6 @@ private function update($source,$id,$data) {
 }
 
 //  //  //  //  //  //  //  //
-static public function acte(Request $in, Response $out, $args) {
-    $db = new db();
-    $db->sql("SELECT * FROM _acte_val limit 100");
-    $customers = $db->all();
-    //print_r($args);
-    echo json_encode($customers);
-}
-
-//  //  //  //  //  //  //  //
 
 //  //  //  //  //  //  //  //
 static public function acte_id(Request $in, Response $out){
@@ -238,7 +136,7 @@ static public function acte_id(Request $in, Response $out){
     $customers = $db->all();
     echo json_encode($customers);
 }
-
+/*/*
 //  //  //  //  //  //  //  //
 static public function acte_insert() { echo 'insert'; }
 
@@ -246,11 +144,9 @@ static public function acte_insert() { echo 'insert'; }
 static public function acte_update() { echo 'update'; }
 
 
-//  //  //  //  //  //  //  //
 
 //  //  //  //  //  //  //  //
-static public function jugador_id(Request $in, Response $out){
-}
+static public function jugador_id(Request $in, Response $out){ echo 'id'; }
 
 //  //  //  //  //  //  //  //
 static public function jugador_insert() { echo 'insert'; }
@@ -259,32 +155,468 @@ static public function jugador_insert() { echo 'insert'; }
 static public function jugador_update() { echo 'update'; }
 
 //  //  //  //  //  //  //  //
-static public function jugador(Request $in, Response $out, $args) {
-}
+static public function jugador(Request $in, Response $out, $args) { echo 'query'; }
 
 //  //  //  //  //  //  //  //
+static public function club_id(Request $in, Response $out){ echo 'id'; }
+
+//  //  //  //  //  //  //  //
+static public function club_insert() { echo 'insert'; }
+
+//  //  //  //  //  //  //  //
+static public function club_update() { echo 'update'; }
 
 //  //  //  //  //  //  //  //
 static public function equip_id(Request $in, Response $out){
+    return Fun::generic_query('_equip',$in);
 }
 
 //  //  //  //  //  //  //  //
-static public function equip_insert() { echo 'insert'; }
-
-//  //  //  //  //  //  //  //
-static public function equip_update() { echo 'update'; }
-
-//  //  //  //  //  //  //  //
-static public function equip(Request $in, Response $out, $args) {
+static public function equip_insert(RequestRequest $in, Response $out $in, Response $out) {
+    return Fun::generic_insert('equip',$in);
 }
-//  //  //  //  //  //  //  //
-
 
 //  //  //  //  //  //  //  //
+static public function equip_update(Request $in, Response $out) {Request $in, Response $out 
+    return Fun::generic_update('equip',$in);
+}
+
+//  //  //  //  //  //  //  //
+static public function noticia_id(Request $in, Response $out){ echo 'id'; }
+
+//  //  //  //  //  //  //  //
+static public function noticia_insert(Request $in, Response $outRequest $in, Response $out) { echo 'insert'; }
+
+//  //  //  //  //  //  //  //
+static public function noticia_update(Request $in, Response $outRequest $in, Response $out) { echo 'update'; }
+
+//  //  //  //  //  //  //  //
+static public function partida_id(Request $in, Response $out){ echo 'id'; }
+
+//  //  //  //  //  //  //  //
+static public function partida_insert(Request $in, Response $outRequest $in, Response $out) { echo 'insert'; }
+
+//  //  //  //  //  //  //  //
+static public function partida_update(Request $in, Response $out) { echo 'update'; }
+
+//	// //  //  //  //  //  //  //
+static public function node_id(Request $in, Response $out){ echo 'id'; }
+
+//  //  //  //  //  //  //  //
+static public function node_insert(Request $in, Response $out) { echo 'insert'; }
+
+//  //  //  //  //  //  //  //
+static public function node_update(Request $in, Response $out) { echo 'update'; }
+*/
+
+static public function auth_login(Request $request, Response $response) {
+	$json = json_decode(file_get_contents("php://input"));
+	Auth::login($json);
+}
+
+//  //  //  //  //  //  //  //
+static public function authtest() {
+    echo "m'has pillaO";
+    $secretKey = base64_decode("SECRET_KEY");
+    // encode the array
+    $jwt = JWT::encode(
+        Fun::token("1", "alfon7", "putoamo"),
+        $secretKey,
+        'HS256'
+    );
+    $enencodedArray = array('jwt' => $jwt);
+    // return the Token to the client.
+    echo json_encode($enencodedArray);
+}
+
+static private function getPost($tabla) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	if ($tabla=='partida') {
+	    if (is_array($json['lloc'])) $json['lloc']= $json['lloc']['id'];
+	    if (is_array($json['local'])) $json['local']= $json['local']['id'];
+	    if (is_array($json['visitant'])) $json['visitant']= $json['visitant']['id'];
+		unset($json['blocId']);
+	}
+	return $json;
+}
 
 
 //  //  //  //  //  //  //  //
+public function generic_update(Request $request, Response $response, $params) {
+	$tabla= $params['tabla'];
+	$json = Fun::getPost($tabla);
+	$id= $params['id'];
+	// comprovar q id existeix
+	if (empty($json['modificacio'])) $json['modificacio']= date('YmdHis');
+	$db= new db();
+	$db->sql('select id from '.($tabla).' where id='.$id);
+	if ($db->numRows()!=1) die('ERROR: No existeix la fila o hi ha més d\'una');
+	$pairs= array();
+	foreach($json as $key=>$value) array_push($pairs,$key."='".$value."'");
+	$pairs= implode(', ',$pairs);
+	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
+    //$request->getParam(
+    echo $sql;
+}
 
+//  //  //  //  //  //  //  //
+public function generic_insert(Request $request, Response $response, $params) {
+	$tabla= $params['tabla'];
+	$json = Fun::getPost($tabla);
+	$keys= implode(',',array_keys($json));
+	$values= "'".implode("','",array_values($json))."'";
+	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
+	echo $sql;
+}
+
+//  //  //  //  //  //  //  //
+public function generic_delete(Request $request, Response $response, $params) {
+	echo 'delete';
+    //$request->getParam(
+}
+
+//  //  //  //  //  //  //  //
+static public function generic_id(Request $request, Response $response, $params) {
+    $db = new db();
+    $tabla= Fun::tables($params['tabla']);
+    $db->sql("SELECT * FROM ".$tabla." where id=".$params['id']);
+    $data = $db->all();
+    echo json_encode($data);
+    return $params;
+}
+
+//  //  //  //  //  //  //  //
+static private function tables($elm) {
+    $tables= array(
+        'acte'=>'_acte_'.Fun::$idioma,
+        'noticia'=>'_noticia_'.Fun::$idioma,
+        'equip'=>'_equip_'.Fun::$idioma,
+        'club'=>'_club_'.Fun::$idioma,
+        'jugador'=>'_jugador_'.Fun::$idioma,
+        'node'=>'_element_'.Fun::$idioma,
+        'jerarquia'=>'_jerarquia',
+        'partida'=>'partida',
+        'producte'=>'_producte_'.Fun::$idioma
+        );
+	if (!in_array($elm,array_keys($tables))) return $elm;
+    return @$tables[$elm];
+}
+
+//  //  //  //  //  //  //  //
+static private function procesaparam($str,$options) {
+	$str= explode('/',$str);
+	switch($str[1]) {
+		case 'per_page':
+			Fun::$itemsPerPage= $str[2];
+			$options['limit']= Fun::$itemsPerPage;
+			break;
+		case 'p': // numpagina
+			$options['limit']= ($str[2]*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
+			break;
+		case 't':
+			if (empty($options['wheres'])) $options['wheres']= array('1=1');
+		    array_push( $options['wheres'], "instr('".$str[2]."',tags)>=0" );
+			break;
+		case 'i':
+		    Fun::$idioma= $str[2];
+			if (empty($options['wheres'])) $options['wheres']= array('1=1');
+		    array_push( $options['wheres'], "idioma='".$str[2]."'" );
+			break;
+		case 'slug': break;
+		case 's': // search
+			break;
+		case 'o':
+			$options['order']= str_replace('-',' desc',$str[2]);
+			break;
+		case 'destacada':
+		    array_push( $options['wheres'], "destacada=1" );
+		    $options['limit'] = '1';
+		    $options['order'] = 'publicacio desc';
+			break;
+		case 'j': //jerarquia
+			if (empty($options['wheres'])) $options['wheres']= array('1=1');
+			array_push( $options['wheres'], "jerarquia=".(Fun::$jerarquia=$str[2]) );
+			break;
+	}
+	return $options;
+}
+
+//  //  //  //  //  //  //  //
+static public function date_query(Request $request, Response $response, $params) {
+	$options= array( 'limit'=>Fun::$itemsPerPage);
+	$options= array_merge(Fun::procesaparam($params['p1'],$options));
+	$options= array_merge(Fun::procesaparam($params['p2'],$options));
+	$options= array_merge(Fun::procesaparam($params['p3'],$options));
+	$options= array_merge(Fun::procesaparam($params['p4'],$options));
+    $db = new db();
+    $tabla= Fun::tables('acte');
+    $sql= "SELECT * FROM ".$tabla;
+	array_push( $option['wheres'], "tipus='A'" );
+	$mes= $params['mes'];
+	$mes= strtotime( substr($mes,0,4).'-'.substr($mes,4,2) );
+	$mes0= date('Ym',$mes);
+	array_push( $options['wheres'], "(publicacio like '".$mes0."%')" );
+    if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
+    if (!empty($options['order'])) $sql.= " order by ".$options['order'];
+    if (!empty($options['limit'])) $sql.= " limit ".$options['limit'];
+    $db->sql($sql);
+    $data = $db->all();
+    Fun::render($data);
+}
+
+//  //  //  //  //  //  //  //
+static public function noticia_query(Request $request, Response $response, $params) {
+	$slug= $params['slug'];
+    $db = new db();
+    $db->sql("select * from _noticia where slug='".$slug."';");
+    $data = $db->all();
+	Fun::render($data);
+}
+
+//  //  //  //  //  //  //  //
+static public function generic_query(Request $request, Response $response, $params) {
+	$options= array( 'limit'=>Fun::$itemsPerPage);
+	$options= array_merge(Fun::procesaparam($params['p1'],$options));
+	$options= array_merge(Fun::procesaparam($params['p2'],$options));
+	$options= array_merge(Fun::procesaparam($params['p3'],$options));
+	$options= array_merge(Fun::procesaparam($params['p4'],$options));
+    $db = new db();
+    $tabla= Fun::tables($params['tabla']);
+    $sql= "SELECT * FROM ".$tabla;
+    if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
+    if (!empty($options['order'])) $sql.= " order by ".$options['order'];
+    if (!empty($options['limit'])) $sql.= " limit ".$options['limit'];
+    $db->sql($sql);
+    $data = $db->all();
+    // retalle valors de titulars i noticies:
+    if (in_array($tabla,array('noticia','_noticia_es','_noticia_val'))) {
+		foreach($data as $i=>$r) { // en cada registre...
+			foreach($r as $k=>$v) { // en cada parell de valors
+				if (empty($options['id']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
+			}
+		}
+	}    
+    Fun::render($data);
+}
+
+
+//  //  //  //  //  //  //  //
+static public function node(Request $request, Response $response, $params) {
+    /*if (!empty($this->json)) {
+        // delete or update or insert (node o element o ordre)
+        if ($request[4]=='ordre' || $request[3]=='ordre') $this->canviaordre($request[3]);
+        //if (isset($this->json['parent_id'])) $this->branca= $this->json['parent_id'];
+        if (!empty($this->json['delete_id'])) { // eliminar un element o un node
+            if (is_numeric($this->branca)) return $this->editaelement($this->branca); // es un element
+            else return $this->guardanode(); // es un node
+        }
+        if ( empty($this->json['tipus']) ) return $this->guardanode(); // es un node de jerarquia
+        return $this->editaelement($this->branca); // es un element de node
+    }*/
+    // si no es post/json, obtin nodes:
+    $id= $params['id'];
+    if (is_numeric($id)) Fun::render(Fun::contingutnode($id), true);
+    else Fun::render(Fun::jerarquia($id), true);
+}
+
+//  //  //  //  //  //  //  //
+// funció que torna un array amb la estructura jerarquica de nodes amb contingut 
+static private function jerarquia($fill='competicions') {
+    Fun::$db = new db();
+	Fun::$db->sql("select *, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
+	$result= Fun::$db->getResult();
+	$resultids= array();
+	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma] ) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
+	unset($result);
+	$estructura= array();
+	//echo '<pre>',print_r($resultids),'</pre>';
+	$antilock= 1500; // màxim de 1500 nodes
+	while (count($resultids)>1) {
+	    $last= array_pop($resultids);
+	    $pareid= $last['pare'];
+	    //echo $last[id],' pare:',$last[pare],'<br/>';
+	    if (!isset($resultids[$pareid]['children'])) $resultids[$pareid]['children']= array();
+	    unset($last['nom_es']);
+	    unset($last['nom_val']);
+	    unset($last['pare']);
+	    array_push($resultids[$pareid]['children'], $last);
+	    //echo '<hr/><pre>',count($resultids),'-',$last[id],'-resultids:',implode(',',array_keys($resultids)),'</pre>';
+	    if ($antilock--<0) break;
+	}
+	$estructura= array_pop($resultids);
+    unset($estructura['nom_es']);
+    unset($estructura['nom_val']);
+    unset($estructura['pare']);
+    // comprove si m'estan demanant el primer fill competicions o el primer fill federacio (param $fill)
+    foreach($estructura['children'] as $elm) { 
+        if ($elm['slug']==$fill) $estructura= $elm;
+    }
+    function walk(&$node,$slug) {
+        if (empty($node)) return;
+        $node['fullSlug']= $slug.$node['slug'];
+        if (!empty($node['children'])) {
+            for ($a=0;$a<count($node['children']);$a++) {
+                walk($node['children'][$a],$node['fullSlug'].'/');
+            }
+        }
+    }
+    walk($estructura,'');
+	return $estructura;
+}
+
+//  //  //  //  //  //  //  //
+// funció que elimina, edita (amb id) o inserta un element de con// funció que elimina, edita (amb id) o inserta un element de contingut... 
+static private function editaelement($id) {
+    $data= Fun::$json;
+    if (isset($data[delete_id])) {
+        Fun::$db->sql(" START TRANSACTION;");
+        Fun::$db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$data[delete_id]);
+        Fun::$db->sql(" DELETE FROM pagina WHERE id=".$data[delete_id]);
+        Fun::$db->sql(" COMMIT;");
+        Fun::render($this->contingutnode($this->branca), true);
+        exit;
+    }
+    if (isset($data[id])) { // UPDATE!
+        $camps= [];
+        foreach($data as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."='".$val."'");
+        $camps= implode(',',$camps);
+        $sql= "START TRANSACTION;";
+        Fun::$db->sql( $sql );
+        if (isset($data['titol'])) {
+            $sql= " UPDATE idioma SET text= '".$data['titol']."' WHERE registreid=".$data['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='titol';";
+            Fun::$db->sql( $sql );
+            unset($data['titol']);
+        }
+        if (isset($data['contingut'])) {
+            $sql= " UPDATE idioma SET text= '".$data['contingut']."' WHERE registreid=".$data['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='contingut';";
+            Fun::$db->sql( $sql );
+            unset($data['contingut']);
+        }
+        $sql= "UPDATE pagina SET ".$camps." where id=".$data['id']."; ";
+        Fun::$db->sql( $sql );
+        $sql= 'COMMIT;';
+		Fun::$db->sql( $sql );
+		$result= Fun::$db->getResult();
+    } else { // INSERT!
+        if (empty($data['ordre'])) $data['ordre']=0;
+        $sql= "START TRANSACTION;";
+        Fun::$db->sql( $sql );
+        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta) values ('".$data['tipus']."',".$id.",".$data['ordre'].",'".$data['url']."','".date('YmdHis')."'); ";
+        Fun::$db->sql( $sql );
+        $sql= "SET @last_id = LAST_INSERT_ID(); ";
+        Fun::$db->sql( $sql );
+        if ($data['tipus']=='H') { // contingut en es i val
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','contingut','".$data['contingut']."'); ";
+            Fun::$db->sql( $sql );
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','contingut','".$data['contingut']."'); ";
+            Fun::$db->sql( $sql );
+        }
+        if (in_array($data['tipus'],array('H','F'))) { // titol en es i val
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','titol','".$data['titol']."'); ";
+            Fun::$db->sql( $sql );
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','titol','".$data['titol']."'); ";
+            Fun::$db->sql( $sql );
+        }
+        $sql= "COMMIT;";
+		Fun::$db->sql( $sql );
+		$result= $this->db->getResult();
+    }
+	Fun::render($this->contingutnode($this->branca), true);
+    exit;
+}
+
+//  //  //  //  //  //  //  //
+static private function contingutnode($id) {
+    Fun::$db= new db();
+    Fun::$order= " order by ordre";
+	$sql= "SELECT * FROM _element_".Fun::$idioma." WHERE jerarquia=".$id;
+	if (!empty(Fun::$wheres)) $sql.= " and ".implode(' and ',Fun::$wheres);
+	$sql.= Fun::$order;
+
+	//echo// '/* ',$sql,' */';
+	Fun::$db->sql( $sql );
+
+	$result= Fun::$db->getResult();
+	$ids_elements_partides= array();
+	if (!empty($result))
+		foreach($result as $i=>$elm) if ($elm['tipus']='J') {
+		    //$result[$i]['partides']= array();
+		    array_push($ids_elements_partides,$elm['id']);
+		}
+	if (count($ids_elements_partides)>0) {
+		$sql= "SELECT *, (select id from FROM partida WHERE registreid in (".implode(',',$ids_elements_partides).");";
+		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and registreid in (".implode(',',$ids_elements_partides).");";
+		Fun::$db->sql( $sql );
+		$result2= Fun::$db->getResult();
+		$partides= array();
+		foreach($result2 as $i=>$elm) {
+		    @$result2[$i]['lloc']= array('id'=>$result2[$i]['lloc'], 'nom'=>$result2[$i]['nomlloc']);
+		    if (isset($result2[$i]['nomlloc'])) unset($result2[$i]['nomlloc']);
+		    @$result2[$i]['local']= array('id'=>$result2[$i]['local'], 'nom'=>$result2[$i]['nomlocal']);
+		    if (isset($result2[$i]['nomlocal'])) unset($result2[$i]['nomlocal']);
+		    @$result2[$i]['visitant']= array('id'=>$result2[$i]['visitant'], 'nom'=>$result2[$i]['nomvisitant']);
+		    if (isset($result2[$i]['nomvisitant'])) unset($result2[$i]['nomvisitant']);
+		    if (!isset($partides[$result2[$i]['registreid']])) $partides[$result2[$i]['registreid']]= array();
+		    array_push( $partides[$result2[$i]['registreid']], $result2[$i] );
+		}
+		//if (empty($result2)) $result2= array();
+		foreach($result as $i=>$elm) {
+		    if($elm['tipus']=='J') 
+		        $result[$i]['partides']= $partides[$elm['id']];
+		}
+	}
+    return $result;
+}
+
+//  //  //  //  //  //  //  //
+static private function canviaordre($nodeid) {
+    if ($nodeid=='ordre') { // canviant ordre de nodes
+        foreach( Fun::$json as $elm ) {
+            $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+            Fun::$db->sql($sql);
+        }
+        return Fun::render( $this->jerarquia(Fun::$branca) , true);
+    }
+    foreach( Fun::$json as $elm) {
+        if ($elm['id']==0) continue;
+        $sql= "UPDATE pagina set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+        Fun::$db->sql($sql);
+    }
+    return Fun::render( Fun::$contingutnode(Fun::$branca) , true);
+}
+
+//  //  //  //  //  //  //  //
+static private function guardanode() {
+    //$this->db->sql('insert into select id from '.($this->nom).' where id='.$this->id);
+    if (isset(Fun::$json['delete_id'])) {
+        Fun::$db->sql(" START TRANSACTION;");
+        Fun::$db->sql(" DELETE FROM idioma WHERE tipus='jerarquia' and registreid=".Fun::$json[delete_id]);
+        Fun::$db->sql(" DELETE FROM jerarquia WHERE id=".Fun::$json[delete_id]);
+        Fun::$db->sql(" COMMIT;");
+        Fun::render(Fun::jerarquia($this->branca), true);
+        exit;
+    }
+    // Si està definit ID és un update...
+    if (isset(Fun::$json['id'])) {
+        $sql= "UPDATE idioma set text='".str_replace("'","\\'",Fun::$json['name'])."' where registreid=".Fun::$json['id']." and idioma='".Fun::$json['idioma']."' and tipus='jerarquia';";
+        $this->db->sql($sql);
+        return Fun::render( Fun::jerarquia($this->branca) , true);
+    }
+    // Si no està definit és un insert...
+    $sql="BEGIN;";
+    Fun::$db->sql($sql);
+    $sql="INSERT INTO jerarquia (pare) VALUES (".Fun::$json['parent_id'].");";
+    Fun::$db->sql($sql);
+    $sql="SET @last_id = LAST_INSERT_ID();";
+    Fun::$db->sql($sql);
+    $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'val','jerarquia','".Fun::$json['name']."');";
+    Fun::$db->sql($sql);
+    $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'es','jerarquia','".Fun::$json['name']."');";
+    Fun::$db->sql($sql);
+    $sql="COMMIT;";
+    Fun::$db->sql($sql);
+	return Fun::render(Fun::jerarquia(Fun::branca),true);
+}
 
 //  //  //  //  //  //  //  //
 
@@ -295,4 +627,4 @@ static public function equip(Request $in, Response $out, $args) {
 //  //  //  //  //  //  //  //
 
     
-}
+} // of class Fun

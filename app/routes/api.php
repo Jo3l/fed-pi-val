@@ -2,14 +2,15 @@
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
-use \app\Fun as Fun;
+use \app\Fun;
+use \app\Filem;
 
-//require_once "../Fun.php";
-
+/*
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
 error_reporting(E_ALL);
+*/
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
@@ -29,6 +30,7 @@ $app->add(function ($req, $res, $next) {
  * If token isn't valid, must throw an UnauthorizedExceptionInterface
  */
 
+
 /*
 * @description
 * Route to handle login for  users.
@@ -47,32 +49,45 @@ $app->post('/api/auth/register', '\app\Fun::auth_register'); // <-- end of Regis
 * to log in again.
 */
 $app->post('/api/auth/logout', '\app\Fun::auth_logout');
+/*PENDENT
+Repassar la forma de cridar les funcions... He de posar \app\Fun:: pq Fun:: no el troba */
 
+$app->get('/api/authtest', '\app\Fun::authtest');
+
+//$app->get('/api/{}/p/{pagina:[0-9]+}[.*]', function(Request $r, Response $rr){ echo 'pos si';exit; });
+
+$app->get('/api/node/{id:[0-9A-Za-z]+}', '\app\Fun::node'); // excepció per a acceptar federacio o competicions
+
+$app->get('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_id');
+
+$app->delete('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_delete');
+
+$app->post('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_update');
+
+$app->post('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}[/]', '\app\Fun::generic_insert');
+
+// té que ser la última:
 //'/news[/{params:.*}[/details]]'
-$app->get('/api/acte/{id}', '\app\Fun::acte_id');
+// {id:users/\d+|me}
 
-$app->post('/api/acte[/]', 'Fun::acte_insert');
+// consulta de actes d'un mes: /acte/YYYYMM amb possibles modificadors /p/pagina/t/tag/s/search/o/ordre/i/idioma/j/node
+$app->get('/api/actes/{mes:[0-9]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::date_query');
 
-$app->post('/api/acte/{id}', 'Fun::acte_update');
+// consulta de una noticia per slug
+$app->get('/api/noticia/slug/{slug:[A-Za-z0-9\-]+}', '\app\Fun::noticia_query');
 
-$app->get('/api/acte[/{params:.*}]', 'Fun::acte');
+// consulta generica d'una taula amb possibles modificadors /p/pagina/t/tag/s/search/o/ordre/i/idioma/j/node
+$app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::generic_query');
 
-$app->get('/api/jugador/{id}', 'Fun::jugador_id');
+$app->get('/api/static{path:/.+}', '\app\Filem::list'); // obtindre un cami
 
-$app->post('/api/jugador[/]', 'Fun::jugador_insert');
+$app->post('/api/static/uploadimgjugador', '\app\Filem::uploadimgjugador'); // guardar imatge jugador
 
-$app->post('/api/jugador/{id}', 'Fun::jugador_update');
+$app->post('/api/static/uploadimg', '\app\Filem::uploadimg'); // guardar imatge
 
-$app->get('/api/jugador[/{params:.*}]', 'Fun::jugador');
+$app->post('/api/static/uploadpdf', '\app\Filem::uploadpdf'); // guardar pdf
 
-$app->get('/api/equip/{id}', 'Fun::equip_id');
-
-$app->post('/api/equip[/]', 'Fun::equip_insert');
-
-$app->post('/api/equip/{id}', 'Fun::equip_update');
-
-$app->get('/api/equip[/{params:.*}]', 'Fun::equip');
-
+$app->delete('/api/static/{path:[\.\/-_0-9A-Za-z]+}', '\app\Filem::delete'); // esborrar arxiu
 
 
 /*
@@ -113,15 +128,9 @@ $app->get('/restrict', function($request, $response){
 });
 
 
-
-$app->get('/api/equips', function(Request $q, Response $r){
-    //echo 'equips---';
-    $r->getBody()->write('Equips---');
-    return $r;
-});
-
 // Kike exemple funcional... el mantinc de prova...
-$app->get('/api/noticies', function(Request $request, Response $response){
+
+/*$app->get('/api/noticies', function(Request $request, Response $response){
     $sql = "SELECT * FROM pagina WHERE categoria = 'noticies' AND destacada = 1";
     try{
         // Get DB Object
@@ -136,7 +145,7 @@ $app->get('/api/noticies', function(Request $request, Response $response){
         echo '{"error": {"text": '.$e->getMessage().'}';
     }
 });
-
+*/
 
 // ruta predeterminada
 /*$app->get('/api/{elm}', function(Request $q, Response $r){
@@ -146,131 +155,3 @@ $app->get('/api/noticies', function(Request $request, Response $response){
     else echo 'NOSE';
 });
 */
-
-///////// A CONTINUACIÓ, EXEMPLES ORIGINALS DE RUTES D'EXEMPLE D'SLIM
-
-// Get Single Customer
-$app->get('/api/customer/{id}', function(Request $request, Response $response){
-    $id = $request->getAttribute('id');
-
-    $sql = "SELECT * FROM customers WHERE id = $id";
-
-    try{
-        // Get DB Object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->query($sql);
-        $customer = $stmt->fetch(PDO::FETCH_OBJ);
-        $db = null;
-        echo json_encode($customer);
-    } catch(PDOException $e){
-        echo '{"error": {"text": '.$e->getMessage().'}';
-    }
-});
-
-// Add Customer
-$app->post('/api/customer/add', function(Request $request, Response $response){
-    $first_name = $request->getParam('first_name');
-    $last_name = $request->getParam('last_name');
-    $phone = $request->getParam('phone');
-    $email = $request->getParam('email');
-    $address = $request->getParam('address');
-    $city = $request->getParam('city');
-    $state = $request->getParam('state');
-
-    $sql = "INSERT INTO customers (first_name,last_name,phone,email,address,city,state) VALUES
-    (:first_name,:last_name,:phone,:email,:address,:city,:state)";
-
-    try{
-        // Get DB Object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->prepare($sql);
-
-        $stmt->bindParam(':first_name', $first_name);
-        $stmt->bindParam(':last_name',  $last_name);
-        $stmt->bindParam(':phone',      $phone);
-        $stmt->bindParam(':email',      $email);
-        $stmt->bindParam(':address',    $address);
-        $stmt->bindParam(':city',       $city);
-        $stmt->bindParam(':state',      $state);
-
-        $stmt->execute();
-
-        echo '{"notice": {"text": "Customer Added"}';
-
-    } catch(PDOException $e){
-        echo '{"error": {"text": '.$e->getMessage().'}';
-    }
-});
-
-// Update Customer
-$app->put('/api/customer/update/{id}', function(Request $request, Response $response){
-    $id = $request->getAttribute('id');
-    $first_name = $request->getParam('first_name');
-    $last_name = $request->getParam('last_name');
-    $phone = $request->getParam('phone');
-    $email = $request->getParam('email');
-    $address = $request->getParam('address');
-    $city = $request->getParam('city');
-    $state = $request->getParam('state');
-
-    $sql = "UPDATE customers SET
-				first_name 	= :first_name,
-				last_name 	= :last_name,
-                phone		= :phone,
-                email		= :email,
-                address 	= :address,
-                city 		= :city,
-                state		= :state
-			WHERE id = $id";
-
-    try{
-        // Get DB Object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->prepare($sql);
-
-        $stmt->bindParam(':first_name', $first_name);
-        $stmt->bindParam(':last_name',  $last_name);
-        $stmt->bindParam(':phone',      $phone);
-        $stmt->bindParam(':email',      $email);
-        $stmt->bindParam(':address',    $address);
-        $stmt->bindParam(':city',       $city);
-        $stmt->bindParam(':state',      $state);
-
-        $stmt->execute();
-
-        echo '{"notice": {"text": "Customer Updated"}';
-
-    } catch(PDOException $e){
-        echo '{"error": {"text": '.$e->getMessage().'}';
-    }
-});
-
-// Delete Customer
-$app->delete('/api/customer/delete/{id}', function(Request $request, Response $response){
-    $id = $request->getAttribute('id');
-
-    $sql = "DELETE FROM customers WHERE id = $id";
-
-    try{
-        // Get DB Object
-        $db = new db();
-        // Connect
-        $db = $db->connect();
-
-        $stmt = $db->prepare($sql);
-        $stmt->execute();
-        $db = null;
-        echo '{"notice": {"text": "Customer Deleted"}';
-    } catch(PDOException $e){
-        echo '{"error": {"text": '.$e->getMessage().'}';
-    }
-});
