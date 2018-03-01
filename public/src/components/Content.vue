@@ -2,9 +2,8 @@
     <transition name="fade">
 	    <div id="content">
 		
-		<button @click="auth">Autenticat</button>
 		<!-- aço es public -->
-		<div class="nodeContentEditable" v-if="show">
+		<div class="nodeContentEditable" v-if="!$store.getters.isAuthenticatedWithRole(1)">
 			<transition name="fade">
 				<div v-bind:class="{ nodeContentElement:true, autenticated: show }" v-for="(element, key) in nodeContent">
 					
@@ -60,7 +59,7 @@
 
 		</div>
 		<!-- aço es admin -->
-		<div class="nodeContentEditable" v-if="!show">
+		<div class="nodeContentEditable" v-if="$store.getters.isAuthenticatedWithRole(0)">
 			<draggable v-model="nodeContent"  :options="{handle:'.drag',chosenClass:'floating'}" @end="setOrder()" preventOnFilter="true">
 				<div class="nodeContentElement" v-for="(element, key) in nodeContent" v-if="nodeContent!=null">
 					
@@ -226,12 +225,12 @@
 			</draggable>
 		</div>
 		
-		<div class="flexWrap" v-if="!show">
+		<div class="flexWrap" v-if="$store.getters.isAuthenticatedWithRole(0)">
 				<hr>
                 <ui-icon-button @click="addContentHtml" tooltip="Insertar Contenido" size="small" icon="font_download" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentFile" tooltip="Insertar archivo" size="small" icon="file_upload" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
-                <ui-icon-button @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary" v-if="!gameOn"></ui-icon-button>
+                <ui-icon-button v-if="disable && !gameOn" @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>
         </div>
         
         <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
@@ -242,7 +241,7 @@
             </div>
         </ui-modal>
 
-<pre>
+<pre v-if="$store.getters.isAuthenticatedWithRole(0)">
 	
 	{{nodeContent}}
 	
@@ -257,13 +256,12 @@
 
 import draggable from 'vuedraggable'
 import VuePellEditor from 'vue-pell-editor'
-import VueFormGenerator from 'vue-form-generator/dist/vfg-core.js'
 import VueDatepickerLocal from 'vue-datepicker-local'
 import FileManager from './FileManager.vue'
 
 export default {
-  	components: { draggable, VuePellEditor, 'vue-form-generator': VueFormGenerator.component, VueDatepickerLocal, 'filemanager':FileManager },
-  	props: ['nodeId'],
+  	components: { draggable, VuePellEditor, VueDatepickerLocal, 'filemanager':FileManager },
+  	props: ['nodeId', "disableBlock"],
 	data () {
 		return {
 			selected:{},
@@ -560,7 +558,7 @@ export default {
 			
 		},
 		auth:function() {
-			this.show = !this.show;
+			return this.$store.getters.isAuthenticated && this.$store.getters.role>=10;
 		}, 
 		addContentImage: function() {
 			this.saveBlock({ tipus:'I', url:'' });
@@ -600,19 +598,34 @@ export default {
 		
 	},
 	mounted: function () {
-
-		//if authicathed
-		this.getTeams();
-		this.getPlaces();
+    	if(this.$store.getters.isAuthenticatedWithRole(0)) {
+			this.getTeams();
+			this.getPlaces();
+    	}
 		
 	},
 	watch: { 
       	nodeId: function(newVal, oldVal) {
           this.getNode();
           this.setOrder(true);
+        },
+        authOn: function(){
+        	if(this.$store.getters.isAuthenticatedWithRole(0)) {
+				this.getTeams();
+				this.getPlaces();
+        	}
+
         }
 	},
 	 computed: {
+	 	disable: function() {
+	 		var root = this.$route.path.split('/')[2];
+	 		var vm=this;
+	 		return root == vm.disableBlock;
+	 	},
+	 	authOn: function() {
+	 		return this.$store.getters.isAuthenticatedWithRole(0);
+	 	},
 	    gameOn: function () {
 	    	var vm = this;
 	      	for(var i = 0; i < vm.nodeContent.length; i++) {
@@ -661,6 +674,9 @@ export default {
 }
 .ui-button--color-blueButtonToRight {
 	color:#87212e;
+    margin-left: auto;
+    display: block;
+    margin-top: 10px;
 }
 
 .ui-button--color-customBlueRight{
@@ -757,10 +773,18 @@ export default {
 	}
 }
 
-.nodeContentEditable {
+.nodeContentEditable, .eventSelected, .news {
 
 	h2 {
 		font-size: 2em;
+    	margin: 0.5em 0 0 0;
+    	font-family: 'Rambla', cursive;
+    	width: 100%;
+    	display: block;
+	}
+	
+	h4 {
+		font-size: 1em;
     	margin: 0.5em 0 0 0;
     	font-family: 'Rambla', cursive;
     	width: 100%;
@@ -774,7 +798,7 @@ export default {
 	    align-items: center;
 	    box-sizing: border-box;
 	    margin: 10px 0;
-	    border: 1px solid #87212e;
+	    border: 1px solid @fedcolor !important;
 	    &.autenticated {
 		margin:20px 0;
 		border:none;

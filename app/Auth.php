@@ -69,7 +69,7 @@ static public function login($json) /*use($app)*/ {
 
 
 //  //  //  //  //  //  //  //
-static private function token($data) {
+static public function token($data) {
     $tokenId = base64_encode(random_bytes(32));
     $issueAt = time();
     $notBefore = $issueAt + 10; //Adding 10 seconds

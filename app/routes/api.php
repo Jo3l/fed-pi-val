@@ -56,7 +56,11 @@ $app->get('/api/authtest', '\app\Fun::authtest');
 
 //$app->get('/api/{}/p/{pagina:[0-9]+}[.*]', function(Request $r, Response $rr){ echo 'pos si';exit; });
 
-$app->get('/api/node/{id:[0-9A-Za-z]+}', '\app\Fun::node'); // excepció per a acceptar federacio o competicions
+$app->post('/api/node/ordre', '\app\Fun::ordre'); // canvi d'ordre dels nodes en la jerarquia
+
+$app->post('/api/node/{id:[0-9]+}/ordre', '\app\Fun::ordre'); // canvi d'ordre dels elements d'un node
+
+$app->get('/api/node/{id:federacio|competicio|federacions|competicions}', '\app\Fun::node'); // excepció per a acceptar federacio o competicions
 
 $app->get('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_id');
 

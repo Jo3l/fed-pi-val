@@ -24,7 +24,7 @@
 				</div>
 
 				<tablerone :tableList="list.data" :tableColumns="columns">
-					<th slot="headActions"></th></th>
+					<th slot="headActions"></th>
 					<template slot="actions" scope="props">
 						<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
 						<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
@@ -119,6 +119,11 @@ export default {
 	mounted: function () {
 		var vm=this;
 		vm.getData('jugador');
+	},
+	created: function() {
+	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
+	      this.$router.push({ path: `/` });
+	    }
 	}
 }
 </script>

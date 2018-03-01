@@ -8,7 +8,7 @@
 				<vue-core-image-upload v-if="tipo=='pdf'"
 			    :text="$i18n.t('common.uploadPdf')"
 			    class="uploader"
-			    url="/api/filemanager.php"
+			    url="/api/static/uploadpdf"
 				@imageuploaded="getData(uploadFolder)"
 			    :data="{do:'uploadpdf'}"
 			    extensions="pdf"
@@ -22,7 +22,7 @@
 				crop="local"
 				cropRatio="2.26: 1"
 				compress="50"
-			    url="/api/filemanager.php"
+			    url="/api/static/uploadimg"
 				@imageuploaded="getData(uploadFolder)"
 			    :data="{do:'uploadimg'}"
 			    extensions="jpg,jpeg"
@@ -37,7 +37,7 @@
 			    :multiple="true"
 				:multiple-size="4"
 				compress="50"
-			    url="/api/filemanager.php"
+			    url="/api/static/uploadimg"
 				@imageuploaded="getData(uploadFolder)"
 			    :data="{do:'uploadimg'}"
 			    extensions="jpg,jpeg"
@@ -100,10 +100,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-var axiosInstance = axios.create({
-  baseURL: '/api/filemanager.php',
-});
 
 import VueCoreImageUpload from 'vue-core-image-upload'
 
@@ -172,7 +168,7 @@ export default {
 		deleteFile: function(relativePath) {
 	        var vm = this;
 	        vm.selected={};
-	        axiosInstance.get('?do=delete&file='+relativePath)
+	        vm.$http.delete('static/'+relativePath)
 	        .then(function (response) {
 				vm.getData(vm.actualRelativePath);
 	        })
@@ -184,7 +180,7 @@ export default {
 	        var vm = this;
 	        vm.files={};
 	        vm.selected={};
-	        axiosInstance.get('?do=list&file='+relativePath)
+	        vm.$http.get('static/'+relativePath)
 	        .then(function (response) {
 				vm.files=response.data;
 				if(relativePath!=null&&relativePath!='') vm.showBack = true;

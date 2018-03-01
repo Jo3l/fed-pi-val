@@ -17,13 +17,13 @@
 		    </li>
 		</ul>
 
-		<div class="flexWrap">
+		<div class="flexWrap" v-if="$store.getters.isAuthenticatedWithRole(0)">
                 <ui-icon-button tooltip="Crear Nodo" icon="create_new_folder" size="small" @click="$refs.insertNode.open()"></ui-icon-button>
                 <ui-icon-button tooltip="Renombrar Nodo" icon="format_size" size="small" @click="$refs.renameNode.open()"></ui-icon-button>
         </div>
 		
 		
-		<node-content :nodeId='currentPageId'></node-content>
+		<node-content :nodeId="currentPageId" :disableBlock="propDisable"></node-content>
 		
 	
 		<ui-modal ref="insertNode" size="normal" v-bind:title="$t('node.insert_node')">
@@ -72,7 +72,7 @@ export default {
     components: {
 		draggable, 'node-content':Content
     },
-  	props: ['node'],
+  	props: ['propDisable'],
     data () {
       return {
       	newOrder: [],

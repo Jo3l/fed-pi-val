@@ -96,11 +96,11 @@
 						crop="local"
 						cropRatio="1:1"
 						compress="50"
-					    url="/api/filemanager.php"
+					    url="/api/static/uploadimgjugador"
 						@imageuploaded="getPhoto"
 					    :data="{do:'uploadimgjugador'}"
 					    extensions="jpg,jpeg"
-					    inputAccept	="image/jpg,image/jpeg,image/png"
+					    inputAccept	="image/jpg,image/jpeg"
 					>
 					</vue-core-image-upload>
 					
@@ -195,6 +195,11 @@ export default {
 	mounted: function () {
 		var vm=this;
 		if(vm.$route.params.jugadorId >= 0) vm.getData();
+	},
+	created: function() {
+	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
+	      this.$router.push({ path: `/` });
+	    }
 	}
 }
 </script>

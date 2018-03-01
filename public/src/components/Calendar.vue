@@ -23,7 +23,7 @@
 					<div class="calendarMonth">
 						<div v-for="week in events[eventos(n-1+increment)]">
 							<span class="calendarDay" v-for="day in week" v-bind:class="[selectedClass(day), dayClass(day)]">
-								<span v-if="day.date" v-bind:class="day.data.cssClass"  @click="openModal( day )">
+								<span v-if="day.date" v-bind:class="day.data.cssClass"  @click="openModalDay( day )">
 									{{ day.date }}
 								</span>
 							</span>
@@ -80,12 +80,44 @@
 			
 			<div class="eventSelected">
 				<article v-for="event in todayEvent">
-					<h4>{{event.titol}}</h4>
-					<p v-html="event.contingut"></p>
+					
+					<aside v-if="$store.getters.isAuthenticatedWithRole(0)" class="nodeContentElement">
+					<h4>{{parseTime(event.publicacio)}}</h4>
+					<i class="remove" @click="removeContent(event, todayEvent)"></i>
+
+							<input v-model="event.titol">
+						    <VuePellEditor 
+						        :actions="editorOptions" 
+						        :content="event.contingut" 
+						        v-model="event.contingut"
+						        :styleWithCss="false"
+						    />
+							
+							<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(event)">{{$i18n.t('common.save')}}</ui-button>
+
+					</aside>
+					
+					<aside v-if="!$store.getters.isAuthenticatedWithRole(1) && event.id">
+						<h4>{{parseTime(event.publicacio)}} - {{event.titol}}</h4>
+						<p v-html="event.contingut"></p>
+					</aside>
+					
 				</article>
+				
+				<ui-button v-if="$store.getters.isAuthenticatedWithRole(0)" color="blueButtonToRight" icon="save" size="small" type="secondary" @click="createBlock()">Nou event</ui-button>
+				
 			</div>
 			
 		</div>
+		
+		
+		<ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
+			<filemanager ref="upload" v-bind:pselected="selected"></filemanager>
+			<div slot="footer">
+                <ui-button @click="acceptModal('uploadModal')" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
+                <ui-button @click="closeModal('uploadModal')">{{$i18n.t('modal.cancel')}}</ui-button>
+            </div>
+        </ui-modal>
 		
 	</div>
 	</transition>
@@ -93,10 +125,12 @@
 
 <script>
 
+import VuePellEditor from 'vue-pell-editor'
+import FileManager from './FileManager.vue'
+
 export default {
 	name: 'Calendar',
-  	components: {
-  	}, 
+  	components: { VuePellEditor, 'filemanager':FileManager	}, 
   	props: {
         type: {
             type: String,
@@ -116,7 +150,30 @@ export default {
 				year : false
 			},
 			modalEvent: [],
-			todayEvent: []
+			todayEvent: [],
+			editorOptions: [
+              'bold',
+              'underline',
+              {
+                name: 'italic',
+                result: () => exec('italic')
+              },
+              {
+                name: 'image',
+                result: () => {
+                
+                  this.openModal('uploadModal', {url:''}, '', 'img');
+                  //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
+                }
+              },
+              {
+                name: 'link',
+                result: () => {
+                  const url = window.prompt('Enter the link URL')
+                  if (url) VuePellEditor.components.pell.exec('createLink', ensureHTTP(url))
+                }
+              }
+            ],
 		}
 	},
 	'computed': {
@@ -129,17 +186,96 @@ export default {
 		}
 	},
 	methods: {
+
+		createBlock: function() {
+			console.log(this.selected);
+			this.todayEvent.push({
+				idioma:this.$i18n.locale,
+				tipus:"A",
+				destacada:"0",
+				categoria:"acte",
+				tags:"",
+				publicacio:Date.parse(this.selected.year+'/'+this.selected.month+'/'+this.selected.day).toString('yyyyMMddHHmmss'),
+				titol:"",
+				contingut:"",
+				
+			});
+		},
+		removeContent: function(event, todayEvent) {
+			var vm=this;
+			console.log(todayEvent);
+			vm.$http.delete('/acte/'+event.id)
+	        .then(function (response) {
+	        	
+				for(var i = todayEvent.length; i--;) {
+					var ev=todayEvent[i];
+					if(ev.id===event.id) {
+						todayEvent.splice(i, 1);
+					}
+				}
+
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+	        
+		},
+		saveBlock: function(block){
+			
+			var vm = this;
+			var bloc = block.id ? block.id : '';
+
+	        vm.$http.post('/acte/'+bloc, block)
+	        .then(function (response) {
+	        	
+				//no cal fer res.
+	
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+
+		},
+		parseTime: function(time) {
+			
+			var str = time;
+			var year = str.substring(0, 4);
+			var month = str.substring(4, 6);
+			var day = str.substring(6, 8);
+			var hour = str.substring(8, 10);
+			var minute = str.substring(10, 12);
+			var second = str.substring(12, 14);
+			
+			return new Date(year, month-1, day, hour, minute, second).toString("d/M/yyyy");	
+			
+		},
 		openEvent: function(day) {
         	this.todayEvent = day.data.events;
-        	console.log(this.todayEvent);
+        	this.select(day);
         },
-        openModal: function(day) {
+        openModalDay: function(day) {
         	this.modalEvent = day.data.events;
         	this.select(day);
-            if( this.modalEvent.length>0 ) this.$refs.events.open();
+            if( this.modalEvent.length>0) {
+            	this.$refs.events.open();
+            }
         },
-        closeModal: function(ref) {
-            this.$refs.events[ref].close();
+		openModal:function(ref, object, cancel, tipo) {
+			this.$refs.upload.activate(tipo);
+			this.selectedCancel = cancel;
+			this.selected=object;
+            this.$refs[ref].open();
+        },
+        acceptModal:function(ref) {
+        	VuePellEditor.components.pell.exec('insertImage', this.selected.url);
+        	this.selected={};
+            this.$refs[ref].close();
+        },
+        closeModal:function(ref) {
+        	this.selected.url = this.selectedCancel;
+        	this.selected={};
+            this.$refs[ref].close();
         },
 		eventos: function(n) {
 			var month = Date.today().add(n).month().getMonth();
@@ -147,7 +283,7 @@ export default {
 			var current = year+''+("0" + (month + 1)).slice(-2);
 			return current;
 		},
-		calendar: function(n) {
+		calendar: function(n, force) {
 			var squareIndex =  0;
 			var mondayFirst = this.mondayFirst ? 1 : 0;
 			var dateOfMonth = 1;
@@ -163,9 +299,9 @@ export default {
 			var current = year+''+("0" + (month + 1)).slice(-2);
 		    var vm = this;
 		    
-		    if( vm.events[current] ) return vm.events[current];
+		    if( vm.events[current] && !force ) return vm.events[current];
 		    var refIndex = 1;
-	        this.$http.get('acte/'+current+'/i/'+this.$i18n.locale)
+	        this.$http.get('actes/'+current+'/i/'+this.$i18n.locale)
 	        .then(function (response) {
 		        while (squareIndex < lastDate) {
 					var week = [];
@@ -212,13 +348,8 @@ export default {
 					
 				}
 				vm.events[current] = weeks;
-//var ya = Date.now();
-
-//console.log(ya);
-				//vm.events.unshift(vm.events.shift()); //aço força el event d'uptate del vue per a q pinte el calendari
 				vm.events.push(vm.events.pop());
-//console.log(Date.now() - ya);
-				//console.log(vm.events);
+
 				return weeks;
 
 	        })
@@ -305,6 +436,19 @@ export default {
 .eventSelected {
 	margin: 2em;
     min-height: 30px;
+    article {
+	    aside {
+		    padding-bottom: 15px;
+		    border-bottom: 1px dashed @fedcolor;
+		    margin-top: 30px;
+		}
+		&:last-of-type{
+			aside {
+			border-bottom:none;
+			}
+		}
+    }
+
 }
 	
 .calendarContainer {

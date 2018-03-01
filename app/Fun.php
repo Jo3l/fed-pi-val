@@ -88,6 +88,10 @@ static private function render($result,$doexit=false) {
 }
 
 //  //  //  //  //  //  //  //
+
+//  //  //  //  //  //  //  //
+
+//  //  //  //  //  //  //  //
 private function list($source,$params=null) {
     $db = new db();
     $db->sql("SELECT * FROM ".$source." limit 100");
@@ -128,107 +132,71 @@ private function update($source,$id,$data) {
 }
 
 //  //  //  //  //  //  //  //
-
-//  //  //  //  //  //  //  //
 static public function acte_id(Request $in, Response $out){
     $db = new db();
     $db->sql("SELECT * FROM _acte_val where id=".$in->getAttribute('id') );
     $customers = $db->all();
     echo json_encode($customers);
 }
-/*/*
-//  //  //  //  //  //  //  //
-static public function acte_insert() { echo 'insert'; }
 
 //  //  //  //  //  //  //  //
-static public function acte_update() { echo 'update'; }
-
-
-
-//  //  //  //  //  //  //  //
-static public function jugador_id(Request $in, Response $out){ echo 'id'; }
-
-//  //  //  //  //  //  //  //
-static public function jugador_insert() { echo 'insert'; }
-
-//  //  //  //  //  //  //  //
-static public function jugador_update() { echo 'update'; }
-
-//  //  //  //  //  //  //  //
-static public function jugador(Request $in, Response $out, $args) { echo 'query'; }
-
-//  //  //  //  //  //  //  //
-static public function club_id(Request $in, Response $out){ echo 'id'; }
-
-//  //  //  //  //  //  //  //
-static public function club_insert() { echo 'insert'; }
-
-//  //  //  //  //  //  //  //
-static public function club_update() { echo 'update'; }
-
-//  //  //  //  //  //  //  //
-static public function equip_id(Request $in, Response $out){
-    return Fun::generic_query('_equip',$in);
+static public function ordre(Request $in, Response $out, $params){
+	//if ($request[4]=='ordre' || $request[3]=='ordre') $this->canviaordre($request[3]);
+	$json = json_decode(file_get_contents("php://input"), true);
+	$nodeid= $params['id'];
+    if (empty($nodeid)) { // canviant ordre de nodes
+        foreach( $json as $elm ) {
+            $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+		    $db = new db();
+            $db->sql($sql);
+        }
+        return Fun::render( Fun::jerarquia() , true);
+    }
+    foreach( $json as $elm) {
+        if ($elm['id']==0) continue;
+        $sql= "UPDATE pagina set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+	    $db = new db();
+        $db->sql($sql);
+    }
+    return Fun::render( Fun::contingutnode($nodeid) , true);
 }
 
 //  //  //  //  //  //  //  //
-static public function equip_insert(RequestRequest $in, Response $out $in, Response $out) {
-    return Fun::generic_insert('equip',$in);
-}
 
 //  //  //  //  //  //  //  //
-static public function equip_update(Request $in, Response $out) {Request $in, Response $out 
-    return Fun::generic_update('equip',$in);
-}
 
 //  //  //  //  //  //  //  //
-static public function noticia_id(Request $in, Response $out){ echo 'id'; }
-
-//  //  //  //  //  //  //  //
-static public function noticia_insert(Request $in, Response $outRequest $in, Response $out) { echo 'insert'; }
-
-//  //  //  //  //  //  //  //
-static public function noticia_update(Request $in, Response $outRequest $in, Response $out) { echo 'update'; }
-
-//  //  //  //  //  //  //  //
-static public function partida_id(Request $in, Response $out){ echo 'id'; }
-
-//  //  //  //  //  //  //  //
-static public function partida_insert(Request $in, Response $outRequest $in, Response $out) { echo 'insert'; }
-
-//  //  //  //  //  //  //  //
-static public function partida_update(Request $in, Response $out) { echo 'update'; }
-
-//	// //  //  //  //  //  //  //
-static public function node_id(Request $in, Response $out){ echo 'id'; }
-
-//  //  //  //  //  //  //  //
-static public function node_insert(Request $in, Response $out) { echo 'insert'; }
-
-//  //  //  //  //  //  //  //
-static public function node_update(Request $in, Response $out) { echo 'update'; }
-*/
-
 static public function auth_login(Request $request, Response $response) {
 	$json = json_decode(file_get_contents("php://input"));
 	Auth::login($json);
 }
 
 //  //  //  //  //  //  //  //
-static public function authtest() {
+static public function authtest(Request $request) {
     echo "m'has pillaO";
     $secretKey = base64_decode("SECRET_KEY");
     // encode the array
     $jwt = JWT::encode(
-        Fun::token("1", "alfon7", "putoamo"),
+        Auth::token("1", "alfon7", "putoamo"),
         $secretKey,
         'HS256'
     );
     $enencodedArray = array('jwt' => $jwt);
     // return the Token to the client.
-    echo json_encode($enencodedArray);
+    Fun::verifyRol($request,0);
+    echo '<hr/>ok';
 }
 
+//  //  //  //  //  //  //  //
+static private function verifyRol($request,$rolneeded) {
+    $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
+    $data= Auth::getUserByToken($token,$rolneeded);
+    //$rolauth= $data->data->rol;
+    // innecessari, ja fa la comprovació en getUserByToken: if ($rolneeded<$rolauth) throw new UnauthorizedException('Rol insuficient');
+    return true;
+}
+
+//  //  //  //  //  //  //  //
 static private function getPost($tabla) {
 	$json= json_decode(file_get_contents("php://input"),true);
 	if ($tabla=='partida') {
@@ -243,7 +211,7 @@ static private function getPost($tabla) {
 
 //  //  //  //  //  //  //  //
 public function generic_update(Request $request, Response $response, $params) {
-	$tabla= $params['tabla'];
+	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$id= $params['id'];
 	// comprovar q id existeix
@@ -252,33 +220,33 @@ public function generic_update(Request $request, Response $response, $params) {
 	$db->sql('select id from '.($tabla).' where id='.$id);
 	if ($db->numRows()!=1) die('ERROR: No existeix la fila o hi ha més d\'una');
 	$pairs= array();
-	foreach($json as $key=>$value) array_push($pairs,$key."='".$value."'");
+	foreach($json as $key=>$value) if($value!=null || $key!='ordre') array_push($pairs,$key."='".$value."'");
 	$pairs= implode(', ',$pairs);
 	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
-    //$request->getParam(
-    echo $sql;
+	$db->sql($sql);
 }
 
 //  //  //  //  //  //  //  //
 public function generic_insert(Request $request, Response $response, $params) {
-	$tabla= $params['tabla'];
+	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$keys= implode(',',array_keys($json));
 	$values= "'".implode("','",array_values($json))."'";
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
-	echo $sql;
+	$db->sql($sql);
 }
 
 //  //  //  //  //  //  //  //
 public function generic_delete(Request $request, Response $response, $params) {
-	echo 'delete';
-    //$request->getParam(
+	$tabla= Fun::tables($params['tabla'],'modify');
+    $db = new db();
+    $db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
 }
 
 //  //  //  //  //  //  //  //
 static public function generic_id(Request $request, Response $response, $params) {
     $db = new db();
-    $tabla= Fun::tables($params['tabla']);
+    $tabla= Fun::tables($params['tabla'],'select');
     $db->sql("SELECT * FROM ".$tabla." where id=".$params['id']);
     $data = $db->all();
     echo json_encode($data);
@@ -286,20 +254,33 @@ static public function generic_id(Request $request, Response $response, $params)
 }
 
 //  //  //  //  //  //  //  //
-static private function tables($elm) {
+static private function tables($elm, $for='select') {
     $tables= array(
-        'acte'=>'_acte_'.Fun::$idioma,
-        'noticia'=>'_noticia_'.Fun::$idioma,
-        'equip'=>'_equip_'.Fun::$idioma,
-        'club'=>'_club_'.Fun::$idioma,
-        'jugador'=>'_jugador_'.Fun::$idioma,
-        'node'=>'_element_'.Fun::$idioma,
-        'jerarquia'=>'_jerarquia',
-        'partida'=>'partida',
-        'producte'=>'_producte_'.Fun::$idioma
-        );
-	if (!in_array($elm,array_keys($tables))) return $elm;
-    return @$tables[$elm];
+    	'select'=> array(
+	        'acte'=>'_acte_'.Fun::$idioma,
+	        'noticia'=>'_noticia_'.Fun::$idioma,
+	        'equip'=>'_equip_'.Fun::$idioma,
+	        'club'=>'_club_'.Fun::$idioma,
+	        'jugador'=>'_jugador_'.Fun::$idioma,
+	        'node'=>'_element_'.Fun::$idioma,
+	        'jerarquia'=>'_jerarquia',
+	        'partida'=>'partida',
+	        'producte'=>'_producte_'.Fun::$idioma
+	    ),
+	    'modify'=> array(
+	        'acte'=>'pagina',
+	        'noticia'=>'pagina',
+	        'equip'=>'equip',
+	        'club'=>'club',
+	        'jugador'=>'jugador',
+	        'node'=>'pagina',
+	        'jerarquia'=>'jerarquia',
+	        'partida'=>'partida',
+	        'producte'=>'producte'
+	    )
+    );
+	if (!in_array($elm,array_keys($tables[$for]))) return $elm;
+    return @$tables[$for][$elm];
 }
 
 //  //  //  //  //  //  //  //
@@ -349,7 +330,7 @@ static public function date_query(Request $request, Response $response, $params)
 	$options= array_merge(Fun::procesaparam($params['p3'],$options));
 	$options= array_merge(Fun::procesaparam($params['p4'],$options));
     $db = new db();
-    $tabla= Fun::tables('acte');
+    $tabla= Fun::tables('acte','select');
     $sql= "SELECT * FROM ".$tabla;
 	array_push( $option['wheres'], "tipus='A'" );
 	$mes= $params['mes'];
@@ -381,7 +362,7 @@ static public function generic_query(Request $request, Response $response, $para
 	$options= array_merge(Fun::procesaparam($params['p3'],$options));
 	$options= array_merge(Fun::procesaparam($params['p4'],$options));
     $db = new db();
-    $tabla= Fun::tables($params['tabla']);
+    $tabla= Fun::tables($params['tabla'],'select');
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
@@ -566,23 +547,6 @@ static private function contingutnode($id) {
 		}
 	}
     return $result;
-}
-
-//  //  //  //  //  //  //  //
-static private function canviaordre($nodeid) {
-    if ($nodeid=='ordre') { // canviant ordre de nodes
-        foreach( Fun::$json as $elm ) {
-            $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
-            Fun::$db->sql($sql);
-        }
-        return Fun::render( $this->jerarquia(Fun::$branca) , true);
-    }
-    foreach( Fun::$json as $elm) {
-        if ($elm['id']==0) continue;
-        $sql= "UPDATE pagina set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
-        Fun::$db->sql($sql);
-    }
-    return Fun::render( Fun::$contingutnode(Fun::$branca) , true);
 }
 
 //  //  //  //  //  //  //  //

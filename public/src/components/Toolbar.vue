@@ -12,7 +12,19 @@
 			<img src="/static/logo.png">
 		</div>
 	    <div slot="actions">
+	    	<ui-button has-dropdown v-if="$store.getters.isAuthenticated" icon="account_circle" size="small">{{$store.getters.userMail}}
+	                <ui-menu
+	                    contain-focus
+	                    has-icons
+	                    slot="dropdown"
+	                    :options="userOptions"
+	                    @select="selectUserOptions"
+	                    @close="$refs.localeSelector.closeDropdown()"
+	                ></ui-menu>
+	    	</ui-button>
+	    	
             <ui-icon-button
+            	v-else
                 color="black"
                 icon="account_circle"
                 size="large"
@@ -55,11 +67,12 @@
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
-	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen"><router-link v-bind:to="menu.path">{{ menu.name }}</router-link></li>
-	    	<li>||</li>
-			<li><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
-			<li><router-link :to="{ path: '/admin/equips' }">Equips</router-link></li>
-			<li><router-link :to="{ path: '/admin/Clubs' }">Clubs</router-link></li>
+	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen">
+	    		<router-link v-bind:to="menu.path">{{ menu.name }}</router-link>
+	    	</li>
+			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
+			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/equips' }">Equips</router-link></li>
+			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/Clubs' }">Clubs</router-link></li>
 	    </ul>
 	</div>
 
@@ -71,7 +84,6 @@
         </div>
 	    <button @click="login(user)">Login</button>
 		<button @click="register(user)">Register</button>
-		<button @click="logout(user)">Logout</button>
     </ui-modal>
 	
 </div>
@@ -86,6 +98,12 @@ export default {
 		loadingBar: false,
 		menuOpen: false,
 		localesArray: [],
+		logged:false,
+		userOptions: [{
+					label: 'logout',
+					action: 'logout',
+					icon: 'visibility off',
+		   		}],
 		user: {
 			name:'alfon7',
 			email:'alfons@algemesi.info',
@@ -95,39 +113,48 @@ export default {
 	}
 	},
 	methods: {
-		selectLang: function(lang) {
-			window.location.replace(lang.url);
+		selectUserOptions:function(selected){
+			if(selected.action=='logout') this.logout();
+		},
+		selectLang: function(selected) {
+			window.location.replace(selected.url);
 		},
 		toggleBar: function() {
 		this.loadingBar = !this.loadingBar;
 		console.log(this.loadingBar);
 		},
-        openModal: function(day) {
+        openModal: function() {
         	this.$refs.login.open();
         },
-        closeModal: function(ref) {
+        closeModal: function() {
             this.$refs.login.close();
         },
+        
 		login: function (user) {
 		  var vm=this;
-	      this.$auth.login(user).then(function () {
-	        console.log('autenticat: '+vm.$auth.isAuthenticated());
-	      })
+		  this.$store.dispatch('login', { user }).then(function(){
+				vm.closeModal();
+		  });
 	    },
 		logout: function (user) {
 		  var vm=this;
-	      this.$auth.logout(user).then(function () {
-	        console.log('autenticat: '+vm.$auth.isAuthenticated());
-	        vm.$refs.login.close();
-	      })
+		  this.$store.dispatch('logout').then(function(){
+				vm.closeModal();
+		  });
 	    },
 	    register: function (user) {
 	      var vm=this;
+	      console.log(vm.$auth);
+	      /*
 	      this.$auth.register(user).then(function () {
 	        console.log('autenticat: '+vm.$auth.isAuthenticated());
 	      })
+	      */
 	    }
 	
+	},
+	mounted: function() {
+
 	},
 	beforeMount: function() {
 		//esta funcio es per a automatitzar el selector de llenguatges a partir del objecte $i18n
@@ -144,6 +171,11 @@ export default {
 		   }
 		}
 		
+	},
+	computed:{
+		isAuthenticated: function(){
+			return this.$store.getters.isAuthenticated;
+		}
 	},
 	created: function(){
 		var vm = this;

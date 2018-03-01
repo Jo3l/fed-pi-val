@@ -124,6 +124,11 @@ export default {
 	mounted: function () {
 		var vm=this;
 		vm.getData('clubs');
+	},
+	created: function() {
+	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
+	      this.$router.push({ path: `/` });
+	    }
 	}
 }
 </script>

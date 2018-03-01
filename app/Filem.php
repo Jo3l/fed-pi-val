@@ -43,7 +43,9 @@ class Filem
 			rmdir($dir);
 		} else {
 			echo $dir;
+			echo file_exists($dir)?1:0;
 			unlink($dir);
+			echo file_exists($dir)?1:0;
 		}
 	}
 	
@@ -75,11 +77,11 @@ class Filem
 	}
 
 	static private function prepare($f) {
-		Filem::$absolutePath = dirname(__FILE__)."/../public/static";
+		Filem::$absolutePath = $_SERVER['DOCUMENT_ROOT'].'/static';
 		Filem::$MAX_UPLOAD_SIZE = min(Filem::asBytes(ini_get('post_max_size')), Filem::asBytes(ini_get('upload_max_filesize')));
 		Filem::$tmp_dir = (Filem::$absolutePath);
 		//Filem::$tmp_dir = (DIRECTORY_SEPARATOR==='\\') ? str_replace('/',DIRECTORY_SEPARATOR,dirname(Filem::$absolutePath)) : dirname(Filem::$absolutePath);
-		$f = $f ? Filem::$absolutePath.$f : Filem::$absolutePath;
+		$f = $f ? Filem::$absolutePath.'/'.$f : Filem::$absolutePath;
 		$tmp = Filem::get_absolute_path($f);
 		if($tmp === false) Filem::err(404,'File or Directory Not Found');
 		//if(substr($tmp, 0,strlen(Filem::$tmp_dir)) !== Filem::$tmp_dir) Filem::err(403,"Forbidden");
@@ -89,28 +91,33 @@ class Filem
 	
 	static public function list(Request $req, Response $res, $params) {
 		if (strpos($params['path'],'..')) Filem::err(403,'Error de acceso');
-		$file= Filem::prepare( $params['path'] );
-		if (is_dir($file)) {
-			$directory = $file;
+		// obtin les rutes del camí sol.licitat
+		$path= $file= Filem::prepare( $params['path'] );
+		// si no estan creats els subdirectoris del mes actual en uploads|jugadors|pdf, els crea
+		if (!is_dir(Filem::$absolutePath.'/upload/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/upload/'.date('Y/m'));
+		if (!is_dir(Filem::$absolutePath.'/jugadors/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/jugadors/'.date('Y/m'));
+		if (!is_dir(Filem::$absolutePath.'/pdf/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/pdf/'.date('Y/m'));
+		//echo is_dir($path)?1:0;
+		if (is_dir($path)) {
+			$directory = $path;
 			$result = [];
 			$files = array_diff(scandir($directory), ['.','..']);
 		    foreach($files as $entry) 
 		    	if($entry !== basename(__FILE__))
 		    		if (!in_array(strtolower(pathinfo($entry, PATHINFO_EXTENSION)), $hidden_extensions)) {
-			    		$i = $_REQUEST['file'] ? $_REQUEST['file'] .'/'. $entry : $entry;
-				    	$stat = stat($file.'/'.$i);
+			    		$file = $_REQUEST['file'] ? $_REQUEST['file'] .'/'. $entry : $entry;
+				    	$stat = stat($path.'/'.$file);
 				        $result[] = [
 				        	//'element' => $i,
 				        	'mtime' => $stat['mtime'],
 				        	'size' => $stat['size'],
-				        	'name' => basename($i),
+				        	'name' => basename($file),
 				        	'selected' => false,
-				        	'path' => preg_replace('@^\./@', '', preg_replace('/^\//', '', $params['path'].'/'.$i)),
-				        	'is_dir' => is_dir($file.'/'.$i),
-				        	'is_readable' => is_readable($i),
-				        	'is_writable' => is_writable($i),
-				        	'is_executable' => is_executable($i),
-				        	'info' => $params['path']
+				        	'path' => preg_replace('@^\./@', '', preg_replace('/^\//', '', $params['path'].'/'.$file)),
+				        	'is_dir' => is_dir($path.'/'.$file),
+				        	'is_readable' => is_readable($path.'/'.$file),
+				        	'is_writable' => is_writable($path.'/'.$file),
+				        	'is_executable' => is_executable($path.'/'.$file)
 				        ];
 				    }
 		} else {
@@ -129,7 +136,7 @@ class Filem
 				case 'zip': header('Content-type: application/x-compressed'); break;
 			}
 			readfile($file);
-			return;
+			exit;
 		}
 		echo json_encode(['success' => true, 'is_writable' => is_writable($file), 'results' =>$result]);
 		exit;
@@ -138,12 +145,12 @@ class Filem
 	static public function delete(Request $req, Response $res, $params) {
 		$file= Filem::prepare( $params['path'] );
 		if(Filem::$allow_delete) {
-			rmrf($file);
+			Filem::rmrf($file);
 		}
 		exit;
 	}
 	
-	static public function uploadimgjugador(Request $req, Response $res, $params) {
+	static public function upload(Request $req, Response $res, $params, $what='upload') {
 		if (Filem::$allow_upload != true) Filem::err(404,'Sense permis per enviar info');
 		$file= Filem::prepare( );
 		
@@ -151,7 +158,7 @@ class Filem
 			if(preg_match(sprintf('/\.%s$/',preg_quote($ext)), $_FILES['files']['name'])) 
 				err(403,"Files of this type are not allowed.");
 				
-		$year_folder = "/jugadors/" . date("Y");
+		$year_folder = '/' . $what . '/' . date("Y");
 		$month_folder = $year_folder . '/' . date("m");
 
 		!file_exists( $file . $year_folder) && mkdir( $file . $year_folder , 0777);
@@ -170,65 +177,10 @@ class Filem
 		exit;
 	}
 	
-	static public function uploadimg(Request $req, Response $res, $params) {
-		if (Filem::$allow_upload != true) Filem::err(404,'Sense permis per enviar info');
-		$file= Filem::prepare( );
-		var_dump($_POST);
-		var_dump($_FILES);
-		var_dump($_FILES['files']['tmp_name']);
-		foreach($disallowed_extensions as $ext) 
-			if(preg_match(sprintf('/\.%s$/',preg_quote($ext)), $_FILES['files']['name'])) 
-				err(403,"Files of this type are not allowed.");
-				
-		$year_folder = $file . "/upload/" . date("Y");
-		$month_folder = $year_folder . '/' . date("m");
-		
-		!file_exists($year_folder) && mkdir($year_folder , 0777);
-		!file_exists($month_folder) && mkdir($month_folder, 0777);
-		
-		$fileDestination = $month_folder;
-		
-		if(file_exists($fileDestination.'/'.$_FILES['files']['name'])) {
-			
-			var_dump(move_uploaded_file($_FILES['files']['tmp_name'], $fileDestination.'/'.rand(00,99)."_".$_FILES['files']['name']));
-		
-		} else {
-			var_dump(move_uploaded_file($_FILES['files']['tmp_name'], $fileDestination.'/'.$_FILES['files']['name']));
-		}
-		
-		exit;
-		
-	}
+	static public function uploadimgjugador(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'jugador'); }
 	
-	static public function uploadpdf(Request $req, Response $res, $params) {
-		if (Filem::$allow_upload != true) Filem::err(404,'Sense permis per enviar info');
-		$file= Filem::prepare( );
-		var_dump($_POST);
-		var_dump($_FILES);
-		var_dump($_FILES['files']['tmp_name']);
-		foreach($disallowed_extensions as $ext) 
-			if(preg_match(sprintf('/\.%s$/',preg_quote($ext)), $_FILES['files']['name'])) 
-				err(403,"Files of this type are not allowed.");
-				
-	
-		$year_folder = $file . "/pdf/" . date("Y");
-		$month_folder = $year_folder . '/' . date("m");
-		
-		!file_exists($year_folder) && mkdir($year_folder , 0777);
-		!file_exists($month_folder) && mkdir($month_folder, 0777);
-		
-		$fileDestination = $month_folder;
-		
-		if(file_exists($fileDestination.'/'.$_FILES['files']['name'])) {
-			
-			var_dump(move_uploaded_file($_FILES['files']['tmp_name'], $fileDestination.'/'.rand(00,99)."_".$_FILES['files']['name']));
-		
-		} else {
-			var_dump(move_uploaded_file($_FILES['files']['tmp_name'], $fileDestination.'/'.$_FILES['files']['name']));
-		}
-		
-		exit;
-	}
+	static public function uploadimg(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'upload'); }
 
+	static public function uploadpdf(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'pdf'); }
 
 }

@@ -21,8 +21,9 @@ class db{
 
     public function sql($sql) {
     	$this->query= $this->pdo->query($sql);
-    	$this->result= array();
         $this->myQuery = $sql; // Pass back the SQL
+    	if (substr(strtolower($sql),0,6)!='select') return true;
+    	$this->result= array();
         if(!is_bool($this->query)){ 
             // If the query returns >= 1 assign the number of rows to numResults 
             $this->numResults = $this->query->rowCount();

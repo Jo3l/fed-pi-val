@@ -7,6 +7,7 @@
 /public/static/pdf
 /public/old_api
 /public/js/*
+/app/config/config.php
 npm-debug.log
 .idea
 composer.phar

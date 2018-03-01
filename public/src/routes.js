@@ -6,7 +6,6 @@ import Cart from './components/Cart.vue'
 
 import SubRoutes from './components/SubRoutes.vue'
 import PageNotFound from './components/PageNotFound.vue'
-import OldBrowser from './components/OldBrowser.vue'
 
 import Jugadors from './components/admin/Jugadors.vue'
 import Jugador from './components/admin/Jugador.vue'
@@ -66,6 +65,16 @@ export const routes = [
     component: News,
   },
   {
+    path: '/val/noticia',
+    name: 'Nova Noticia',
+    component: SingleNews,
+  },
+  {
+    path: '/es/noticia',
+    name: 'Nueva Noticia',
+    component: SingleNews,
+  },
+  {
     path: '/val/noticia/:slug',
     name: 'Noticia',
     component: SingleNews,
@@ -75,22 +84,6 @@ export const routes = [
     name: 'Noticia-es',
     component: SingleNews,
   },
-/*
-  {
-    path: '/val/noticia/edit/:slug',
-    name: 'NoticiaEdit',
-    component: function(resolve) {
-             require(['./components/EditSingleNews.vue'], resolve);
-        },
-  },
-  {
-    path: '/es/noticia/edit/:slug',
-    name: 'NoticiaEdit-es',
-    component: function(resolve) {
-             require(['./components/EditSingleNews.vue'], resolve);
-        },
-  },
-*/
   {
     path: '/val/calendari',
     name: 'Calendari',
@@ -118,19 +111,19 @@ export const routes = [
   {
     path: '/val/competicions',
     name: 'Competicions',
-    props: {node:'competicions'},
+    props: {propDisable:'competicions'},
     component: SubRoutes,
     lang:'val'
   },
   {
     path: '/es/competiciones',
     name: 'Competiciones',
-    props: {node:'competiciones'},
+    props: {propDisable:'competiciones'},
     component: SubRoutes,
-    lang:'es'
+    lang:'es',
   },  {
     path: '/val/federacio',
-    name: 'Federacio',
+    name: 'Federació',
     component: SubRoutes,
     lang:'val'
   },
@@ -143,11 +136,13 @@ export const routes = [
   {
     path: '/val/*',
     name: 'nodes',
-    component: SubRoutes,
+    props: {propDisable:'competicions'},
+    component: SubRoutes
   },
   {
     path: '/es/*',
     name: 'nodos',
+    props: {propDisable:'competiciones'},
     component: SubRoutes,
   },
   {
@@ -163,32 +158,32 @@ export const routes = [
     {
     path: '/admin/jugadors',
     name: 'Jugadors',
-    component: Jugadors
+    component: Jugadors,
+    role: 0
   },
     {
     path: '/admin/jugador/:jugadorId',
     name: 'Jugador',
-    component: Jugador
+    component: Jugador,
+    role: 0
   },
     {
     path: '/admin/jugador/',
     name: 'Nou Jugador',
-    component: Jugador
+    component: Jugador,
+    role: 0
   },
     {
     path: '/admin/equips',
     name: 'Equips',
-    component: Equips
+    component: Equips,
+    role: 0
   },
     {
     path: '/admin/clubs',
     name: 'Clubs',
-    component: Clubs
-  },
-  {
-    path: '/oldBrowser',
-    name: 'oldBrowser',
-    component: OldBrowser
+    component: Clubs,
+    role: 0
   },
   {
     path: '/404',

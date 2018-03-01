@@ -12,29 +12,25 @@
 					<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+newsTeaser.slug }"><h2>{{ newsTeaser.titol }}</h2></router-link>
 			</aside>
 			
-			<progressive-background :src="newsTeaser.url" class="teaserPicture">
-			
+			<progressive-background v-if="newsTeaser.url" :src="newsTeaser.url" class="teaserPicture">
 
-				
-				<!--
 				<div v-bind:class="{ competicions:true, active: newsTeaser!='' }">
-							<h3>COMPETICIONS EN JOC</h3>
+							<h3>COMPETICIONS ACTIVES</h3>
 							<ul>
-								<li><a href="http://fedpival.es/competicions/documents/13/12/13">Escala i Corda - Lliga Juvenil Tecnif.</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/14/20">Escala i Corda - Auton. AON EiC</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/18/113">Raspall - Individual Autonomic</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/13/285">Raspall - Circuit Sub-18 Femení</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/13/286">Raspall - Circuit Sub-23 Femení</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/7/312">Frontó - XXXVI JECV Parelles 2017-18</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/17/313">Llargues i Palma - Trofeu Hivern Llargues</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/5/316">Raspall - XXXVI JECV 2017-2018</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/6/317">Galotxa - XXXV JECV galotxa 17 - 18</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/49/318">Fundació per a la Pilota Valenciana - Convocatòria Projectes Fundació</a></li>
-								<li><a href="http://fedpival.es/competicions/documents/13/51/321">Copa Generalitat - Copa Generalitat 2018 - Frontó</a></li>
+								<li><a href="#">Escala i Corda - Lliga Juvenil Tecnif.</a></li>
+								<li><a href="#">Escala i Corda - Auton. AON EiC</a></li>
+								<li><a href="#">Raspall - Individual Autonomic</a></li>
+								<li><a href="#">Raspall - Circuit Sub-18 Femení</a></li>
+								<li><a href="#">Raspall - Circuit Sub-23 Femení</a></li>
+								<li><a href="#">Frontó - XXXVI JECV Parelles 2017-18</a></li>
+								<li><a href="#">Llargues i Palma - Trofeu Hivern Llargues</a></li>
+								<li><a href="#">Raspall - XXXVI JECV 2017-2018</a></li>
+								<li><a href="#">Galotxa - XXXV JECV galotxa 17 - 18</a></li>
+								<li><a href="#">Fundació per a la Pilota Valenciana - Convocatòria Projectes Fundació</a></li>
+								<li><a href="#">Copa Generalitat - Copa Generalitat 2018 - Frontó</a></li>
 							</ul>
 				</div>
-				-->
-	
+
 			</progressive-background>
 			
 			
@@ -59,7 +55,7 @@ export default {
 		getData: function(apiUrl) {
 	
 	        var vm = this;
-	        this.$http.get(apiUrl)
+	        this.$http.get(apiUrl, { useCache: true })
 	        .then(function (response) {
 	            vm.newsTeaser = response.data[0];
 	        })
@@ -71,6 +67,8 @@ export default {
 	},
 	mounted: function () {
 		this.getData('/noticia/destacada/i/'+this.$i18n.locale);
+		
+		console.log(this.$http.defaults);
 	},
 	watch: {
 	
@@ -102,6 +100,7 @@ export default {
 		    margin: 0;
 		    color: white;
 		    text-shadow: 1px 1px 3px #101010;
+		    max-width: 80%;
 		}
     }
 	.teaserPicture {

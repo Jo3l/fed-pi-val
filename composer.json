@@ -7,7 +7,8 @@
     "autoload": {
         "classmap": [
           "app",
-          "app/Fun.php"
+          "app/Fun.php",
+          "app/Auth.php"
         ]
     }
 }
