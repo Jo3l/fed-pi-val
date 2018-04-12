@@ -31,6 +31,7 @@ class Fun
     private static $mes= null; // mes a partir del qual es consulten dades
     private static $idioma= 'val'; // idioma actual
     private static $rowcount= null; 
+    private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // taules que al fer update o insert, han de fer-ho tmb en idioma
 
 //  //  //  //  //  //  //  //
 // funció que verifica que l'slug es unic
@@ -124,12 +125,12 @@ private function list($source,$params=null) {
 }
 
 //  //  //  //  //  //  //  //
-private function update($source,$id,$data) {
+/*borrable private function update($source,$id,$data) {
     $db = new db();
     $db->sql("UPDATE ".$source." limit 100");
     $elements = $db->all();
     echo json_encode($elements);
-}
+}*/
 
 //  //  //  //  //  //  //  //
 static public function acte_id(Request $in, Response $out){
@@ -140,22 +141,24 @@ static public function acte_id(Request $in, Response $out){
 }
 
 //  //  //  //  //  //  //  //
-static public function ordre(Request $in, Response $out, $params){
-	//if ($request[4]=='ordre' || $request[3]=='ordre') $this->canviaordre($request[3]);
+static public function ordre_nodes(Request $in, Response $out, $params){
+	$json = json_decode(file_get_contents("php://input"), true);
+	$db = new db();
+    foreach( $json as $elm ) {
+        $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
+	    $db->sql($sql);
+    }
+    return Fun::render( Fun::jerarquia() , true);
+}
+
+//  //  //  //  //  //  //  //
+static public function ordre_elements(Request $in, Response $out, $params){
 	$json = json_decode(file_get_contents("php://input"), true);
 	$nodeid= $params['id'];
-    if (empty($nodeid)) { // canviant ordre de nodes
-        foreach( $json as $elm ) {
-            $sql= "UPDATE jerarquia set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
-		    $db = new db();
-            $db->sql($sql);
-        }
-        return Fun::render( Fun::jerarquia() , true);
-    }
-    foreach( $json as $elm) {
+	$db = new db();
+    foreach( $json as $elm ) {
         if ($elm['id']==0) continue;
         $sql= "UPDATE pagina set ordre=".$elm['ordre'].' where id='.$elm['id'].';';
-	    $db = new db();
         $db->sql($sql);
     }
     return Fun::render( Fun::contingutnode($nodeid) , true);
@@ -223,24 +226,94 @@ public function generic_update(Request $request, Response $response, $params) {
 	foreach($json as $key=>$value) if($value!=null || $key!='ordre') array_push($pairs,$key."='".$value."'");
 	$pairs= implode(', ',$pairs);
 	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
+	// falta canviar camps en idioma susceptibles d'estar subjectes a llengua
+	// noticia: titol i contingut, acte: titol i contingut
 	$db->sql($sql);
+	if (in_array($tabla,Fun::$taules_amb_idioma)) Fun::update_idioma($params,$id,$json);
+	Fun::generic_id($request,$response,$params);
+	return;
 }
 
 //  //  //  //  //  //  //  //
+// actualització de contingut segons idioma
+private function update_idioma($params, $id, $json) {
+	$tipus= $params['tabla'];
+	switch ($tipus) {
+		case 'noticia': $camps= array('titol','contingut','slug'); break;
+		case 'acte': $camps= array('titol','contingut'); break;
+		case 'jerarquia': $camps= array('titol'); break;
+		case 'element': $camps= array('titol','contingut'); break;
+		case 'categoria': $camps= array('categoria'); break;
+		case 'producte': $camps= array('producte'); break;
+	}
+	if (empty($camps)) return;
+	$campsnous= array();
+	foreach($camps as $camp) $campsnous[$camp]= $json[$camp];
+	//tipus: acte,noticia,jerarquia,element
+	//camp: categoria,producte,titol,contingut,slug
+	$db= new db();
+    $db->sql(" START TRANSACTION;");
+	foreach($campsnous as $camp=>$val) {
+		$sql= "update idioma set text=".$db->escapeString($val)." where idioma='".Fun::$idioma."' and tipus='".$tipus."' and camp='".$camp."' and registreid=".$id."\n";
+		$db->sql($sql);
+	}
+    $db->sql(" COMMIT;");
+}
+
+//  //  //  //  //  //  //  //
+// inserció genèrica de contingut
 public function generic_insert(Request $request, Response $response, $params) {
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$keys= implode(',',array_keys($json));
 	$values= "'".implode("','",array_values($json))."'";
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
+	$db= new db();
 	$db->sql($sql);
+	$sql= "SELECT LAST_INSERT_ID() as id";
+	$db->sql($sql);
+	$id = $db->all();
+	$id= $id[0]['id'];
+	if (in_array($tabla,Fun::$taules_amb_idioma)) Fun::insert_idioma($params,$id,$json);
+	$params['id']= $id;
+	Fun::generic_id($request,$response,$params);
+}
+
+//  //  //  //  //  //  //  //
+// inserció de contingut segons idioma
+private function insert_idioma($params, $id, $json) {
+	$tipus= $params['tabla'];
+	switch ($tipus) {
+		case 'noticia': $camps= array('titol','contingut','slug'); break;
+		case 'acte': $camps= array('titol','contingut'); break;
+		case 'jerarquia': $camps= array('titol'); break;
+		case 'element': $camps= array('titol','contingut'); break;
+		case 'categoria': $camps= array('categoria'); break;
+		case 'producte': $camps= array('producte'); break;
+	}
+	if (empty($camps)) return;
+	$campsnous= array();
+	foreach($camps as $camp) $campsnous[$camp]= $json[$camp];
+	//tipus: acte,noticia,jerarquia,element
+	//camp: categoria,producte,titol,contingut,slug
+	$db= new db();
+    $db->sql(" START TRANSACTION;");
+	foreach($campsnous as $camp=>$val) {
+		$sql= "insert into idioma(registreid,idioma,tipus,camp,text) values ( ".$id.",'".Fun::$idioma."','".$tipus."','".$camp."' ,".$db->escapeString($val).")";
+		$db->sql($sql);
+	}
+    $db->sql(" COMMIT;");
 }
 
 //  //  //  //  //  //  //  //
 public function generic_delete(Request $request, Response $response, $params) {
+    // considerar dependencies ací
+    // per exemple, jugador amb pertany
 	$tabla= Fun::tables($params['tabla'],'modify');
     $db = new db();
-    $db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
+    try{
+    	$db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
+    } catch(Exception $e) { Fun::render(array("error"=>$e->getMessage())); }
 }
 
 //  //  //  //  //  //  //  //
@@ -254,14 +327,36 @@ static public function generic_id(Request $request, Response $response, $params)
 }
 
 //  //  //  //  //  //  //  //
+static public function generic_search(Request $request, Response $response, $params) {
+	// minim tres caracters al buscar
+	if (strlen($params['que'])<3) die ( json_encode([]) );
+	$options= array();
+	if (isset($params['p'])) $options['limit']= ($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
+	if (isset($params['o'])) $options['order']= str_replace('-',' desc',$params['o']);
+    $db = new db();
+    $tabla= Fun::tables($params['tabla'],'select');
+	$db->sql("SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$tabla."' and data_type='varchar';");
+	$que= $db->all();
+	$ques= array();
+	foreach( $que as $elm ) { array_push( $ques, $elm['column_name']." like '%".$params['que']."%' " ); }
+	$sql= "select * from ".$tabla." where ".implode( $ques, ' OR ');
+    if (isset($options['order'])) $sql.= " order by ".$options['order'];
+    if (isset($options['limit'])) $sql.= " limit ".$options['limit'];
+	$db->sql($sql);
+	$data= $db->all();
+    echo json_encode($data);
+    return $params;
+}
+
+//  //  //  //  //  //  //  //
 static private function tables($elm, $for='select') {
     $tables= array(
     	'select'=> array(
 	        'acte'=>'_acte_'.Fun::$idioma,
 	        'noticia'=>'_noticia_'.Fun::$idioma,
-	        'equip'=>'_equip_'.Fun::$idioma,
-	        'club'=>'_club_'.Fun::$idioma,
-	        'jugador'=>'_jugador_'.Fun::$idioma,
+	        'equip'=>'_equip',
+	        'club'=>'_club',
+	        'jugador'=>'jugador',
 	        'node'=>'_element_'.Fun::$idioma,
 	        'jerarquia'=>'_jerarquia',
 	        'partida'=>'partida',
@@ -292,6 +387,7 @@ static private function procesaparam($str,$options) {
 			$options['limit']= Fun::$itemsPerPage;
 			break;
 		case 'p': // numpagina
+			// la pàgina 0 es la base sempre
 			$options['limit']= ($str[2]*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 			break;
 		case 't':
@@ -382,22 +478,50 @@ static public function generic_query(Request $request, Response $response, $para
 
 
 //  //  //  //  //  //  //  //
-static public function node(Request $request, Response $response, $params) {
-    /*if (!empty($this->json)) {
-        // delete or update or insert (node o element o ordre)
-        if ($request[4]=='ordre' || $request[3]=='ordre') $this->canviaordre($request[3]);
-        //if (isset($this->json['parent_id'])) $this->branca= $this->json['parent_id'];
-        if (!empty($this->json['delete_id'])) { // eliminar un element o un node
-            if (is_numeric($this->branca)) return $this->editaelement($this->branca); // es un element
-            else return $this->guardanode(); // es un node
-        }
-        if ( empty($this->json['tipus']) ) return $this->guardanode(); // es un node de jerarquia
-        return $this->editaelement($this->branca); // es un element de node
-    }*/
-    // si no es post/json, obtin nodes:
+// elimina un node de la jerarquia
+static public function delete_node(Request $request, Response $response, $params) {
+	//api/node/{tipus:federacio|competicio/federacions/competicions}/{id:[0-9]+}
     $id= $params['id'];
-    if (is_numeric($id)) Fun::render(Fun::contingutnode($id), true);
-    else Fun::render(Fun::jerarquia($id), true);
+    $db= new db();
+    $db->sql(" START TRANSACTION;");
+    $db->sql(" DELETE FROM idioma WHERE tipus='jerarquia' and registreid=".$id);
+    $db->sql(" DELETE FROM jerarquia WHERE id=".$id);
+    $db->sql(" COMMIT;");
+    return Fun::render(Fun::jerarquia($params['tipus']), true);
+}
+
+//  //  //  //  //  //  //  //
+// crea un node de la jerarquia
+static public function insert_node(Request $request, Response $response, $params) {	return Fun::guardanode($params); }
+
+//  //  //  //  //  //  //  //
+// elimina un bloc o element
+static public function delete_element(Request $request, Response $response, $params) {
+	//api/node/{pare:[0-9]+}/element/{id:[0-9]+}
+    $id= $params['id'];
+    $pare= $params['pare'];
+    $db= new db();
+    $db->sql(" START TRANSACTION;");
+    $db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$id);
+    $db->sql(" DELETE FROM pagina WHERE id=".$id);
+    $db->sql(" COMMIT;");
+    return Fun::render(Fun::contingutnode($pare), true);
+}
+
+//  //  //  //  //  //  //  //
+// inserta un nou bloc o element d'un tipus indicat
+static public function insert_element(Request $request, Response $response, $params) {
+    return Fun::editaelement($params['id']);
+}
+
+//  //  //  //  //  //  //  //
+static public function list_elements(Request $request, Response $response, $params) {
+    echo Fun::render(Fun::contingutnode($params['id']), true);
+}
+
+//  //  //  //  //  //  //  //
+static public function list_nodes(Request $request, Response $response, $params) {
+    Fun::render(Fun::jerarquia($params['id']), true);
 }
 
 //  //  //  //  //  //  //  //
@@ -446,71 +570,66 @@ static private function jerarquia($fill='competicions') {
 }
 
 //  //  //  //  //  //  //  //
-// funció que elimina, edita (amb id) o inserta un element de con// funció que elimina, edita (amb id) o inserta un element de contingut... 
+// funció queedita (amb id) o inserta un element de contingut... 
 static private function editaelement($id) {
-    $data= Fun::$json;
-    if (isset($data[delete_id])) {
-        Fun::$db->sql(" START TRANSACTION;");
-        Fun::$db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$data[delete_id]);
-        Fun::$db->sql(" DELETE FROM pagina WHERE id=".$data[delete_id]);
-        Fun::$db->sql(" COMMIT;");
-        Fun::render($this->contingutnode($this->branca), true);
-        exit;
-    }
-    if (isset($data[id])) { // UPDATE!
+    $json= json_decode(file_get_contents("php://input"),true);
+    $db= new db();
+    if (isset($json['id'])) { // UPDATE!
         $camps= [];
-        foreach($data as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."='".$val."'");
+        foreach($json as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."='".$val."'");
         $camps= implode(',',$camps);
         $sql= "START TRANSACTION;";
-        Fun::$db->sql( $sql );
-        if (isset($data['titol'])) {
-            $sql= " UPDATE idioma SET text= '".$data['titol']."' WHERE registreid=".$data['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='titol';";
-            Fun::$db->sql( $sql );
-            unset($data['titol']);
+        $db->sql( $sql );
+        if (isset($json['titol'])) {
+            $sql= " UPDATE idioma SET text= '".$json['titol']."' WHERE registreid=".$json['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='titol';";
+            $db->sql( $sql );
+            unset($json['titol']);
         }
-        if (isset($data['contingut'])) {
-            $sql= " UPDATE idioma SET text= '".$data['contingut']."' WHERE registreid=".$data['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='contingut';";
-            Fun::$db->sql( $sql );
-            unset($data['contingut']);
+        if (isset($json['contingut'])) {
+            $sql= " UPDATE idioma SET text= '".$json['contingut']."' WHERE registreid=".$json['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='contingut';";
+            $db->sql( $sql );
+            unset($json['contingut']);
         }
-        $sql= "UPDATE pagina SET ".$camps." where id=".$data['id']."; ";
-        Fun::$db->sql( $sql );
+        $sql= "UPDATE pagina SET ".$camps." where id=".$json['id']."; ";
+        $db->sql( $sql );
         $sql= 'COMMIT;';
-		Fun::$db->sql( $sql );
+		$db->sql( $sql );
 		$result= Fun::$db->getResult();
     } else { // INSERT!
-        if (empty($data['ordre'])) $data['ordre']=0;
+        if (empty($json['ordre'])) $json['ordre']=0;
         $sql= "START TRANSACTION;";
-        Fun::$db->sql( $sql );
-        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta) values ('".$data['tipus']."',".$id.",".$data['ordre'].",'".$data['url']."','".date('YmdHis')."'); ";
-        Fun::$db->sql( $sql );
+        $db->sql( $sql );
+        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta) values ('".$json['tipus']."',".$id.",".$json['ordre'].",'".$json['url']."','".date('YmdHis')."'); ";
+        $db->sql( $sql );
         $sql= "SET @last_id = LAST_INSERT_ID(); ";
-        Fun::$db->sql( $sql );
-        if ($data['tipus']=='H') { // contingut en es i val
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','contingut','".$data['contingut']."'); ";
-            Fun::$db->sql( $sql );
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','contingut','".$data['contingut']."'); ";
-            Fun::$db->sql( $sql );
+        $db->sql( $sql );
+        if ($json['tipus']=='H') { // contingut en es i val
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','contingut','".$json['contingut']."'); ";
+            $db->sql( $sql );
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','contingut','".$json['contingut']."'); ";
+            $db->sql( $sql );
         }
-        if (in_array($data['tipus'],array('H','F'))) { // titol en es i val
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','titol','".$data['titol']."'); ";
-            Fun::$db->sql( $sql );
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','titol','".$data['titol']."'); ";
-            Fun::$db->sql( $sql );
+        if (in_array($json['tipus'],array('H','F'))) { // titol en es i val
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','titol','".$json['titol']."'); ";
+            $db->sql( $sql );
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','titol','".$json['titol']."'); ";
+            $db->sql( $sql );
         }
         $sql= "COMMIT;";
-		Fun::$db->sql( $sql );
-		$result= $this->db->getResult();
+		$db->sql( $sql );
+		$result= $db->getResult();
     }
-	Fun::render($this->contingutnode($this->branca), true);
+	Fun::render(Fun::contingutnode($id), true);
     exit;
 }
 
 //  //  //  //  //  //  //  //
+// funció que llista els elements o blocs d'un node
 static private function contingutnode($id) {
     Fun::$db= new db();
     Fun::$order= " order by ordre";
 	$sql= "SELECT * FROM _element_".Fun::$idioma." WHERE jerarquia=".$id;
+	//echo $sql;exit;
 	if (!empty(Fun::$wheres)) $sql.= " and ".implode(' and ',Fun::$wheres);
 	$sql.= Fun::$order;
 
@@ -550,36 +669,30 @@ static private function contingutnode($id) {
 }
 
 //  //  //  //  //  //  //  //
-static private function guardanode() {
+static private function guardanode($params) {
     //$this->db->sql('insert into select id from '.($this->nom).' where id='.$this->id);
-    if (isset(Fun::$json['delete_id'])) {
-        Fun::$db->sql(" START TRANSACTION;");
-        Fun::$db->sql(" DELETE FROM idioma WHERE tipus='jerarquia' and registreid=".Fun::$json[delete_id]);
-        Fun::$db->sql(" DELETE FROM jerarquia WHERE id=".Fun::$json[delete_id]);
-        Fun::$db->sql(" COMMIT;");
-        Fun::render(Fun::jerarquia($this->branca), true);
-        exit;
-    }
     // Si està definit ID és un update...
-    if (isset(Fun::$json['id'])) {
-        $sql= "UPDATE idioma set text='".str_replace("'","\\'",Fun::$json['name'])."' where registreid=".Fun::$json['id']." and idioma='".Fun::$json['idioma']."' and tipus='jerarquia';";
-        $this->db->sql($sql);
-        return Fun::render( Fun::jerarquia($this->branca) , true);
+    $json= json_decode(file_get_contents("php://input"),true);
+    $db= new db();
+    if (isset($json['id'])) {
+        $sql= "UPDATE idioma set text='".str_replace("'","\\'",$json['name'])."' where registreid=".$json['id']." and idioma='".$json['idioma']."' and tipus='jerarquia';";
+        $db->sql($sql);
+        return Fun::render( Fun::jerarquia($params['tipus']) , true);
     }
     // Si no està definit és un insert...
     $sql="BEGIN;";
-    Fun::$db->sql($sql);
-    $sql="INSERT INTO jerarquia (pare) VALUES (".Fun::$json['parent_id'].");";
-    Fun::$db->sql($sql);
+    $db->sql($sql);
+    $sql="INSERT INTO jerarquia (pare) VALUES (".$json['parent_id'].");";
+    $db->sql($sql);
     $sql="SET @last_id = LAST_INSERT_ID();";
-    Fun::$db->sql($sql);
-    $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'val','jerarquia','".Fun::$json['name']."');";
-    Fun::$db->sql($sql);
-    $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'es','jerarquia','".Fun::$json['name']."');";
-    Fun::$db->sql($sql);
+    $db->sql($sql);
+    $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'val','jerarquia','".$json['name']."');";
+    $db->sql($sql);
+    $sql="INSERT INTO idioma(registreid,idioma,tipus,text) values(@last_id,'es','jerarquia','".$json['name']."');";
+    $db->sql($sql);
     $sql="COMMIT;";
-    Fun::$db->sql($sql);
-	return Fun::render(Fun::jerarquia(Fun::branca),true);
+    $db->sql($sql);
+	return Fun::render(Fun::jerarquia($params['tipus']),true);
 }
 
 //  //  //  //  //  //  //  //

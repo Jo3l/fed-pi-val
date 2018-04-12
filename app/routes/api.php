@@ -12,6 +12,8 @@ error_reporting(E_ALL&~E_NOTICE&~E_STRICT&~E_DEPRECATED);
 error_reporting(E_ALL);
 */
 
+//$app->etag(md5($_SERVER['REQUEST_URI']));
+
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
@@ -24,11 +26,6 @@ $app->add(function ($req, $res, $next) {
         ->withHeader('Access-Control-Allow-Headers', 'X-Auth-Token, X-Requested-With, Content-Type, Accept, Origin, Authorization')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
-
-/**
- * Verify if token is valid on database
- * If token isn't valid, must throw an UnauthorizedExceptionInterface
- */
 
 
 /*
@@ -54,34 +51,42 @@ Repassar la forma de cridar les funcions... He de posar \app\Fun:: pq Fun:: no e
 
 $app->get('/api/authtest', '\app\Fun::authtest');
 
-//$app->get('/api/{}/p/{pagina:[0-9]+}[.*]', function(Request $r, Response $rr){ echo 'pos si';exit; });
+$app->post('/api/node/ordre', '\app\Fun::ordre_nodes'); // canvi d'ordre dels nodes en la jerarquia
 
-$app->post('/api/node/ordre', '\app\Fun::ordre'); // canvi d'ordre dels nodes en la jerarquia
+$app->post('/api/node/{id:[0-9]+}/ordre', '\app\Fun::ordre_elements'); // canvi d'ordre dels elements d'un node
 
-$app->post('/api/node/{id:[0-9]+}/ordre', '\app\Fun::ordre'); // canvi d'ordre dels elements d'un node
+$app->post('/api/node/{tipus:federacio|federacion|competicio|competicions}', '\app\Fun::insert_node'); // inserta node
 
-$app->get('/api/node/{id:federacio|competicio|federacions|competicions}', '\app\Fun::node'); // excepció per a acceptar federacio o competicions
+$app->delete('/api/node/{tipus:federacio|federacion|competicions|competiciones}/{id:[0-9]+}', '\app\Fun::delete_node'); // elimina un node
 
-$app->get('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_id');
+$app->delete('/api/node/{pare:[0-9]+}/element/{id:[0-9]+}', '\app\Fun::delete_element'); // elimina un element o bloc
 
-$app->delete('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_delete');
+//$app->get('/api/nodes/{id:federacio|federacion|competicions|competiciones}/i/{kk:es|val}', function () { echo '{"error":"Lleva eixe /i/val de la URL, va..."}'; }); // jerarquia federacio o competicions
 
-$app->post('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_update');
+$app->get('/api/node/{id:federacio|federacion|competicions|competiciones}', '\app\Fun::list_nodes'); // jerarquia federacio o competicions
 
-$app->post('/api/{tabla:partida|club|equipo|jugador|producto|jerarquia|noticia|acte}[/]', '\app\Fun::generic_insert');
+$app->get('/api/node/{id:[0-9]+}', '\app\Fun::list_elements'); // obtindre elements o blocs d'un node
 
-// té que ser la última:
-//'/news[/{params:.*}[/details]]'
-// {id:users/\d+|me}
+$app->post('/api/node/{id:[0-9]+}', '\app\Fun::insert_element'); // jerarquia federacio o competicions
+
+$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_id');
+
+$app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_delete');
+
+$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_update');
+
+$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte}[/]', '\app\Fun::generic_insert');
 
 // consulta de actes d'un mes: /acte/YYYYMM amb possibles modificadors /p/pagina/t/tag/s/search/o/ordre/i/idioma/j/node
-$app->get('/api/actes/{mes:[0-9]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::date_query');
+$app->get('/api/actes/{mes:[0-9]{6}}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::date_query');
 
 // consulta de una noticia per slug
 $app->get('/api/noticia/slug/{slug:[A-Za-z0-9\-]+}', '\app\Fun::noticia_query');
 
 // consulta generica d'una taula amb possibles modificadors /p/pagina/t/tag/s/search/o/ordre/i/idioma/j/node
 $app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::generic_query');
+
+$app->get('/api/{tabla:[A-Za-z]+}/search/{que:[^/]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::generic_search'); // buscar
 
 $app->get('/api/static{path:/.+}', '\app\Filem::list'); // obtindre un cami
 
@@ -92,7 +97,6 @@ $app->post('/api/static/uploadimg', '\app\Filem::uploadimg'); // guardar imatge
 $app->post('/api/static/uploadpdf', '\app\Filem::uploadpdf'); // guardar pdf
 
 $app->delete('/api/static/{path:[\.\/-_0-9A-Za-z]+}', '\app\Filem::delete'); // esborrar arxiu
-
 
 /*
 /noticia // llista totes les noticies (les primeres 20)

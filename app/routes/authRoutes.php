@@ -43,7 +43,7 @@ $app->add(new TokenAuthentication([
 ]));
 
 $app->add(new TokenAuthentication([
-    'path' =>   ['/api/jugador/.*','/api/equip/.*','/api/club/.*','/api/aaaauthtest'],
+    'path' =>   [/*'/api/jugador.*',/*'/api/equip/.*','/api/club/.*',*/'/api/aaaauthtest'],
     'authenticator' => $authenticator7	,
     'secure' => true,
     'relaxed' => ['localhost', 'fedpival.indiza.com', 'fedpival2.indiza.com', 'api-fedpival.indiza.com']
