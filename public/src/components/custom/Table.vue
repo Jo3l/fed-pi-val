@@ -57,7 +57,7 @@ export default {
 					
 				result = result[splitter[i]];
 			}
-			return result;
+			return result!=undefined ? result.toLowerCase() : result;
 		},
 	},
 	mounted: function () {
@@ -66,9 +66,10 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
 
+td {text-transform:capitalize;}
 
 </style>

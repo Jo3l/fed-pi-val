@@ -6,57 +6,85 @@
 			
 			<div class="cart">
 			  <h2>{{count}} / {{total}} €</h2>
-			  <div class="cart_item" v-for="item,i in cart" v-if="item.qty &gt; 0"><b>{{ item.qty }}</b> &times; {{ item.name }} {{ item.price }}
+			  <div class="cart_item" v-for="item,i in cart" v-if="item.qty > 0"><b>{{ item.qty }}</b> &times; {{ item.name }} {{ item.price }}
 			    <button @click="item.qty += 1">+1</button>
-			    <button v-if="item.qty &gt; 1" @click="(item.qty &gt; 1) ? item.qty -= 1 : ''">-1</button>
-			    <button @click="del(i, item.id)">X</button>
+			    <button v-if="item.qty > 1" @click="(item.qty > 1) ? item.qty -= 1 : ''">-1</button>
+			    <button @click="del(item.id)">X</button>
 			  </div>
 			</div>
 			
 			
-		  <carousel :perPageCustom="[[0, 1],[480, 2],[768, 3],[992, 4], [1200, 5]]" :minSwipeDistance=30 :paginationPadding=5 class="products">
-		  	<slide v-for="product in products">
-			    <div class="item" ><img :src="'//zupra.github.io/t-shirt_shop/img/test-2/'+product.id+'.png'"/>
-			      <div class="name">{{ product.name }}</div>
-			      <div class="price">{{ product.price }} €</div>
-			      <button class="btn" :disabled="product.qty" @click="addToCart(product)"> 
-			        <template v-if="!product.qty">{{ $t('cart.addToBasket') }}</template>
-			        <template v-else="v-else">✔ <b>{{product.qty}}</b> {{ $t('cart.added') }}</template>
-			      </button>
+		  <carousel :perPageCustom="[[0, 1],[480, 2],[768, 3],[992, 4], [1200, 5]]" :minSwipeDistance=30 :navigationEnabled="true" :paginationPadding=5 paginationActiveColor="#87212e" paginationColor="#e28b96" class="products">
+	
+		  	<slide v-for="product,i in products">
+			    <div class="item" >
+			    	<div class="itemContainer">
+				    	<img :src="'//zupra.github.io/t-shirt_shop/img/test-2/'+product.id+'.png'"/>
+				    	<div class="name">{{ product.name }}</div>
+				    	<div class="price">{{ product.price }} €</div>
+				    	
+				    	<ui-button :icon="!product.qty ? 'add' : 'done'" size="small" :disabled="product.qty>0" @click="addToCart(product)" v-if="!product.qty">
+				        	<template v-if="!product.qty">{{ $t('cart.addToBasket') }}</template>
+				        	<template v-else="v-else">{{product.qty}} {{ $t('cart.added') }}</template>
+				    	</ui-button>
+				    	
+				    	<ui-button icon="add" size="small" @click="product.qty += 1" v-if="product.qty>0">
+							1
+				    	</ui-button>
+				    	
+				    	<ui-button size="small"  :icon="product.qty==1?'remove_shopping_cart':'remove'" v-if="product.qty > 0" @click="(product.qty > 1) ? product.qty -= 1 : del(product.id)">
+				    		<template v-if="product.qty == 1"></template>
+				    		<template v-else>1</template>
+				    	</ui-button>
+
+			    	</div>
 			    </div>
 		  	</slide>
 		  </carousel>
 		</div>
 		
 		<div class="shop full" v-else="v-else">
+			<pre>{{carto}}</pre>
+			<pre>{{cart}}</pre>
 			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.online_shop') }}</h1>
 			
 			<div class="cart">
 			  <h2>{{count}} / {{total}} €</h2>
-			  <div class="cart_item" v-for="item,i in cart" v-if="item.qty &gt; 0"><b>{{ item.qty }}</b> &times; {{ item.name }} {{ item.price }}
+			  <div class="cart_item" v-for="item,i in cart" v-if="item.qty > 0"><b>{{ item.qty }}</b> &times; {{ item.name }} {{ item.price }}
 			    <button @click="item.qty += 1">+1</button>
-			    <button v-if="item.qty &gt; 1" @click="(item.qty &gt; 1) ? item.qty -= 1 : ''">-1</button>
+			    <button v-if="item.qty > 1" @click="(item.qty > 1) ? item.qty -= 1 : ''">-1</button>
 			    <button @click="del(i, item.id)">X</button>
 			  </div>
 			</div>
 		  <div class="products">
-		    <div v-for="product in products" class="item" ><img :src="'//zupra.github.io/t-shirt_shop/img/test-2/'+product.id+'.png'"/>
-		      <div class="name">{{ product.name }}</div>
-		      <div class="price">{{ product.price }} €</div>
-		      <button class="btn" :disabled="product.qty" @click="addToCart(product)"> 
-		        <template v-if="!product.qty">{{ $t('cart.addToBasket') }}</template>
-		        <template v-else="v-else">✔ <b>{{product.qty}}</b> {{ $t('cart.added') }}</template>
-		      </button>
+		    <div v-for="product in products" class="item" >
+		    	<div class="itemContainer">
+			    	<img :src="'//zupra.github.io/t-shirt_shop/img/test-2/'+product.id+'.png'"/>
+			    	<div class="name">{{ product.name }}</div>
+			    	<div class="price">{{ product.price }} €</div>
+			    	<ui-button :icon="!product.qty ? 'add' : 'done'" size="small" :disabled="product.qty>0" @click="addToCart(product)" v-if="!product.qty">
+			        	<template v-if="!product.qty">{{ $t('cart.addToBasket') }}</template>
+			        	<template v-else="v-else">{{product.qty}} {{ $t('cart.added') }}</template>
+			    	</ui-button>
+			    	<ui-button icon="add" size="small" @click="product.qty += 1" v-if="product.qty>0">
+						1
+			    	</ui-button>
+			    	<ui-button size="small"  :icon="product.qty==1?'remove_shopping_cart':'remove'" v-if="product.qty > 0" @click="(product.qty > 1) ? product.qty -= 1 : del(product.id)">
+			    		<template v-if="product.qty == 1"></template>
+			    		<template v-else>1</template>
+			    	</ui-button>
+		    	</div>
 		    </div>
 		  </div>
 		</div>
-		
+
     </transition>
 </template>
 
 <script>
 
 import { Carousel, Slide } from 'vue-carousel';
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'Cart',
@@ -73,51 +101,61 @@ export default {
 	      id: 1,
 	      name: "black",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 2,
 	      name: "dark-blue",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 3,
 	      name: "green",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 4,
 	      name: "grey",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 5,
 	      name: "light-blue",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 6,
 	      name: "pink",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 7,
 	      name: "purple",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 8,
 	      name: "red",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }, {
 	      id: 9,
 	      name: "white",
 	      category: "pilotes",
-	      price: 99
+	      price: 99,
+	      inventory:6
 	    }],
 	    cart: []
     }
   },
+
   computed: {
     count: function count() {
       return this.cart.reduce(function (n, cart) {
@@ -128,7 +166,12 @@ export default {
       return this.cart.reduce(function (n, cart) {
         return cart.price * cart.qty + n;
       }, 0).toFixed(2);
-    }
+    },
+    ...mapGetters({
+    	counto: 'countCart',
+    	carto: 'cart',
+    	checkoutStatus: 'checkoutStatus',
+    })
   },
   methods: {
     addToCart: function addToCart(product) {
@@ -143,10 +186,21 @@ export default {
         }
       }
     },
-    del: function del(index, id) {
-      this.cart.splice(index, 1);
-      this.unblock(id);
+    del: function del(id) {
+    	
+	    for (var i = 0; i < this.cart.length; i++) {
+	        if (this.cart[i].id === id) {
+	          this.cart.splice(i, 1);
+	          break;
+	        }
+	    }
+    	this.unblock(id);
     }
+  },
+  mounted: function() {
+  	console.log(this.$store.dispatch('addProductToCart', this.products[0]));
+  	console.log(this.$store.dispatch('addProductToCart', this.products[1]));
+  	console.log(this.counto);
   }
 }
 </script>
@@ -160,18 +214,29 @@ export default {
 	.products {
 		.item {
 		  text-align: center;
-		  padding:10px 0;
-		  img {
-		  	width:60%;
-		  }
+		  //padding:10px 0;
+		
+			.itemContainer {
+				margin:10px;
+				padding:10px 0;
+				border-radius: .25rem;
+	    		border: 1px solid rgba(0,0,0,.125);
+		    	img {
+				  	width:60%;
+				}
+				.name{
+					font-weight:bolder;
+					text-transform:capitalize;
+				}
+				
+				.price {
+					display:block;
+					font-size:1.2em;
+				}
+			}	
+
 		}
-		.name {
-		  margin-bottom: 0.5em;
-		}
-		.price {
-		  display: inline-block;
-		  vertical-align: middle;
-		}
+
 	}
 	
 	.cart {
@@ -179,31 +244,22 @@ export default {
 	  width: 270px;
 	}
 	&.full {
-		padding:20px;
-		@media(max-width:@screenMobile) {
-			padding:0;
-		}
 		.products {
 			  display: flex;
 			  flex-flow: row wrap;
 			  justify-content: space-between;
-			  padding: 0 20px;
 			  &:after {
 			  content: "";
 			  flex: auto;
 			  }
 			.item {
 				width: 25%;
-				padding: 20px 0;
-
 				@media(max-width:@screenTablet) {
 					width: 33%;
 				}
-
 				@media(max-width:@screenMobile) {
 					width: 50%;
 				}
-			
 				img {
 					width:75%;
 				}

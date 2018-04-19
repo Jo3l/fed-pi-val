@@ -4,7 +4,7 @@
 //@import "fluidable.less";
 @import "toolbar.less";
 @import "table.less";
-@import "vue-transitions.less";
+@import "transitions.less";
 
 html { 
 	//margin-left: ~"calc(100vw - 100%);" 
@@ -20,6 +20,13 @@ body {
     &.ui-modal--is-open{
     	overflow: initial!important;
     }
+}
+
+
+h1 > button{
+	float: right;
+	margin-right: 60px;
+	margin-top: 5px!important;
 }
 
 //remove Firefox's dotted outline
@@ -96,7 +103,8 @@ a {
 	color: #232323;
 	text-decoration:none;
 	&:hover {
-		text-decoration:underline;
+		//text-decoration:underline;
+	    text-shadow: 0px 3px 5px rgba(0,0,0,0.3);
 		color:#000000;
 	}
 }
@@ -119,6 +127,12 @@ h1 {
 
 
 //generic clases
+
+.ui-button--color-saveForm {
+	margin: 20px auto;
+    display: block;
+    color: #87212e;
+}
 
 .buttonLeft {
 			margin: 0 32px;

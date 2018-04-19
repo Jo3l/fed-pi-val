@@ -15,6 +15,15 @@
 						type="text"
 			            v-model="jugador.nom"
 			        ></ui-textbox>
+
+					<ui-textbox
+					    floating-label
+			            autocomplete="off"
+			            error="This field is required"
+			            label="Cognoms"
+						type="text"
+			            v-model="jugador.cognoms"
+			        ></ui-textbox>
 			        
 					<ui-textbox
 					    floating-label
@@ -25,11 +34,17 @@
 			            v-model="jugador.dni"
 			        ></ui-textbox>
 			       
+			        <ui-radio-group
+		                name="sexe"
+		                :options="[{label: 'Home', value: 'h'},{label: 'Dona', value: 'd'}]"
+		                v-model="jugador.sexe"
+		            >Sexe</ui-radio-group><br>
+			       
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
 			            error="This field is required"
-			            label="Num. Soci"
+			            label="Num. Llicència"
 						type="number"
 			            v-model="jugador.numsoci"
 			        ></ui-textbox>
@@ -44,7 +59,7 @@
 			        ></ui-textbox>
 		        	
 		        	<label>Data Naixement
-					<vue-datepicker-local v-model="jugador.naixement" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
+					<vue-datepicker-local v-model="jugador.naixement" :local="datePickerOptions" format="DD-MM-YYYY" v-if="typeof jugador.naixement === 'object'"></vue-datepicker-local>
 					</label>
 		        
 					<ui-textbox
@@ -65,17 +80,24 @@
 			            v-model="jugador.dir"
 			        ></ui-textbox>
 			        
-					<ui-textbox
-					    floating-label
-			            autocomplete="off"
-			            error="This field is required"
-			            label="Codi Postal"
-						type="number"
-			            v-model="jugador.cp"
-			        ></ui-textbox>
+			        <ui-select
+		                disable-filter
+		                has-search
+		                label="Codi Postal"
+		                placeholder="Busca la població a partir del codi postal"
+		                search-placeholder="Escriu el codi postal"
+						@dropdown-close="setPoblacio"
+		                :loading="loading"
+		                :no-results="noResults"
+		                :options="poblacions"
+		                @query-change="onQueryChange"
+		                v-model="jugador.cp"
+		                
+		            ></ui-select>
 			        
 					<ui-textbox
 					    floating-label
+					    disabled
 			            autocomplete="off"
 			            error="This field is required"
 			            label="Població"
@@ -120,6 +142,9 @@ export default {
   	components: { VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
+			loading:false,
+		    noResults:false,
+			poblacions: [],
 		    jugador:{
 			      nom: null,
 			      naixement: new Date(),
@@ -145,9 +170,48 @@ export default {
 		}
 	},
 	methods: {
+		setPoblacio:function(){
+			var vm = this;
+			var poblacio = vm.jugador.cp.split(" - ");
+			vm.jugador.cp = poblacio[0];
+			vm.jugador.poblacio = poblacio[1];
+		},
+		onQueryChange: function(query) {
+            if (query.length < 3) {
+                return;
+            }
+            
+        	var vm = this;
+	        vm.loading=true;
+	        
+	        
+	        vm.$http.get('/postal/search/'+query, { cache: false })
+	        .then(function (response) {
+	        	var pob = [];
+	        	
+	        	for (var key = 0; key < response.data.length; key++){
+				  pob.push(response.data[key].codipostal+" - "+response.data[key].poblacio);
+				}
+	            vm.poblacions = pob;
+	            vm.loading=false;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            
+        },
 		saveForm: function() {
-			console.log(this.jugador);
-			this.$router.push({ path: `/admin/jugadors/`});
+			var vm=this;
+			vm.jugador.naixement = vm.jugador.naixement.toString('yyyyMMddHHmmss');
+	        vm.$http.post('/jugador/'+ (vm.$route.params.jugadorId?vm.$route.params.jugadorId :'') , vm.jugador)
+	        .then(function (response) {
+	            //vm.jugador = response.data[0];
+	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
+	            vm.$router.push({ path: `/admin/jugadors/`});
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
 		},
 		parseTime: function(time) {
 			
@@ -169,7 +233,7 @@ export default {
 	  	remove:function(row) {
 			var vm=this;
 
-			vm.$http.post('/jugador/', {'delete_id': row.id})
+			vm.$http.delete('/jugador/'+row.id)
 	        .then(function (response) {
 	        	
 	            vm.getData('jugador');
@@ -182,9 +246,9 @@ export default {
 		getData: function(){
 	        var vm = this;
 	        
-	        vm.$http.get('/jugador/'+vm.$route.params.jugadorId)
+	        vm.$http.get('/jugador/'+vm.$route.params.jugadorId, { cache: false })
 	        .then(function (response) {
-	            vm.jugador = response.data.data[0];
+	            vm.jugador = response.data[0];
 	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
 	        })
 	        .catch(function (error) {
@@ -207,18 +271,23 @@ export default {
 <style lang="less">
 
 @import "../../assets/less/defines.less";
-
+	
 .contentFlex {
 	display:flex;
 	flex-wrap: wrap-reverse;
 	padding: 1em 2em;
 	&.formulari {
-		input{border-bottom: 1px dashed #ccc!important;}
-	}
-	.ui-button--color-saveForm {
-		margin: 20px auto;
-	    display: block;
-	    color: #87212e;
+		input{
+			border-bottom: 1px dashed #ccc!important;
+
+		}
+		.datepicker {
+			input {
+				font-family:inherit!important;
+				font-size:1em!important;
+			}
+		}
+
 	}
 	.left50 {
 		width:50%;

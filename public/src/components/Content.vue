@@ -1,11 +1,11 @@
 <template>
-    <transition name="fade">
+
 	    <div id="content">
 		
 		<!-- aço es public -->
 		<div class="nodeContentEditable" v-if="!$store.getters.isAuthenticatedWithRole(1)">
-			<transition name="fade">
-				<div v-bind:class="{ nodeContentElement:true, autenticated: show }" v-for="(element, key) in nodeContent">
+
+				<div v-bind:class="{ nodeContentElement:true, autenticated: !$store.getters.isAuthenticatedWithRole(1) }" v-for="(element, key) in nodeContent">
 					
 					<img v-if="element.tipus == 'I'" :src="element.url" class="wide">
 
@@ -15,7 +15,6 @@
 					</article>
 
 					<a v-if="element.tipus == 'F'" :href="element.url"><ui-icon icon="attach_file"></ui-icon><strong>{{element.titol}}</strong></a>
-					
 					
 					<div class="partida" v-if="element.tipus == 'J'">
 					<table class="table results">
@@ -55,7 +54,7 @@
 				<!-- llistat -->
 					
 				</div>
-			</transition>
+
 
 		</div>
 		<!-- aço es admin -->
@@ -71,7 +70,7 @@
 					<!-- imatge -->
 					<img class="teaserImg wide" v-if="element.tipus == 'I' && element.url" :src="element.url">
 					<div class="buttonContainer" v-if="element.tipus == 'I'">
-	                	<ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', element, element.url, 'img')">{{$i18n.t('image.uploadImages')}}</ui-button>
+	                	<ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', element, element.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
 						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
 					</div>
 					<!-- imatge -->
@@ -84,10 +83,11 @@
 						        :content="nodeContent[key].contingut" 
 						        v-model="nodeContent[key].contingut"
 						        :styleWithCss="false"
+						        placeholder="..."
 						    />
 					</article>
 					<div class="buttonContainer" v-if="element.tipus == 'H'">
-						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">Desar</ui-button>
+						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
 					</div>
 					<!-- Html -->
 					
@@ -188,7 +188,7 @@
 				            ></ui-textbox>
 							<div class="buttonContainer">
 								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Netejar</ui-button>
-								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(newGame)">Desar Partida</ui-button>
+								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(newGame)">{{$i18n.t('node.save_game')}}</ui-button>
 							</div>
 
 						</div>
@@ -249,7 +249,7 @@
 
 
 	    </div>
-    </transition>
+
 </template>
 
 <script>
@@ -313,7 +313,6 @@ export default {
               }
             ],
 			searchList:[],
-			show:false,
 			newOrder:[],
 			customToolbar: [
 			  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
@@ -521,11 +520,9 @@ export default {
 
 			var vm=this;
 
-			vm.$http.post('/node/'+vm.nodeId, {'delete_id': element.id})
+			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
 	        .then(function (response) {
-	        	
 	            vm.nodeContent = vm.delEmptyNodes(response.data);
-	
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -798,7 +795,7 @@ export default {
 	    align-items: center;
 	    box-sizing: border-box;
 	    margin: 10px 0;
-	    border: 1px solid @fedcolor !important;
+	    border: 1px solid @fedcolor;
 	    &.autenticated {
 		margin:20px 0;
 		border:none;

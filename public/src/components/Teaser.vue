@@ -47,8 +47,7 @@ export default {
   	components: {},
 	data () {
 		return {
-			newsTeaser: '',
-			loadedTeaser:false,
+			newsTeaser:'',
 		}
 	},
 	methods: {
@@ -66,12 +65,7 @@ export default {
 	    }
 	},
 	mounted: function () {
-		this.getData('/noticia/destacada/i/'+this.$i18n.locale);
-		
-		console.log(this.$http.defaults);
-	},
-	watch: {
-	
+		this.getData('/noticia/destacada/i/'+this.$i18n.locale, { useCache: true });
 	}
 }
 </script>

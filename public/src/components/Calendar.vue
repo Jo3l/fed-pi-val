@@ -48,7 +48,9 @@
         
         
 		<div v-else="v-else">
-			<h1>{{ $t('common.calendar') }}</h1>
+			<h1>{{ $t('common.calendar') }}
+				<ui-button v-if="$store.getters.isAuthenticatedWithRole(0)" color="blueButtonToRight" icon="save" size="small" type="secondary" @click="createBlock()">{{ $t('common.eventNew') }}</ui-button>
+			</h1>
 			<div class="buttonContainer">
 				<ui-icon-button @click="decMonth" icon="chevron_left" type="primary" class="buttonFloatLeft"></ui-icon-button>
 				<ui-icon-button @click="incMonth" icon="chevron_right" type="primary" class="buttonFloatRight"></ui-icon-button>
@@ -81,7 +83,7 @@
 			<div class="eventSelected">
 				<article v-for="event in todayEvent">
 					
-					<aside v-if="$store.getters.isAuthenticatedWithRole(0)" class="nodeContentElement">
+					<aside v-if="$store.getters.isAuthenticatedWithRole(0)" class="nodeContentElement lined">
 					<h4>{{parseTime(event.publicacio)}}</h4>
 					<i class="remove" @click="removeContent(event, todayEvent)"></i>
 
@@ -91,6 +93,7 @@
 						        :content="event.contingut" 
 						        v-model="event.contingut"
 						        :styleWithCss="false"
+								placeholder="..."
 						    />
 							
 							<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(event)">{{$i18n.t('common.save')}}</ui-button>
@@ -104,7 +107,6 @@
 					
 				</article>
 				
-				<ui-button v-if="$store.getters.isAuthenticatedWithRole(0)" color="blueButtonToRight" icon="save" size="small" type="secondary" @click="createBlock()">Nou event</ui-button>
 				
 			</div>
 			
@@ -424,6 +426,11 @@ export default {
 		this.calendar(1);
 		this.calendar(2);
 		this.calendar(3);
+		
+		this.selected.year = Date.today().getYear() + 1900;
+		this.selected.month = Date.today().getMonth();
+		this.selected.day = Date.today().getDate();
+		
 	}
 };
 </script>
@@ -441,6 +448,9 @@ export default {
 		    padding-bottom: 15px;
 		    border-bottom: 1px dashed @fedcolor;
 		    margin-top: 30px;
+		    &.lined{
+		    	border-bottom: 1px solid @fedcolor!important;
+		    }
 		}
 		&:last-of-type{
 			aside {

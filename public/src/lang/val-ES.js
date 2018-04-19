@@ -29,11 +29,13 @@ export default {
 		duplicate_on_other_lang: 'Duplicar en ',
 		page: 'pàgina',
 		calendar: 'calendari',
-		save: 'Desar',
+		save: 'Guardar',
 		cancel: 'Cancelar',
 		delete: 'Borrar',
 		uploadPdf: 'Pujar document PDF',
 		search: 'Buscar',
+		newsNew: 'Nova noticia',
+		eventNew: 'Nou event'
 	},
 	node : {
 		insert_node : 'Insertar nou node',
@@ -41,10 +43,12 @@ export default {
 		remember_node: 'Recorda insertar un nom clar y senzill',
 		rename_node: 'Renombrar node',
 		insert_game: 'Insertar partida',
+		save_game: 'Guardar partida'
 	}, 
 	image : {
+		selectImage: 'Sel·leccionar imatge',
 		uploadAndCut: 'Pujar imatge i  retallar',
-		uploadImages: 'Pujar imatges',
+		uploadImages: 'Pujar imatge',
 		cutImages: 'Retallar Imatge'
 	},
 		modal: {

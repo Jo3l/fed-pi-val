@@ -34,6 +34,8 @@ export default {
 		delete: 'Borrar',
 		uploadPdf: 'Subir documento PDF',
 		search: 'Buscar',
+		newsNew: 'Nueva notícia',
+		eventNew: 'Nuevo evento'
 	}, 
 	node : {
 		insert_node : 'Insertar nuevo nodo',
@@ -41,10 +43,12 @@ export default {
 		remember_node: 'Recuerda usar un nombre claro y sencillo',
 		rename_node: 'Renombrar nodo',
 		insert_game: 'Insertar partida',
+		save_game: 'Guardar partida'
 	}, 
 	image : {
+		selectImage: 'Seleccionar imagen',
 		uploadAndCut: 'Subir imagen y recortar',
-		uploadImages: 'Subir imagenes',
+		uploadImages: 'Subir imagen',
 		cutImages: 'Recortar imagen'
 	},
 	modal: {

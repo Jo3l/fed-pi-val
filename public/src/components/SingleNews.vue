@@ -20,21 +20,7 @@
 			
 			</progressive-background>
 
-			<vue-core-image-upload
-			    :text="$i18n.t('image.uploadImages')"
-			    class="uploader"
-			    :max-file-size="5242880"
-			    :multiple="true"
-				:multiple-size="4"
-				compress="50"
-			    url="/api/static/uploadimg"
-				@imageuploaded="getPhoto"
-			    :data="{do:'uploadimg'}"
-			    extensions="jpg,jpeg"
-			    inputAccept	="image/jpg,image/jpeg"
-			    >
-			</vue-core-image-upload>
-
+	        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
 
 			<div class="page__demo-group icon-right" v-if="$store.getters.isAuthenticatedWithRole(0)">
                 <ui-icon-button color="primary" has-dropdown icon="code" ref="dropdownButton">
@@ -84,7 +70,7 @@
 
 	</div>
 
-	<NewsCarousel></NewsCarousel>
+	<NewsCarousel v-if="!$store.getters.isAuthenticatedWithRole(1)"></NewsCarousel>
 
     <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
 		<filemanager ref="upload" v-bind:pselected="selected"></filemanager>
@@ -191,7 +177,7 @@ export default {
 			vm.news.url = '/static'+res.file;
 		},
 		menuSelection: function(e) {
-			if(e.label == 'Editar')  this.$router.push('/'+this.$i18n.locale+'/'+this.$i18n.t('common.news')+'/edit/'+this.$store.news.slug);
+			if(e.label == 'Editar')  this.$router.push('/'+this.$i18n.locale+'/'+this.$i18n.t('common.news')+'/edit/');
 		},
 		SaveNews: function() {
 			var vm = this;
@@ -300,6 +286,10 @@ export default {
 	min-height:200px;
 	background-color:white;
 	padding: 0 0 4vw 0;
+	
+	.nodeContentElement{
+		
+	}
 	
 	#star {
 		width: 42px;

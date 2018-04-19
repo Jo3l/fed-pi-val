@@ -1,15 +1,15 @@
 <template>
-<transition name="fade">
+
   <div class="tree">
 
 		<ul class="breadcrumb-wrapper">
-			<li v-for="bread in breadCrumb" @click="updateBreadcrumb" v-bind:class="[ bread.id==currentPageId && treeLevel.children && treeLevel.children.length!=0 ? 'lastLi' : '']">    
+			<li v-for="bread in breadCrumb" @click="updateBreadcrumb" v-bind:class="[ bread.id==currentPageId && treeLevel.children && treeLevel.children.length!=0 ? 'lastLi' : '', $store.getters.isAuthenticatedWithRole(0)? 'auth' : '']">    
     			<router-link  class="breadcrumb" v-bind:to="bread.link">{{ bread.name }}</router-link><span class="breadcrumb-separator"></span>
 					<ul class="vertical-menu" @click="updateBreadcrumb" v-if="bread.id==currentPageId">
 						
-						<draggable v-model="treeLevel.children" :options="{draggable:'li'}" @end="setOrder(true)">
-							<li v-for="leaf in treeLevel.children" :key="leaf.order" v-bind:class="{ deleteable: !leaf.children && leaf.elements==0 }">
-					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> --> <em v-if="!leaf.children && leaf.elements==0" class="remove" @click="removeNode(leaf)"></em>
+						<draggable v-model="treeLevel.children" :options="{draggable:'li', disabled:!$store.getters.isAuthenticatedWithRole(0)}" @end="setOrder(true)">
+							<li v-for="leaf in treeLevel.children" :key="leaf.order" v-bind:class="{ deleteable: !leaf.children && leaf.elements==0 && $store.getters.isAuthenticatedWithRole(0) }">
+					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> --> <em v-if="!leaf.children && leaf.elements==0 && $store.getters.isAuthenticatedWithRole(0)" class="remove" @click="removeNode(leaf)"></em>
 					    	</li>
 						</draggable>
 
@@ -22,6 +22,7 @@
                 <ui-icon-button tooltip="Renombrar Nodo" icon="format_size" size="small" @click="$refs.renameNode.open()"></ui-icon-button>
         </div>
 		
+		<hr v-if="!$store.getters.isAuthenticatedWithRole(1)">
 		
 		<node-content :nodeId="currentPageId" :disableBlock="propDisable"></node-content>
 		
@@ -61,7 +62,7 @@
   
 
   </div>
-</transition>
+
 </template>
 
 <script>
@@ -102,7 +103,7 @@ export default {
 		var vm=this;
 		var root = this.$route.path.split('/')[2];
 		
-		vm.$http.post('/nodes/'+root, {'delete_id': node.id})
+		vm.$http.delete('/node/'+root+'/'+ node.id)
         .then(function (response) {
         	
 	        vm.tree = [response.data];
@@ -124,7 +125,7 @@ export default {
 					vm.newOrder.push( { 'id': vm.treeLevel.children[node].id, 'ordre' : node } );
 		    }
 		}
-		if (manual) this.postOrder('nodes/ordre', vm.newOrder);
+		if (manual) this.postOrder('node/ordre', vm.newOrder);
 	},
 	postOrder: function(apiUrl, order) {
         var vm = this;
@@ -138,7 +139,7 @@ export default {
     },
     saveNode: function(){
     	var root = this.$route.path.split('/')[2];
-    	this.postData('nodes/'+root, this.newNodeName, false);
+    	this.postData('node/'+root, this.newNodeName, false);
     },
     updateNode: function(){
     	var vm=this;
@@ -146,7 +147,7 @@ export default {
 		var parent = vm.$route.path.replace(/^(.+?)\/*?$/, "$1").split('/');
 		var root = this.$route.path.split('/')[2];
 		parent.pop();
-    	this.postData('nodes/'+root, this.currentNodeName, parent.join('/') );
+    	this.postData('node/'+root, this.currentNodeName, parent.join('/') );
     },
     postData: function(apiUrl, node, redirect) {
         var vm = this;
@@ -242,22 +243,21 @@ export default {
       }
     },
     watch: { 
-      	node: function(newVal, oldVal) { // watch it
-      	
+      	slug: function(newVal, oldVal) { // watch it
           var root = this.$route.path.split('/')[2];
-	      this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
-
+	      this.getData('node/'+root);
         }
     },
     created: function () {
     	var root = this.$route.path.split('/')[2];
-    	this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
+    	this.getData('node/'+root);
     },
-	beforeRouteUpdate (to, from, next) {
-    	next();
-		if(to.params.slug) {
-			var root = to.params.slug.split('/')[2];
-	    	this.getData('nodes/'+root+'/i/'+this.$i18n.locale);
+	mounted: function() {
+
+	},
+	computed: {
+		slug:function(){
+			return this.$route.path;
 		}
 	}
 }
@@ -291,7 +291,7 @@ export default {
 		border: 2px solid #87212e;
 		padding: 4px 8px;
 		font-family: arial;
-		font-size: 11px;
+		font-size: 14px;
 		border-radius: 30px;
 		text-transform: capitalize;
 		cursor: pointer;
@@ -318,10 +318,13 @@ export default {
   	display: inline-block;
   	margin-bottom: 16px;
   	&.lastLi {
-	  	border: 1px dashed #87212e;
-	    padding: 7px;
+  		padding: 0 0 6px 5px;
+	    //padding: 10px 7px 18px 7px;
 	    margin: -8px 0 0 0;
 	    border-radius: 20px;
+	    &.auth{
+	    	border: 1px dashed #87212e;
+	    }
   	}
   }
   
@@ -331,6 +334,8 @@ export default {
 
   
 	.vertical-menu {
+		height: 15px;
+		display: inline-table;
 		&>div{display:flex;flex-wrap: wrap;}
 		list-style: none;
 		margin: 0;
@@ -340,7 +345,8 @@ export default {
 			    display: list-item;
 			    padding: 3px 16px 0 0px;
 			    white-space: nowrap;
-
+				height: 25px;
+				
 				a {
 					color:#232323;
 					text-decoration:none;
@@ -393,7 +399,7 @@ export default {
 					}
 					a{color: #fff;}
 				    background-color: #87212e;
-				    padding: 3px 10px 3px 10px;
+				    padding: 3px 10px 3px 11px;
 					margin-left: -10px;
 					margin-right: 5px;
 				    border-radius: 20px;

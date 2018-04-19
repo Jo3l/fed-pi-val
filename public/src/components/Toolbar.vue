@@ -29,7 +29,7 @@
                 icon="account_circle"
                 size="large"
                 type="secondary"
-                @click="openModal()"
+                @click="goLogin()"
             ></ui-icon-button>
             <ui-icon-button
             	has-dropdown
@@ -91,6 +91,7 @@
 
 <script>
 
+
 export default {
 	name: 'Toolbar',
 	data () {
@@ -104,15 +105,12 @@ export default {
 					action: 'logout',
 					icon: 'visibility off',
 		   		}],
-		user: {
-			name:'alfon7',
-			email:'alfons@algemesi.info',
-			clau:'inmersa',
-			sexo:'ninja'
-		}
 	}
 	},
 	methods: {
+		goLogin: function() {
+			this.$router.push({ path: `/login` });
+		},
 		selectUserOptions:function(selected){
 			if(selected.action=='logout') this.logout();
 		},
@@ -129,13 +127,6 @@ export default {
         closeModal: function() {
             this.$refs.login.close();
         },
-        
-		login: function (user) {
-		  var vm=this;
-		  this.$store.dispatch('login', { user }).then(function(){
-				vm.closeModal();
-		  });
-	    },
 		logout: function (user) {
 		  var vm=this;
 		  this.$store.dispatch('logout').then(function(){
@@ -154,7 +145,7 @@ export default {
 	
 	},
 	mounted: function() {
-
+		//console.log(this.$store);
 	},
 	beforeMount: function() {
 		//esta funcio es per a automatitzar el selector de llenguatges a partir del objecte $i18n
@@ -197,7 +188,7 @@ export default {
 		a {
 			text-decoration: none;
 			color: #232323;
-		&:hover {text-decoration:underline;}
+		&:hover {text-decoration:underline;text-shadow:inherit;}
 		&:visited {color: #232323;}
 		}
 	}

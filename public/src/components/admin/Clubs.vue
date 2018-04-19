@@ -23,7 +23,7 @@
 	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText=''"></ui-icon-button>
 				</div>
 
-				<tablerone :tableList="list.data" :tableColumns="columns">
+				<tablerone :tableList="list" :tableColumns="columns">
 					<th slot="headActions"></th></th>
 					<template slot="actions" scope="props">
 						<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
@@ -40,6 +40,8 @@
 				    :container-class="'pagination'"
 				    :page-class="'page-item'">
 				</paginate>
+  
+  {{list}}
   
 			</div>
 			
@@ -91,10 +93,10 @@ export default {
 	  	remove:function(row) {
 			var vm=this;
 
-			vm.$http.post('/clubs/', {'delete_id': row.id})
+			vm.$http.post('/club/', {'delete_id': row.id})
 	        .then(function (response) {
 	        	
-	            vm.getData('clubs');
+	            vm.getData('club');
 	
 	        })
 	        .catch(function (error) {
@@ -104,15 +106,15 @@ export default {
 	    clickCallback: function(pageNum) {
 	    	console.log(pageNum);
 	    	var vm=this;
-	    	vm.getData('clubs', pageNum);
+	    	vm.getData('club', pageNum);
 	    },
 		getData: function(listName, page){
 	        var vm = this;
 	        
-	        var searchFilter = vm.filterText!='' ? '/search/nom/'+vm.filterText : '';
-	        var searchPage = page!=null ? '/p/'+ page : '';
+	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
+	        var searchPage = page!=null ? '/p/'+ page : '/p/1';
 	        
-	        vm.$http.get(listName+searchFilter+searchPage)
+	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
 	        .then(function (response) {
 	            vm.list = response.data;
 	        })
@@ -123,7 +125,7 @@ export default {
 	},
 	mounted: function () {
 		var vm=this;
-		vm.getData('clubs');
+		vm.getData('club');
 	},
 	created: function() {
 	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {

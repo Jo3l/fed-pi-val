@@ -180,7 +180,7 @@ export default {
 	        var vm = this;
 	        vm.files={};
 	        vm.selected={};
-	        vm.$http.get('static/'+relativePath)
+	        vm.$http.get('static/'+relativePath, { cache: false })
 	        .then(function (response) {
 				vm.files=response.data;
 				if(relativePath!=null&&relativePath!='') vm.showBack = true;

@@ -15,7 +15,7 @@
 				    floating-label
 	                autocomplete="off"
 	                :label="$t('common.search')"
-					type="text"
+					type="search"
 	                v-model="filterText"
                 	@keydown-enter="getData('jugador')"
 	            ></ui-textbox>
@@ -23,7 +23,7 @@
 	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText=''"></ui-icon-button>
 				</div>
 
-				<tablerone :tableList="list.data" :tableColumns="columns">
+				<tablerone :tableList="list" :tableColumns="columns">
 					<th slot="headActions"></th>
 					<template slot="actions" scope="props">
 						<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
@@ -33,8 +33,7 @@
 				<paginate
 				    :page-count="Math.ceil(list.total / list.per_page)"
 					:clickHandler="clickCallback"
-					:page-range="2"
-    				:margin-pages="0"
+    				:margin-pages=0
 				    :prev-text="'Prev'"
 				    :next-text="'Next'"
 				    :container-class="'pagination'"
@@ -70,6 +69,11 @@ export default {
 	                html: false,    
 	            },
 	            {
+	                label: 'Cognoms',
+	                field: 'cognoms',
+	                html: false,    
+	            },
+	            {
 	                label: 'Club',
 	                field: 'clubs',
 	                html: false,    
@@ -86,7 +90,7 @@ export default {
 	  	remove:function(row) {
 			var vm=this;
 
-			vm.$http.post('/jugador/', {'delete_id': row.id})
+			vm.$http.delete('/jugador/'+row.id)
 	        .then(function (response) {
 	        	
 	            vm.getData('jugador');
@@ -97,17 +101,16 @@ export default {
 	        });
 	    },
 	    clickCallback: function(pageNum) {
-	    	console.log(pageNum);
 	    	var vm=this;
 	    	vm.getData('jugador', pageNum);
 	    },
-		getData: function(listName, page){
+		getData: function(listName, page=1){
 	        var vm = this;
+	        console.log(page);
+	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
+	        var searchPage = '/p/' + (parseInt(page) - 1);
 	        
-	        var searchFilter = vm.filterText!='' ? '/search/nom/'+vm.filterText : '';
-	        var searchPage = page!=null ? '/p/'+ page : '';
-	        
-	        vm.$http.get(listName+searchFilter+searchPage)
+	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
 	        .then(function (response) {
 	            vm.list = response.data;
 	        })
@@ -121,7 +124,7 @@ export default {
 		vm.getData('jugador');
 	},
 	created: function() {
-	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
+	    if (!this.$store.getters.isAuthenticatedWithRole(1)) {
 	      this.$router.push({ path: `/` });
 	    }
 	}

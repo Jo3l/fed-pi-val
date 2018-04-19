@@ -1,0 +1,69 @@
+import Vue from 'vue'
+import axios from '../../axios'
+import VueAuthenticate from 'vue-authenticate'
+import jwt_decode from "jwt-decode"
+
+Vue.use(VueAuthenticate)
+
+Vue.prototype.$http = axios;
+
+var vueAuth = VueAuthenticate.factory(Vue.prototype.$http, {
+  baseUrl: '',
+  tokenName: 'access_token',
+})
+
+const state = {
+  isAuthenticated: vueAuth.isAuthenticated()
+}
+
+const getters = {
+    isAuthenticated: function (state) {
+      return state.isAuthenticated;
+    },
+    isAuthenticatedWithRole: function (state) {
+    	return function (n) {
+			return state.isAuthenticated && jwt_decode(vueAuth.getToken() ).data.rol <= n;
+    	}
+    },
+    role: function(state) {
+    	if(state.isAuthenticated) return jwt_decode(vueAuth.getToken() ).data.rol;
+    },
+    userMail: function(state) {
+    	if(state.isAuthenticated)  return jwt_decode(vueAuth.getToken() ).data.email;
+    }
+}
+
+
+const mutations = {
+    isAuthenticated: function (state, payload) {
+      state.isAuthenticated = payload.isAuthenticated;
+    }
+}
+
+const actions = {
+    login: function (context, payload) {
+      vueAuth.login(payload.user, payload.requestOptions).then(
+      	
+      	function (response) {
+      		
+	        return context.commit('isAuthenticated', {
+	          isAuthenticated: vueAuth.isAuthenticated()
+	        });
+	
+    	}
+      )
+
+    },
+    logout: function (context, payload) {
+      vueAuth.logout().then(
+      	function () {return context.commit('isAuthenticated', {isAuthenticated: vueAuth.isAuthenticated()});}
+      );
+    }
+}
+
+export default {
+  state,
+  getters,
+  mutations,
+  actions
+}
