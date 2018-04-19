@@ -107,8 +107,8 @@ class db{
     } 
 
     // Escape your string 
-    public function escapeString($data){ 
-        return $this->PDO->quote($data); 
+    public function escapeString($data){
+        return $this->pdo->quote($data); 
     }     
 
 

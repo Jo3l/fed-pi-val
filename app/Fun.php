@@ -329,7 +329,7 @@ static public function generic_id(Request $request, Response $response, $params)
 //  //  //  //  //  //  //  //
 static public function generic_search(Request $request, Response $response, $params) {
 	// minim tres caracters al buscar
-	if (strlen($params['que'])<3) die ( json_encode([]) );
+	if (strlen($params['que'])<3) die ( 'ERROR: Mínim 3 caràcters per buscar...' );
 	$options= array();
 	if (isset($params['p'])) $options['limit']= ($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $options['order']= str_replace('-',' desc',$params['o']);
@@ -696,6 +696,10 @@ static private function guardanode($params) {
 }
 
 //  //  //  //  //  //  //  //
+// obtindre tags existents
+static public function tags_query(Request $request, Response $response, $params) {
+	return file_get_contents('../data/tags'.$params['tipus'].'.json');
+}
 
 
 //  //  //  //  //  //  //  //

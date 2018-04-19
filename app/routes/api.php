@@ -51,6 +51,8 @@ Repassar la forma de cridar les funcions... He de posar \app\Fun:: pq Fun:: no e
 
 $app->get('/api/authtest', '\app\Fun::authtest');
 
+$app->get('/api/tags/{tipus:producte|noticia|acte}', '\app\Fun::tags_query'); // buscar
+
 $app->post('/api/node/ordre', '\app\Fun::ordre_nodes'); // canvi d'ordre dels nodes en la jerarquia
 
 $app->post('/api/node/{id:[0-9]+}/ordre', '\app\Fun::ordre_elements'); // canvi d'ordre dels elements d'un node
