@@ -35,7 +35,8 @@ export default {
 		uploadPdf: 'Subir documento PDF',
 		search: 'Buscar',
 		newsNew: 'Nueva notícia',
-		eventNew: 'Nuevo evento'
+		eventNew: 'Nuevo evento',
+		wrong: 'Valor incorrecto'
 	}, 
 	node : {
 		insert_node : 'Insertar nuevo nodo',

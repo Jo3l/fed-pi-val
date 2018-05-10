@@ -12,13 +12,16 @@
                </thead>
                <tbody>
 					<tr v-for="(row, index) in tableList">
-						<td v-for="column in tableColumns">
-							<div v-if="!column.html"> {{ collect(row, column.field) }} </div>
-							<div v-if="column.html" v-html="collect(row, column.field)"></div>						
+						
+						<slot name="icon1" :row="row"></slot>
+						<slot name="icon2" :row="row"></slot>
+						
+						<td v-for="column in tableColumns" v-if="!column.icon">
+							<div v-if="!column.html"> {{ collect(row, column) }} </div>
+							<div v-if="column.html" v-html="collect(row, column)"></div>						
 						</td>
-						<td class="actions">
-							<slot name="actions" :row="row"></slot>
-						</td>
+						
+						<slot name="actions" :row="row"></slot>
 						
 					</tr>
                </tbody>
@@ -40,11 +43,14 @@ export default {
 		}
 	},
 	methods: {
-		collect: function(obj, field) {
-			if (typeof(field) === 'function')
+		collect: function(obj, column) {
+			
+			console.log(column.icon);
+			
+			if (typeof(column.field) === 'function')
 				return field(obj);
-			else if (typeof(field) === 'string')
-				return this.dig(obj, field);
+			else if (typeof(column.field) === 'string')
+				return this.dig(obj, column.field);
 			else
 				return undefined;
 		},

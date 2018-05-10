@@ -22,6 +22,39 @@ public function getUserByToken($token,$rol)
     return $dectoken;
 }
 
+//  //  //  //  //  //  //  //
+// comprova si el nivell d'accés (rol) de l'usuari autenticat és inferior (igual o més privilegi) que el indicat
+// i per tant si té accés. En cas contrari genera excepció i casca
+static public function verifyRol($request,$rolneeded) {
+    $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
+    if (empty($token)) throw new UnauthorizedException('Invalid Token');
+    $data= Auth::getUserByToken($token,$rolneeded);
+    //$rolauth= $data->data->rol;
+    // innecessari, ja fa la comprovació en getUserByToken: if ($rolneeded<$rolauth) throw new UnauthorizedException('Rol insuficient');
+    return true;
+}
+
+
+//  //  //  //  //  //  //  //
+// test d'accés
+static public function authtest($request) {
+	// en la consulta get /api/authtest
+	// cal posar el token en el bearer en els paràmetres del header.
+	// el token el dona al autenticar-se
+    echo "m'has pillaO";
+    $secretKey = base64_decode("SECRET_KEY");
+    // encode the array
+    $jwt = JWT::encode(
+        Auth::token("1", "alfon7", "putoamo"),
+        $secretKey,
+        'HS256'
+    );
+    $enencodedArray = array('jwt' => $jwt);
+    // return the Token to the client.
+    echo Auth::verifyRol($request,0) ? 'true':'false';
+    echo '<hr/>ok';
+}
+
 
 static public function login($json) /*use($app)*/ {
     $email = (isset($json->email)) ? trim($json->email) : "";
@@ -54,7 +87,7 @@ static public function login($json) /*use($app)*/ {
                 echo json_encode(array('access_token' => $jwt ));
             } else {
                 header("HTTP/1.0 401 Not Authorized");
-                echo '{"status":"fail", "message":"1 Unable to log you in. Please try again!"}';
+                echo '{"status":"fail", "message":"1 Unable to log you in. Please try again!'.hash('sha256',$clau).'"}';
             }
         }
         else{

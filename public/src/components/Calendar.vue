@@ -128,6 +128,7 @@
 <script>
 
 import VuePellEditor from 'vue-pell-editor'
+import VuePellEditorConfig from '../config/pelleditor'
 import FileManager from './FileManager.vue'
 
 export default {
@@ -153,29 +154,8 @@ export default {
 			},
 			modalEvent: [],
 			todayEvent: [],
-			editorOptions: [
-              'bold',
-              'underline',
-              {
-                name: 'italic',
-                result: () => exec('italic')
-              },
-              {
-                name: 'image',
-                result: () => {
-                
-                  this.openModal('uploadModal', {url:''}, '', 'img');
-                  //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
-                }
-              },
-              {
-                name: 'link',
-                result: () => {
-                  const url = window.prompt('Enter the link URL')
-                  if (url) VuePellEditor.components.pell.exec('createLink', ensureHTTP(url))
-                }
-              }
-            ],
+            editorOptions: VuePellEditorConfig(this.openModal),
+
 		}
 	},
 	'computed': {

@@ -48,6 +48,7 @@
 		        :content="news.contingut" 
 		        v-model="news.contingut"
 		        :styleWithCss="false"
+		        placeholder="..."
 		    />
 			
 			<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="SaveNews()">{{$i18n.t('common.save')}}</ui-button>
@@ -96,6 +97,7 @@ import NewsCarousel from './NewsCarousel.vue';
 import VueCoreImageUpload from 'vue-core-image-upload'
 import VueDatepickerLocal from 'vue-datepicker-local'
 import VuePellEditor from 'vue-pell-editor'
+import VuePellEditorConfig from '../config/pelleditor'
 import FileManager from './FileManager.vue'
 
 export default {
@@ -129,29 +131,7 @@ export default {
         		months: this.$parent.$i18n.t('calendar.monthsShort'),
     			weeks: this.$parent.$i18n.t('calendar.weekShort')
 			},
-			editorOptions: [
-              'bold',
-              'underline',
-              {
-                name: 'italic',
-                result: () => exec('italic')
-              },
-              {
-                name: 'image',
-                result: () => {
-                
-                  this.openModal('uploadModal', {url:''}, '', 'img');
-                  //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
-                }
-              },
-              {
-                name: 'link',
-                result: () => {
-                  const url = window.prompt('Enter the link URL')
-                  if (url) VuePellEditor.components.pell.exec('createLink', ensureHTTP(url))
-                }
-              }
-            ],
+			editorOptions: VuePellEditorConfig(this.openModal),
 		}
 	},
 	methods: {
@@ -244,7 +224,6 @@ export default {
 		}
 	},
 	mounted: function () {
-		
 		if(this.$route.params.slug) {
 			this.getData('noticia/slug/'+this.$route.params.slug);
 		}
@@ -311,7 +290,7 @@ export default {
 	}
 	
 	.datepicker {
-	    width: 200px;
+	    width: 210px;
 	}
 	.icon-right {
 	    position: absolute;

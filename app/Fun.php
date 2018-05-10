@@ -2,7 +2,7 @@
 
 /* 
  * @Author alsanan <alsanan@gmail.com> 
- * @Version 2.0 (slim)
+ * @Version 2.0 (slim framework)
  * @Package FedpivalAPI 
  */
  
@@ -12,7 +12,12 @@ use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use \Firebase\JWT\JWT;
 use db;
-use \app\Auth;
+use \app\Auth;		// funcions d'autenticació i gestió de sessió
+use \app\Generics;	// funcions genèriques de gestió de taules (update,insert,query,delete)
+use \app\Nodes;		// funcions per gestionar la jerarquia de nodes
+use \app\Content;	// funcions per gestionar els blocs de contingut d'un node
+
+include "Tools.php";
 
 class Fun
 {
@@ -33,40 +38,6 @@ class Fun
     private static $rowcount= null; 
     private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // taules que al fer update o insert, han de fer-ho tmb en idioma
 
-//  //  //  //  //  //  //  //
-// funció que verifica que l'slug es unic
-private static function slugunic($propos) {
-	$sufixe= '-';
-	Fun::$db= new db();
-	do {
-		Fun::$db->sql("select slug from pagina where slug='".$propos."';");
-		$propos.= $sufixe;
-	} while (Fun::$db->numRows()!=0);
-	return substr($propos,0,-1); // està correcte el proposat
-}
-
-//  //  //  //  //  //  //  //
-// funció que converteix un text a slug
-private static function slugify($string, $replace = array(), $delimiter = '-') {
-  // https://github.com/phalcon/incubator/blob/master/Library/Phalcon/Utils/Slug.php
-  if (!extension_loaded('iconv')) {
-    throw new Exception('iconv module not loaded');
-  }
-  // Save the old locale and set the new locale to UTF-8
-  $oldLocale = setlocale(LC_ALL, '0');
-  setlocale(LC_ALL, 'en_US.UTF-8');
-  $clean = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
-  if (!empty($replace)) {
-    $clean = str_replace((array) $replace, ' ', $clean);
-  }
-  $clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
-  $clean = strtolower($clean);
-  $clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
-  $clean = trim($clean, $delimiter);
-  // Revert back to the old locale
-  setlocale(LC_ALL, $oldLocale);
-  return $clean;
-}
 
     
 //  //  //  //  //  //  //  //
@@ -124,6 +95,10 @@ private function list($source,$params=null) {
 	return Fun::render($result);    
 }
 
+public function test( Request $in, Response $out) {
+	testintools();
+}
+
 //  //  //  //  //  //  //  //
 /*borrable private function update($source,$id,$data) {
     $db = new db();
@@ -174,30 +149,6 @@ static public function auth_login(Request $request, Response $response) {
 	Auth::login($json);
 }
 
-//  //  //  //  //  //  //  //
-static public function authtest(Request $request) {
-    echo "m'has pillaO";
-    $secretKey = base64_decode("SECRET_KEY");
-    // encode the array
-    $jwt = JWT::encode(
-        Auth::token("1", "alfon7", "putoamo"),
-        $secretKey,
-        'HS256'
-    );
-    $enencodedArray = array('jwt' => $jwt);
-    // return the Token to the client.
-    Fun::verifyRol($request,0);
-    echo '<hr/>ok';
-}
-
-//  //  //  //  //  //  //  //
-static private function verifyRol($request,$rolneeded) {
-    $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
-    $data= Auth::getUserByToken($token,$rolneeded);
-    //$rolauth= $data->data->rol;
-    // innecessari, ja fa la comprovació en getUserByToken: if ($rolneeded<$rolauth) throw new UnauthorizedException('Rol insuficient');
-    return true;
-}
 
 //  //  //  //  //  //  //  //
 static private function getPost($tabla) {
@@ -214,6 +165,10 @@ static private function getPost($tabla) {
 
 //  //  //  //  //  //  //  //
 public function generic_update(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+	    echo Fun::verifyRol($request,0) ? 1 : 0;
+		//die(print_r($_SESSION));
+	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$id= $params['id'];
@@ -263,6 +218,10 @@ private function update_idioma($params, $id, $json) {
 //  //  //  //  //  //  //  //
 // inserció genèrica de contingut
 public function generic_insert(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Fun::verifyRol($request,0);
+	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$keys= implode(',',array_keys($json));
@@ -307,6 +266,10 @@ private function insert_idioma($params, $id, $json) {
 
 //  //  //  //  //  //  //  //
 public function generic_delete(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Auth::verifyRol($request,0);
+	}
     // considerar dependencies ací
     // per exemple, jugador amb pertany
 	$tabla= Fun::tables($params['tabla'],'modify');
@@ -318,9 +281,15 @@ public function generic_delete(Request $request, Response $response, $params) {
 
 //  //  //  //  //  //  //  //
 static public function generic_id(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Auth::verifyRol($request,0);
+	}
     $db = new db();
     $tabla= Fun::tables($params['tabla'],'select');
-    $db->sql("SELECT * FROM ".$tabla." where id=".$params['id']);
+    // no use les vistes per a tornar un únic objecte...
+    // PENDENT: caldrà verificar permisos per accedir a la info...
+    $db->sql("SELECT * FROM ".$params['tabla']." where id=".$params['id']);
     $data = $db->all();
     echo json_encode($data);
     return $params;
@@ -328,6 +297,10 @@ static public function generic_id(Request $request, Response $response, $params)
 
 //  //  //  //  //  //  //  //
 static public function generic_search(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Auth::verifyRol($request,0);
+	}
 	// minim tres caracters al buscar
 	if (strlen($params['que'])<3) die ( 'ERROR: Mínim 3 caràcters per buscar...' );
 	$options= array();
@@ -349,18 +322,42 @@ static public function generic_search(Request $request, Response $response, $par
 }
 
 //  //  //  //  //  //  //  //
+static public function equipsdeclub(Request $request, Response $response, $params) {
+    $db = new db();
+	$club= $params['club'];
+	$options= array();
+	$sql= "SELECT id,nom,modalitat,competicio,categoria FROM equip WHERE club=".$club;
+	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
+	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
+	$db->sql($sql);
+	$data= $db->all();
+    echo json_encode($data);
+}
+
+//  //  //  //  //  //  //  //
 static private function tables($elm, $for='select') {
     $tables= array(
     	'select'=> array(
 	        'acte'=>'_acte_'.Fun::$idioma,
+	        'actes'=>'_acte_'.Fun::$idioma,
+	        'actos'=>'_acte_'.Fun::$idioma,
 	        'noticia'=>'_noticia_'.Fun::$idioma,
-	        'equip'=>'_equip',
+	        'noticies'=>'_noticia_'.Fun::$idioma,
+	        'noticias'=>'_noticia_'.Fun::$idioma,
+	        'equips'=>'_equip',
 	        'club'=>'_club',
+	        'clubs'=>'_club',
 	        'jugador'=>'jugador',
+	        'jugadors'=>'jugador',
 	        'node'=>'_element_'.Fun::$idioma,
 	        'jerarquia'=>'_jerarquia',
 	        'partida'=>'partida',
-	        'producte'=>'_producte_'.Fun::$idioma
+	        'partidas'=>'partida',
+	        'partides'=>'partida',
+	        'producte'=>'_producte_'.Fun::$idioma,
+	        'productes'=>'_producte_'.Fun::$idioma,
+	        'producto'=>'_producte_'.Fun::$idioma,
+	        'productos'=>'_producte_'.Fun::$idioma
 	    ),
 	    'modify'=> array(
 	        'acte'=>'pagina',
@@ -452,6 +449,10 @@ static public function noticia_query(Request $request, Response $response, $para
 
 //  //  //  //  //  //  //  //
 static public function generic_query(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Auth::verifyRol($request,0);
+	}
 	$options= array( 'limit'=>Fun::$itemsPerPage);
 	$options= array_merge(Fun::procesaparam($params['p1'],$options));
 	$options= array_merge(Fun::procesaparam($params['p2'],$options));
@@ -534,8 +535,8 @@ static private function jerarquia($fill='competicions') {
 	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma] ) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
 	unset($result);
 	$estructura= array();
-	//echo '<pre>',print_r($resultids),'</pre>';
-	$antilock= 1500; // màxim de 1500 nodes
+	//echo '<pre>',print_r($resultids),'</pre>';exit;
+	$antilock= 300; // màxim de 300 nodes
 	while (count($resultids)>1) {
 	    $last= array_pop($resultids);
 	    $pareid= $last['pare'];
@@ -546,7 +547,7 @@ static private function jerarquia($fill='competicions') {
 	    unset($last['pare']);
 	    array_push($resultids[$pareid]['children'], $last);
 	    //echo '<hr/><pre>',count($resultids),'-',$last[id],'-resultids:',implode(',',array_keys($resultids)),'</pre>';
-	    if ($antilock--<0) break;
+	    if ($antilock--<0) die('antilock');
 	}
 	$estructura= array_pop($resultids);
     unset($estructura['nom_es']);
@@ -707,5 +708,42 @@ static public function tags_query(Request $request, Response $response, $params)
 
 //  //  //  //  //  //  //  //
 
+
+//  //  //  //  //  //  //  //
+// funció que verifica que l'slug es unic
+static private function slugunic($propos) {
+	$sufixe= '-';
+	Fun::$db= new db();
+	do {
+		Fun::$db->sql("select slug from pagina where slug='".$propos."';");
+		$propos.= $sufixe;
+	} while (Fun::$db->numRows()!=0);
+	return substr($propos,0,-1); // està correcte el proposat
+}
+
+//  //  //  //  //  //  //  //
+// funció que converteix un text a slug
+static private function slugify($string, $replace = array(), $delimiter = '-') {
+  // https://github.com/phalcon/incubator/blob/master/Library/Phalcon/Utils/Slug.php
+  if (!extension_loaded('iconv')) {
+    throw new Exception('iconv module not loaded');
+  }
+  // Save the old locale and set the new locale to UTF-8
+  $oldLocale = setlocale(LC_ALL, '0');
+  setlocale(LC_ALL, 'en_US.UTF-8');
+  $clean = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+  if (!empty($replace)) {
+    $clean = str_replace((array) $replace, ' ', $clean);
+  }
+  $clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
+  $clean = strtolower($clean);
+  $clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
+  $clean = trim($clean, $delimiter);
+  // Revert back to the old locale
+  setlocale(LC_ALL, $oldLocale);
+  return $clean;
+}
+    
+    
     
 } // of class Fun

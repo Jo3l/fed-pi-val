@@ -25,10 +25,28 @@
 
 				<tablerone :tableList="list" :tableColumns="columns">
 					<th slot="headActions"></th>
-					<template slot="actions" scope="props">
-						<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
-						<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
+					
+					<template slot="icon1" scope="props">
+						<td class="actiu">
+							<ui-icon icon="lens" class="green" v-if="props.row.actiu"></ui-icon>
+							<ui-icon icon="trip_origin" class="red" v-else ></ui-icon>
+						</td>
 					</template>
+					
+					<template slot="icon2" scope="props">
+						<td class="actiu">
+							<ui-icon icon="lens" class="green" v-if="props.row.segur"></ui-icon>
+							<ui-icon icon="trip_origin" class="red" v-else ></ui-icon>
+						</td>
+					</template>
+					
+					<template slot="actions" scope="props">
+						<td class="actions">
+							<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
+							<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
+						</td>
+					</template>
+					
 				</tablerone>
 				<paginate
 				    :page-count="Math.ceil(list.total / list.per_page)"
@@ -58,6 +76,18 @@ export default {
 		return {
 		    list:{},
 		    columns:[
+	            {
+	                label: 'Actiu',
+	                field: 'actiu',
+	                html: false,
+	                icon: true
+	            },
+	            {
+	                label: 'Assegurat',
+	                field: 'segur',
+	                html: false,
+	                icon: true
+	            },
 	            {
 	                label: 'Num. Soci',
 	                field: 'numsoci',
@@ -134,6 +164,14 @@ export default {
 <style lang="less">
 
 @import "../../assets/less/defines.less";
+
+
+.table {
+	.actiu > span {
+		font-size:1em!important;
+		text-align:center;
+	}
+}
 
 .button-right{
 	margin:0 1em 0 auto;

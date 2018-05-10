@@ -5,15 +5,15 @@
 		<ul class="breadcrumb-wrapper">
 			<li v-for="bread in breadCrumb" @click="updateBreadcrumb" v-bind:class="[ bread.id==currentPageId && treeLevel.children && treeLevel.children.length!=0 ? 'lastLi' : '', $store.getters.isAuthenticatedWithRole(0)? 'auth' : '']">    
     			<router-link  class="breadcrumb" v-bind:to="bread.link">{{ bread.name }}</router-link><span class="breadcrumb-separator"></span>
-					<ul class="vertical-menu" @click="updateBreadcrumb" v-if="bread.id==currentPageId">
+					<div class="vertical-menu" @click="updateBreadcrumb" v-if="bread.id==currentPageId">
 						
-						<draggable v-model="treeLevel.children" :options="{draggable:'li', disabled:!$store.getters.isAuthenticatedWithRole(0)}" @end="setOrder(true)">
-							<li v-for="leaf in treeLevel.children" :key="leaf.order" v-bind:class="{ deleteable: !leaf.children && leaf.elements==0 && $store.getters.isAuthenticatedWithRole(0) }">
-					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> --> <em v-if="!leaf.children && leaf.elements==0 && $store.getters.isAuthenticatedWithRole(0)" class="remove" @click="removeNode(leaf)"></em>
-					    	</li>
+						<draggable v-model="treeLevel.children" :options="{draggable:'em', disabled:!$store.getters.isAuthenticatedWithRole(0)}" @end="setOrder(true)">
+							<em v-for="leaf in treeLevel.children" :key="leaf.order" v-bind:class="{ deleteable: !leaf.children && leaf.elements==0 && $store.getters.isAuthenticatedWithRole(0) }">
+					    			<router-link v-bind:to="basePath+leaf.slug">{{ leaf.name }}</router-link> <!--<i></i> --> <i v-if="!leaf.children && leaf.elements==0 && $store.getters.isAuthenticatedWithRole(0)" class="remove" @click="removeNode(leaf)"></i>
+					    	</em>
 						</draggable>
 
-					</ul>
+					</div>
 		    </li>
 		</ul>
 
@@ -229,7 +229,9 @@ export default {
 
     	for (var bread in tempBreadCrumb) {
     		incPath = incPath+tempBreadCrumb[bread]+'/';
-    		if(!vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") )) vm.$router.push('/404'); //si el slug no esta en el tree, ens envia a 404
+    		
+    		//if(!vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") )) vm.$router.push('/404'); //si el slug no esta en el tree, ens envia a 404
+
 		    breadCrumb.push({'id':vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") ).id, 'name': vm.findNodeBySlug(vm.tree, incPath.replace(/^(.+?)\/*?$/, "$1") ).name,'slug': tempBreadCrumb[bread], 'link':baseUrl+incPath.replace(/^(.+?)\/*?$/, "$1")});
 		}
 		
@@ -285,7 +287,7 @@ export default {
   padding: 0;
   display:flex;
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin-bottom: -40px;
 	.breadcrumb {
 		color: #232323;
 		border: 2px solid #87212e;
@@ -316,14 +318,15 @@ export default {
 
   li { 
   	display: inline-block;
-  	margin-bottom: 16px;
+  	//margin-bottom: 16px;
+  	min-height: 35px;
   	&.lastLi {
-  		padding: 0 0 6px 5px;
+  		padding: 0;
 	    //padding: 10px 7px 18px 7px;
-	    margin: -8px 0 0 0;
+	    margin: 0 0 20px 0;
 	    border-radius: 20px;
 	    &.auth{
-	    	border: 1px dashed #87212e;
+	    	//border: 1px dashed #87212e;
 	    }
   	}
   }
@@ -335,44 +338,63 @@ export default {
   
 	.vertical-menu {
 		height: 15px;
-		display: inline-table;
-		&>div{display:flex;flex-wrap: wrap;}
-		list-style: none;
+		display: initial;
+		&>div{
+			//display:flex;
+			//flex-wrap: wrap;
+			column-count:2;
+			column-gap: 40px;
+			margin-top:10px;
+			margin-left: 10px;
+			@media(max-width:768px) {
+				column-count:1;
+				width: ~"calc(100vw - 85px)";
+			}
+			@media(max-width:480px){
+				font-size: 80%;
+			}
+		}
+
 		margin: 0;
 		padding: 0px 11px 0 11px;
-			li{
-	  		    margin: 5px 0 0 0;
-			    display: list-item;
-			    padding: 3px 16px 0 0px;
-			    white-space: nowrap;
-				height: 25px;
+			em{
+	  		    margin: 0;
+			    display: block;
+			    padding: 3px 10px 3px 11px;
+				font-style: initial;
+				margin-left: -10px;
+				border-radius: 20px;
+				position:relative;
+				page-break-inside: avoid;
+                break-inside: avoid;
 				
 				a {
 					color:#232323;
 					text-decoration:none;
 					text-transform: capitalize;
+					white-space: nowrap; 
+				    overflow: hidden;
+				    text-overflow: ellipsis;
+				    display:block;
 				}
 				i {
 				    cursor: n-resize;
 				    width: 5px;
 				    height: 5px;
 				    display: inline-block;
-				    margin-bottom: 2px;
-				    margin-left: 10px;
 				    border-top: 1px solid #87212e;
 				    border-bottom: 1px solid #87212e;
-				    float:right;
-				    margin-top:8px;
 				}
 				
-				em.remove {
+				i.remove {
 					display:none;
 					cursor: pointer;
 				    width: 10px;
 				    height: 10px;
-				    margin-top: 5px;
 				    position: absolute;
-				    margin-left: 5px;
+				    right: 8px;
+    				top: 8px;
+    				
 					&:hover {
 					    &:before, &:after {	width: 2px; }
 					}
@@ -395,16 +417,14 @@ export default {
 
 				&:hover {
 					&.deleteable {
-						padding: 3px 25px 3px 10px;
+						//padding: 3px 25px 3px 10px;
+						padding-right: 22px;
+						margin-right:-5px;
 					}
 					a{color: #fff;}
 				    background-color: #87212e;
-				    padding: 3px 10px 3px 11px;
-					margin-left: -10px;
-					margin-right: 5px;
-				    border-radius: 20px;
 
-					em.remove {
+					.remove {
 							display:inline;
 					}
 				}

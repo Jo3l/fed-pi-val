@@ -71,8 +71,7 @@
 	    		<router-link v-bind:to="menu.path">{{ menu.name }}</router-link>
 	    	</li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
-			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/equips' }">Equips</router-link></li>
-			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/Clubs' }">Clubs</router-link></li>
+			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/clubs' }">Clubs</router-link></li>
 	    </ul>
 	</div>
 

@@ -49,7 +49,9 @@ $app->post('/api/auth/logout', '\app\Fun::auth_logout');
 /*PENDENT
 Repassar la forma de cridar les funcions... He de posar \app\Fun:: pq Fun:: no el troba */
 
-$app->get('/api/authtest', '\app\Fun::authtest');
+$app->get('/api/authtest', '\app\Auth::authtest');
+
+$app->get('/api/test', '\app\Fun::test'); // obtindre un cami
 
 $app->get('/api/tags/{tipus:producte|noticia|acte}', '\app\Fun::tags_query'); // buscar
 
@@ -71,13 +73,15 @@ $app->get('/api/node/{id:[0-9]+}', '\app\Fun::list_elements'); // obtindre eleme
 
 $app->post('/api/node/{id:[0-9]+}', '\app\Fun::insert_element'); // jerarquia federacio o competicions
 
-$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_id');
+$app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::equipsdeclub'); // buscar
 
-$app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_delete');
+$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Fun::generic_id');
 
-$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte}/{id:[0-9]+}', '\app\Fun::generic_update');
+$app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Fun::generic_delete');
 
-$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte}[/]', '\app\Fun::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Fun::generic_update');
+
+$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Fun::generic_insert');
 
 // consulta de actes d'un mes: /acte/YYYYMM amb possibles modificadors /p/pagina/t/tag/s/search/o/ordre/i/idioma/j/node
 $app->get('/api/actes/{mes:[0-9]{6}}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::date_query');

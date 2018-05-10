@@ -14,7 +14,8 @@ import PageNotFound from './components/PageNotFound.vue'
 import Jugadors from './components/admin/Jugadors.vue'
 import Jugador from './components/admin/Jugador.vue'
 import Clubs from './components/admin/Clubs.vue'
-import Equips from './components/admin/Equips.vue'
+import Club from './components/admin/Club.vue'
+import Equip from './components/admin/Equip.vue'
 
 Vue.use(Router);
 
@@ -146,25 +147,25 @@ export default new Router({
 	    lang:'es'
 	  },
 	  {
-	    path: '/val/competicions/:slug',
+	    path: '/val/competicions/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Competicions node',
 	    component: SubRoutes,
 	  },
 	  {
-	    path: '/es/competiciones/:slug',
+	    path: '/es/competiciones/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Competiciones nodo',
 	    component: SubRoutes,
 	  },
 	  {
-	    path: '/val/federacio/:slug',
+	    path: '/val/federacio/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Federació node',
 	    component: SubRoutes,
 	  },
 	  {
-	    path: '/es/federacion/:slug',
+	    path: '/es/federacion/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Federación nodo',
 	    component: SubRoutes,
@@ -204,15 +205,33 @@ export default new Router({
 	    role: 0
 	  },
 	    {
+	    path: '/admin/club/:clubId',
+	    name: 'Club',
+	    component: Club,
+	    role: 0
+	  },
+	    {
 	    path: '/admin/jugador/',
 	    name: 'Nou Jugador',
 	    component: Jugador,
 	    role: 0
 	  },
 	    {
-	    path: '/admin/equips',
-	    name: 'Equips',
-	    component: Equips,
+	    path: '/admin/club/',
+	    name: 'Nou Club',
+	    component: Club,
+	    role: 0
+	  },
+	    {
+	    path: '/admin/club/:clubId/equip/:equipId',
+	    name: 'Equip',
+	    component: Equip,
+	    role: 0
+	  },
+	  {
+	    path: '/admin/club/:clubId/equip',
+	    name: 'Nou Equip',
+	    component: Equip,
 	    role: 0
 	  },
 	    {

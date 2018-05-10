@@ -2,10 +2,10 @@
     <transition name="fade">
 	    <div>
 
-			<h1>Jugadors</h1>
+			<h1>Clubs</h1>
 			
 			<span class="button-right">
-				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Jugador</ui-button>
+				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Club</ui-button>
 			</span>
 			
 			<div class="vuetableContainer">
@@ -41,7 +41,6 @@
 				    :page-class="'page-item'">
 				</paginate>
   
-  {{list}}
   
 			</div>
 			
@@ -70,16 +69,6 @@ export default {
 	                label: 'Població',
 	                field: 'poblacio',
 	                html: false,    
-	            },
-	            {
-	                label: 'Codi Postal',
-	                field: 'cp',
-	                html: false,    
-	            },
-	            {
-	                label: 'Telèfon',
-	                field: 'telefon',
-	                html: false,    
 	            }
 	            
 	        ],
@@ -88,7 +77,7 @@ export default {
 	},
 	methods: {
 	  	edit:function(row) {
-	    	this.$router.push({ path: `/admin/clubs/`+row.id });
+	    	this.$router.push({ path: `/admin/club/`+row.id });
 	    },
 	  	remove:function(row) {
 			var vm=this;
@@ -112,7 +101,7 @@ export default {
 	        var vm = this;
 	        
 	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
-	        var searchPage = page!=null ? '/p/'+ page : '/p/1';
+	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
 	        
 	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
 	        .then(function (response) {

@@ -7,6 +7,15 @@
 			<div class="contentFlex formulari">
 			
 				<div class="left50">
+					
+					<div class="contentFlex intern">
+						<div class="left50">
+							<ui-switch v-model="jugador.actiu">Actiu</ui-switch>
+						</div>
+						<div class="left50">
+	                		<ui-switch v-model="jugador.segur">Assegurat</ui-switch>
+	                	</div>
+					</div>
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
@@ -147,6 +156,8 @@ export default {
 			poblacions: [],
 		    jugador:{
 			      nom: null,
+			      actiu: null,
+			      segur: null,
 			      naixement: new Date(),
 			      dni: null,
 			      numsoci: null,
@@ -274,7 +285,7 @@ export default {
 	
 .contentFlex {
 	display:flex;
-	flex-wrap: wrap-reverse;
+	flex-wrap: wrap;
 	padding: 1em 2em;
 	&.formulari {
 		input{
@@ -288,6 +299,9 @@ export default {
 			}
 		}
 
+	}
+	&.intern {
+		padding: 1em 0 2em 0;
 	}
 	.left50 {
 		width:50%;

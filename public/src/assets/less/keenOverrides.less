@@ -1,0 +1,40 @@
+@import "defines";
+
+.ui-tabs--text-color-active-primary .ui-tab-header-item.is-active, .ui-tabs--text-color-active-primary .ui-tab-header-item.is-active .ui-tab-header-item__icon {
+    color: @fedcolor;
+}
+.ui-tabs--indicator-color-primary .ui-tabs__active-tab-indicator {
+    background-color: @fedcolor;
+    height: 3px;
+}
+
+.is-active .ui-textbox__label-text {
+	color: @fedcolor!important;
+}
+
+.calendar-date-selected, .calendar-date-selected:hover {
+    background:  @fedcolor!important;
+}
+
+.ui-select__search-input:focus+.ui-select__search-icon {
+    color: @fedcolor!important;
+}
+
+.ui-select.is-active:not(.is-disabled) .ui-select__display {
+    border-bottom-color: @fedcolor!important;
+}
+.ui-select.is-active:not(.is-disabled) .ui-select__icon-wrapper .ui-icon, .ui-select.is-active:not(.is-disabled) .ui-select__label-text {
+    color: @fedcolor!important;
+}
+.ui-tabs__body {
+    border: 0;
+}
+
+.ui-icon {
+	&.green {
+		color: green;
+	}
+	&.red {
+		color: red;
+	}
+}	

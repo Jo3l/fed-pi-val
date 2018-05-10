@@ -24,6 +24,7 @@
 				            label="Password"
 							type="password"
 				            v-model="user.clau"
+				            @keyup.enter.native="login(user)"
 				        ></ui-textbox>
 				        
 				        
@@ -42,8 +43,8 @@ export default {
 	data () {
 		return {
 			user: {
-				email:'alfons@algemesi.info',
-				clau:'inmersa',
+				email:'',
+				clau:'',
 			}
 		}
 	},

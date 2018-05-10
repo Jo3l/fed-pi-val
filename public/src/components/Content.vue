@@ -256,6 +256,7 @@
 
 import draggable from 'vuedraggable'
 import VuePellEditor from 'vue-pell-editor'
+import VuePellEditorConfig from '../config/pelleditor'
 import VueDatepickerLocal from 'vue-datepicker-local'
 import FileManager from './FileManager.vue'
 
@@ -283,46 +284,9 @@ export default {
         		months: this.$parent.$i18n.t('calendar.monthsShort'),
     			weeks: this.$parent.$i18n.t('calendar.weekShort')
 			},
-            editorOptions: [
-              'bold',
-              'underline',
-              {
-                name: 'italic',
-                result: () => exec('italic')
-              },
-              {
-                name: 'custom',
-                icon: '<b><u><i>C</i></u></b>',
-                title: 'Custom Action',
-                result: () => console.log(this)
-              },
-              {
-                name: 'image',
-                result: () => {
-                
-                  this.openModal('uploadModal', {url:''}, '', 'img');
-                  //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
-                }
-              },
-              {
-                name: 'link',
-                result: () => {
-                  const url = window.prompt('Enter the link URL')
-                  if (url) VuePellEditor.components.pell.exec('createLink', ensureHTTP(url))
-                }
-              }
-            ],
+            editorOptions: VuePellEditorConfig(this.openModal),
 			searchList:[],
 			newOrder:[],
-			customToolbar: [
-			  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-			  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-			  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-			  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-			  [{ 'align': [] }],
-			
-			  ['clean']                                         // remove formatting button
-			],
 			nodeContent:[],
 			newGame:{}
 			
@@ -599,7 +563,6 @@ export default {
 			this.getTeams();
 			this.getPlaces();
     	}
-		
 	},
 	watch: { 
       	nodeId: function(newVal, oldVal) {
@@ -692,14 +655,6 @@ export default {
 	}
 }
 
-.is-active{
-	.ui-textbox__label-text {
-    	color: #117edd!important;
-	}
-	.ui-textbox__input {
-		border-bottom-color: #117edd!important;
-	}
-}
 
 .partida{
 	width:100%;

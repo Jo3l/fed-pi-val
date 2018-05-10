@@ -2,7 +2,6 @@
     <transition name="fade">
 	    <div id="fileManager">
 		
-			  
 			<div class="uploadContainer">
 				
 				<vue-core-image-upload v-if="tipo=='pdf'"
@@ -101,7 +100,7 @@
 
 <script>
 
-import VueCoreImageUpload from 'vue-core-image-upload'
+import VueCoreImageUpload  from 'vue-core-image-upload'
 
 export default {
   	components: { 'vue-core-image-upload': VueCoreImageUpload},

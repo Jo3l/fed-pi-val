@@ -8,7 +8,11 @@
         "classmap": [
           "app",
           "app/Fun.php",
-          "app/Auth.php"
+          "app/Auth.php",
+          "app/Nodes.php",
+          "app/Content.php",
+          "app/Generics.php",
+          "app/Tools.php"
         ]
     }
 }
