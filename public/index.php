@@ -1,29 +1,18 @@
 <?php
+//echo '<pre>', print_r($_SERVER);
+//include "index.html";
 
-use Slim\App;
+$uri= $_SERVER['REQUEST_URI'];
+$uri= explode('/',$uri);
+echo array_pop($uri);
 
-use \Psr\Http\Message\ServerRequestInterface as Request;
-use \Psr\Http\Message\ResponseInterface as Response;
+echo '<h1>Executat en public/index.php';
 
-
-require '../vendor/autoload.php';
-require '../app/config/db.php';
-
-
-$config = [
-    'settings' => [
-        'displayErrorDetails' => true
-    ]
-];
-
-
-$app = new App($config);
-
-
-require '../app/routes/authRoutes.php';
-
-// Customer Routes
-
-require '../app/routes/api.php';
-
-$app->run();
+// /val/noticia/*
+// /es/noticia/*
+// /val/competicions/*
+// /es/competicions/*
+// /val/federacio/*
+// /es/federacio/*
+// /val/calendari
+// /es/calendari

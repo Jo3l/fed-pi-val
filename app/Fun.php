@@ -34,9 +34,8 @@ class Fun
     private static $order= null; // ordre definit
     private static $id= null; // id del registre que se va a editar
     private static $mes= null; // mes a partir del qual es consulten dades
-    private static $idioma= 'val'; // idioma actual
+    public static $idioma= 'val'; // idioma actual
     private static $rowcount= null; 
-    private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // taules que al fer update o insert, han de fer-ho tmb en idioma
 
 
     
@@ -151,7 +150,7 @@ static public function auth_login(Request $request, Response $response) {
 
 
 //  //  //  //  //  //  //  //
-static private function getPost($tabla) {
+static public function getPost($tabla) {
 	$json= json_decode(file_get_contents("php://input"),true);
 	if ($tabla=='partida') {
 	    if (is_array($json['lloc'])) $json['lloc']= $json['lloc']['id'];
@@ -162,7 +161,7 @@ static private function getPost($tabla) {
 	return $json;
 }
 
-
+/*
 //  //  //  //  //  //  //  //
 public function generic_update(Request $request, Response $response, $params) {
 	if ($params['tabla']=='usuari') {
@@ -189,6 +188,7 @@ public function generic_update(Request $request, Response $response, $params) {
 	return;
 }
 
+
 //  //  //  //  //  //  //  //
 // actualització de contingut segons idioma
 private function update_idioma($params, $id, $json) {
@@ -214,6 +214,7 @@ private function update_idioma($params, $id, $json) {
 	}
     $db->sql(" COMMIT;");
 }
+
 
 //  //  //  //  //  //  //  //
 // inserció genèrica de contingut
@@ -320,6 +321,7 @@ static public function generic_search(Request $request, Response $response, $par
     echo json_encode($data);
     return $params;
 }
+*/
 
 //  //  //  //  //  //  //  //
 static public function equipsdeclub(Request $request, Response $response, $params) {
@@ -335,7 +337,7 @@ static public function equipsdeclub(Request $request, Response $response, $param
 }
 
 //  //  //  //  //  //  //  //
-static private function tables($elm, $for='select') {
+static public function tables($elm, $for='select') {
     $tables= array(
     	'select'=> array(
 	        'acte'=>'_acte_'.Fun::$idioma,

@@ -4,6 +4,8 @@ use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 use \app\Fun;
 use \app\Filem;
+use \app\Headers;
+use \app\Generics;
 
 /*
 ini_set('display_errors', 1);
@@ -24,7 +26,7 @@ $app->add(function ($req, $res, $next) {
         //->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Origin', 'http://fedpival.indiza.com')
         ->withHeader('Access-Control-Allow-Headers', 'X-Auth-Token, X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        ->withHeader('Accgeess-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
 
@@ -75,13 +77,13 @@ $app->post('/api/node/{id:[0-9]+}', '\app\Fun::insert_element'); // jerarquia fe
 
 $app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::equipsdeclub'); // buscar
 
-$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Fun::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_id');
 
-$app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Fun::generic_delete');
+$app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_delete');
 
-$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Fun::generic_update');
+$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_update');
 
-$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Fun::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Generics::generic_insert');
 
 // consulta de actes d'un mes: /acte/YYYYMM amb possibles modificadors /p/pagina/t/tag/s/search/o/ordre/i/idioma/j/node
 $app->get('/api/actes/{mes:[0-9]{6}}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Fun::date_query');
@@ -103,6 +105,13 @@ $app->post('/api/static/uploadimg', '\app\Filem::uploadimg'); // guardar imatge
 $app->post('/api/static/uploadpdf', '\app\Filem::uploadpdf'); // guardar pdf
 
 $app->delete('/api/static/{path:[\.\/-_0-9A-Za-z]+}', '\app\Filem::delete'); // esborrar arxiu
+
+/* rutes estàtiques de preprocess per generar els headers per a que els bots puguen compartir dades */
+
+$app->get('/{path:val/noticia/.+|es/noticia/.+}', '\app\Headers::headers_noticia');
+$app->get('/{path:val/calendari|es/calendario}', '\app\Headers::headers_federacio');
+$app->get('/{path:val/competicions/.+|es/competiciones/.+}', '\app\Headers::headers_competicions');
+$app->get('/{path:val/federacio/.+|es/federacion/.+}', '\app\Headers::headers_federacio');
 
 /*
 /noticia // llista totes les noticies (les primeres 20)

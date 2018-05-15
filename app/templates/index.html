@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="{{lang}}">
+  <head>
+    <meta charset="utf-8">
+    
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, minimum-scale = 1.0, initial-scale = 1.0, maximum-scale = 5.0, user-scalable=yes, shrink-to-fit=no">
+    <meta http-equiv="Cache-control" content="no-Store">
+    
+    <title>{{titol}}</title>
+    
+    <meta name="generator" content="Indiza system">
+    <meta name="description" content="Federació de Pilota Valenciana">
+    
+    <!-- Meta for Facebook -->
+    <meta property="og:title" content="{{titol}}">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="{{url}}">
+    <meta property="og:description" content="{{contingut}}">
+    
+    <!-- Meta for Twitter -->
+    <meta name="twitter:card" content="{{url}}">
+    <meta name="twitter:site" content="@fedpival">
+    <meta name="twitter:creator" content="@fedpival">
+    <meta name="twitter:title" content="{{titol}}">
+    <meta name="twitter:description" content="{{contingut}}">
+    <meta name="twitter:image" content="{{url}}">
+    
+    <base href="/">
+    
+    <link rel="icon" href="static/ico.png">
+
+    <!-- See https://goo.gl/OOhYW5 -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- See https://goo.gl/qRE0vM -->
+    <meta name="theme-color" content="#3f51b5">
+
+    <!-- Add to homescreen for Chrome on Android. Fallback for manifest.json -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Federació de pilota Valenciana">
+    
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Federació de pilota Valenciana">
+    <link rel="apple-touch-icon"  sizes="48x48" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="72x72" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="96x96" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="128x128" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="144x144" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="152x152" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="192x192" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="384x384" href="static/ico.png">
+    <link rel="apple-touch-icon"  sizes="512x512" href="static/ico.png">
+    
+    <!-- Tile icon for Windows 8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="static/ico.png">    
+    <meta name="msapplication-TileColor" content="">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+	<link rel="stylesheet" href="/dist/keen-ui.min.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	
+<script>
+  window.Promise || document.write('<script src="https://unpkg.com/es6-promise@3.2.1/dist/es6-promise.min.js"><\/script>');
+  window.fetch || document.write('<script src="https://unpkg.com/whatwg-fetch@1.0.0/fetch.js"><\/script>');
+</script>
+
+  </head>
+  <body>
+  	
+	<div class="waveHorizontals" style="display:none;">
+		<svg id="waveHorizontal1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(69,121,226,0.5)" />
+		</svg>
+		<svg id="waveHorizontal2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(52,97,193,0.5)" />
+		</svg>
+		<svg id="waveHorizontal3" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(45,85,170,0.5)" />
+		</svg>
+	</div>
+	
+	
+	<div class="waveHorizontals darrere" style="display:none;">
+		<svg id="waveHorizontal1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(69,121,226,0.5)" />
+		</svg>
+		<svg id="waveHorizontal2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(52,97,193,0.5)" />
+		</svg>
+		<svg id="waveHorizontal3" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+			<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(45,85,170,0.5)" />
+		</svg>
+	</div>
+	
+	
+    <div id="app">
+  
+    	<Toolbar></Toolbar>
+        <router-view></router-view>
+        
+    </div>
+
+	<footer class="footer" style="display:none;">
+		<div class="waveHorizontals">
+			<svg id="waveHorizontal1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+				<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(255,255,255,0.5)" />
+			</svg>
+			<svg id="waveHorizontal2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+				<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(255,255,255,0.5)" />
+			</svg>
+			<svg id="waveHorizontal3" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
+				<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(255,255,255,0.5)" />
+			</svg>
+		</div>
+		<div class="footerSpacer">
+				<a href="http://pilotaescola.es" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola"></a>
+				<a href="http://www.ceice.gva.es/ca/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/conselleria_esport.jpg" alt="Conselleria d'Educació, Investigació, Cultura i Esport" title="Conselleria d'Educació, Investigació, Cultura i Esport"></a>
+				<a href="http://www.dival.es/" target="_blank"><img src="/static/img/footer/diputacioval.jpg" alt="Diputació de València" title="Diputació de València"></a>
+				<a href="http://www.diputacionalicante.es" target="_blank"><img src="/static/img/footer/alacant.gif" alt="Diputació d'Alacant" title="Diputació d'Alacant"></a>
+				<a href="http://www.dipcas.es" target="_blank"><img src="/static/img/footer/castello.jpg" alt="Diputació de Castelló" title="Diputació de Castelló"></a>
+				<a href="http://www.valencia.es" target="_blank"><img src="/static/img/footer/valencia.jpg" alt="Ajuntament de València" title="Ajuntament de València"></a>
+				<a href="http://www.deportevalencia.com" target="_blank"><img src="/static/img/footer/fdm.jpg" alt="Fundació Esportiva Municipal" title="Fundació Esportiva Municipal"></a>
+				<a href="http://www.elcorteingles.es" target="_blank"><img src="/static/img/footer/eci.jpg" alt="El Corte Inglés" title="El Corte Inglés"></a>
+				<a href="http://lacaixa.es/" target="_blank"><img src="/static/img/footer/lacaixa.jpg" alt="La Caixa" title="La Caixa"></a>
+				<a href="http://www.edicom.es" target="_blank"><img src="/static/img/footer/edicom.jpg" alt="Edicom" title="Edicom"></a>
+				<a href="http://www.caixapopular.es" target="_blank"><img src="/static/img/footer/caixapopular.jpg" alt="Caixa Popular" title="Caixa Popular"></a>
+				<a href="http://www.bankia.es" target="_blank"><img src="/static/img/footer/bankia.jpg" alt="Bankia" title="Bankia"></a>
+				<a href="http://www.intersport.es/" target="_blank"><img src="/static/img/footer/intersport.jpg" alt="Bankia" title="Intersport"></a>
+				<a href="http://www.acerbis.com/" target="_blank"><img src="/static/img/footer/acerbis.jpg" alt="Bankia" title="Acerbis"></a>
+				<img src="/static/img/footer/iso.jpg" alt="ISO 9001" title="ISO 9001">
+				<a href="http://twitter.com/fedpival" target="_blank"><img src="http://fedpival.es/img/tw.png" alt="Twitter" title="Twitter"></a>
+				<a href="http://facebook.com/fedpival" target="_blank"><img src="http://fedpival.es/img/fb.png" alt="Facebook" title="Facebook"></a>
+				<a href="http://www.ceice.gva.es/web/deporte/pilota-valenciana" target="_blank"><img src="http://fedpival.es/img/tv.png" alt="Partides" title="Partides"></a>		
+			
+		</div>
+	</footer>
+
+    <script src="/dist/build.js"></script>
+  </body>
+</html>

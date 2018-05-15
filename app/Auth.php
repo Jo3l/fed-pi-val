@@ -6,6 +6,9 @@ use \Firebase\JWT\JWT;
 use db;
 use config;
 
+
+// echo hash('sha256', 'contraseña');
+
 class Auth
 {
 
