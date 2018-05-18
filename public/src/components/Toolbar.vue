@@ -144,7 +144,7 @@ export default {
 	
 	},
 	mounted: function() {
-		//console.log(this.$store);
+
 	},
 	beforeMount: function() {
 		//esta funcio es per a automatitzar el selector de llenguatges a partir del objecte $i18n

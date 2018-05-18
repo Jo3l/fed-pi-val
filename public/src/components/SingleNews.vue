@@ -107,7 +107,11 @@ export default {
 		return {
 		    selected:{},
 		    destacada:false,
-		    news: '',
+		    news:{
+				titol: '',
+				contingut: '',
+				url:''
+		    },
 		    showMobileMenu: false,
 		    publishedDate: '',
 		    unPublishedDate: '',
@@ -134,6 +138,20 @@ export default {
 			editorOptions: VuePellEditorConfig(this.openModal),
 		}
 	},
+    head: {
+		title: function () {
+	        return {
+	          inner: this.news.titol,
+	        }
+    	},
+	    meta: function () {
+	        return [
+				  { name: 'description', content: this.news.contingut, id: 'desc' },
+				  { property: 'og:title', content: this.news.titol },
+				  { p: 'og:image', c: window.location.protocol + '//' + window.location.host + this.news.url },
+	        ]
+	    }
+    },
 	methods: {
 		openModal:function(ref, object, cancel, tipo) {
 			this.$refs.upload.activate(tipo);
@@ -191,7 +209,7 @@ export default {
 		getData: function(apiUrl) {
 	
 	        var vm = this;
-	        this.$http.get(apiUrl)
+	        vm.$http.get(apiUrl, { useCache: true })
 	        .then(function (response) {
 	            vm.news = response.data[0];
 	            vm.publishedDate = new Date.parse(vm.fixDateForParse(response.data[0].publicacio));
@@ -199,7 +217,7 @@ export default {
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-	        
+    	            		    	
 	    },
 	  	fixDate: function (date) { 
 		  return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("d/M/yyyy");
@@ -240,9 +258,13 @@ export default {
 			this.$router.push({ path: `/` });
 		}
 		this.scrollToTop(0);
-		
-		
+
 	},
+    watch: { 
+      	news: function(newVal, oldVal) { // watch it
+			this.$emit('updateHead');
+        }
+    },
 	computed: {
 		dateFixed: function() {
 			return this.publishedDate.toString("d/M/yyyy");

@@ -50,12 +50,15 @@ export default {
 			this.$parent.$emit('loadingBar', data);
 	}
   },
-    mounted: function () {
+  created : function() {
 
-    },
-    watch: {
+  },
+  mounted: function () {
 
-    }
+  },
+  watch: {
+
+  }
 }
 </script>
 

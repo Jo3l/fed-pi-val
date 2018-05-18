@@ -12,7 +12,8 @@
           "app/Nodes.php",
           "app/Content.php",
           "app/Generics.php",
-          "app/Tools.php"
+          "app/Tools.php",
+          "app/Headers.php"
         ]
     }
 }

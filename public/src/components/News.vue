@@ -30,11 +30,11 @@ export default {
 	name: 'News',
   	components: {'NewsCarousel' : NewsCarousel},
 	data () {
-	return {
-	    pagina: 0,
-	    any:'',
-	    mes:''
-	}
+		return {
+		    pagina: 0,
+		    any:'',
+		    mes:''
+		}
 	},
 	methods: {
 		incPage: function() {

@@ -36,7 +36,8 @@ export default {
 		search: 'Buscar',
 		newsNew: 'Nova noticia',
 		eventNew: 'Nou event',
-		wrong: 'Valor incorrecte'
+		wrong: 'Valor incorrecte',
+		cookieLegal: 'Aquesta pàgina web utilitza cookies per a millorar l´experiencia navegant. Pots consultar ací la nostra ',
 	},
 	node : {
 		insert_node : 'Insertar nou node',
@@ -52,7 +53,7 @@ export default {
 		uploadImages: 'Pujar imatge',
 		cutImages: 'Retallar Imatge'
 	},
-		modal: {
+	modal: {
 		ok: 'Acceptar',
 		cancel: 'Cancelar'
 	}

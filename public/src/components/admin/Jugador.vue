@@ -311,6 +311,17 @@ export default {
 		.jugador {
 		    width: 75%;
 		    margin-left: 15%;
+		    img {
+		    	top:0;
+		    	right:0;
+		    	bottom:0;
+		    	left:0;
+		    	margin:auto;
+		    	max-width:300px;
+		    	@media(max-width:@screenTablet) {
+		    		max-width:inherit;
+		    	}
+		    }
 		}
 		.uploader {
 	    	text-align: center;

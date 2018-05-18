@@ -30,11 +30,42 @@
     border: 0;
 }
 
+.ui-switch--color-primary.is-checked:not(.is-disabled) .ui-switch__thumb {
+    background-color: @fedcolor;
+}
+
+.ui-radio-group:not(.is-disabled):not(.is-invalid).is-active .ui-radio-group__label-text {
+    color: @fedcolor;
+}
+
+.ui-radio--color-primary.is-checked:not(.is-disabled) .ui-radio__inner-circle {
+    background-color: @fedcolor;
+}
+
+.ui-radio--color-primary.is-checked:not(.is-disabled) .ui-radio__outer-circle {
+    border-color: @fedcolor;
+}
+
+.ui-switch--color-primary.is-checked:not(.is-disabled) .ui-switch__track {
+    background-color: rgba(135,33,45,.5);
+}
+
+.datepicker>input.focus {
+    box-shadow: none;//0 0 5px rgba(135, 33, 45, .3);
+}
+
+.calendar-date:hover, .calendar-date-on {
+    background: rgba(135,33,45,.1);;
+}
+
 .ui-icon {
 	&.green {
 		color: green;
 	}
 	&.red {
 		color: red;
+	}
+	&.fedcolor {
+		color: @fedcolor;
 	}
 }	

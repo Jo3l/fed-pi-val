@@ -88,14 +88,19 @@ export default function(openModal) {
               	name: '',
               	icon: '',
               },
-              /*
+/*
               {
                 name: 'custom',
                 icon: '<b><u><i>C</i></u></b>',
                 title: 'Custom Action',
-                result: () => console.log(this)
+                //result: () => console.log(this)
+                result: function() { 
+                	VuePellEditor.viewcode=true;
+                	console.log(VuePellEditor);
+                	return VuePellEditor.components.pell.exec('formatBlock', '<PRE>');
+                	}
               },
-              */
+*/
               {
                 name: 'image',
                 icon: '<i class="material-icons">insert_photo</i>',

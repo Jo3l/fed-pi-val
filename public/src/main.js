@@ -12,24 +12,29 @@ import i18n from './lang'
 import routes from './routes'
 import css from './assets/less/app.less'
 
+
 Vue.use(KeenUI)
 Vue.use(VueProgressiveImage)
 
 Vue.prototype.$http = axios;
 
 import Toolbar from './components/Toolbar.vue' //este se carga aqui ya que esta fuera de las rutas
+import Cookie from './components/custom/Cookie.vue' //este se carga aqui ya que esta fuera de las rutas
 
 new Vue({
 	el: '#app',
 	i18n,
 	router,
 	store,
-	components: { Toolbar },
+	components: { Toolbar, Cookie },
 	data: {
+	},
+	head : function() {
+		return this.$route.meta;
 	},
 	methods: {
 	},
 	mounted: function () {
-
+		console.log(this.$route)
 	}
 })

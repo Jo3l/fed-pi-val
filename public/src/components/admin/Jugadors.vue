@@ -20,7 +20,7 @@
                 	@keydown-enter="getData('jugador')"
 	            ></ui-textbox>
 	            <ui-icon-button color="default" icon="search" type="secondary" @click="getData('jugador')"></ui-icon-button>
-	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText=''"></ui-icon-button>
+	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText='';getData('jugador')"></ui-icon-button>
 				</div>
 
 				<tablerone :tableList="list" :tableColumns="columns">
@@ -28,15 +28,15 @@
 					
 					<template slot="icon1" scope="props">
 						<td class="actiu">
-							<ui-icon icon="lens" class="green" v-if="props.row.actiu"></ui-icon>
-							<ui-icon icon="trip_origin" class="red" v-else ></ui-icon>
+							<ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu"></ui-icon>
+							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon>
 						</td>
 					</template>
 					
 					<template slot="icon2" scope="props">
 						<td class="actiu">
-							<ui-icon icon="lens" class="green" v-if="props.row.segur"></ui-icon>
-							<ui-icon icon="trip_origin" class="red" v-else ></ui-icon>
+							<ui-icon icon="lens" class="fedcolor" v-if="props.row.segur"></ui-icon>
+							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon>
 						</td>
 					</template>
 					
@@ -136,7 +136,6 @@ export default {
 	    },
 		getData: function(listName, page=1){
 	        var vm = this;
-	        console.log(page);
 	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
 	        var searchPage = '/p/' + (parseInt(page) - 1);
 	        
@@ -168,7 +167,7 @@ export default {
 
 .table {
 	.actiu > span {
-		font-size:1em!important;
+		font-size:1.4em!important;
 		text-align:center;
 	}
 }

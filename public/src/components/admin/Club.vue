@@ -102,8 +102,8 @@
 					            v-model="club.poblacio"
 					        ></ui-textbox>
 					        
-							<img v-if="mapa==''" class="jugador" src="/static/img/mapsPlaceholder.jpg">
-							<progressive-img v-else class="jugador" :src="mapa" fallback="/static/img/mapsPlaceholder.jpg" />
+							<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
+							<progressive-img v-else  :src="mapa" fallback="/static/img/mapsPlaceholder.jpg" />
 					        
 					        </div>
 					        <div class="left50">

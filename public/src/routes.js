@@ -1,5 +1,6 @@
 import Vue from 'vue';
-import Router from 'vue-router';
+import VueHead from 'vue-head'
+import Router from 'vue-router'
 
 import Login from './components/admin/Login.vue'
 import Start from './components/Start.vue'
@@ -17,7 +18,10 @@ import Clubs from './components/admin/Clubs.vue'
 import Club from './components/admin/Club.vue'
 import Equip from './components/admin/Equip.vue'
 
-Vue.use(Router);
+import defaultHead from './config/defaultHeader'
+
+Vue.use(VueHead)
+Vue.use(Router)
 
 export default new Router({
 	mode: 'history',	
@@ -42,7 +46,12 @@ export default new Router({
 	    path: '/val/inici',
 	    name: 'Inici',
 	    component: Start,
-	    lang:'val'
+	    lang:'val',
+	    meta: Object.assign(defaultHead, {
+	    	title: {
+			  inner: 'Yeeeeessssss'
+			},
+	    }),
 	  },
 	  {
 	    path: '/es/inicio',
@@ -68,6 +77,11 @@ export default new Router({
 	    path: '/val/noticies/:page',
 	    name: 'NoticiesPagina',
 	    component: News,
+	    meta: Object.assign(defaultHead, {
+	    	title: {
+			  inner: 'Yeeeeessssss'
+			},
+	    })
 	  },
 	  {
 	    path: '/es/noticias/:page',
@@ -98,8 +112,13 @@ export default new Router({
 	    path: '/val/calendari',
 	    name: 'Calendari',
 	    component: Calendar,
-	    lang:'val'
-	  },
+	    lang:'val',
+		meta: Object.assign(defaultHead, {
+		    	title: {
+				  inner: 'Cal cal'
+				},
+		    }),
+		},
 	    {
 	    path: '/es/calendario',
 	    name: 'Calendario',

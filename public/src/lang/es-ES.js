@@ -36,7 +36,8 @@ export default {
 		search: 'Buscar',
 		newsNew: 'Nueva notícia',
 		eventNew: 'Nuevo evento',
-		wrong: 'Valor incorrecto'
+		wrong: 'Valor incorrecto',
+		cookieLegal: 'Esta página web utiliza cookies para mejorar tu experiencia navegando. Puedes consultar aquí nuestra',
 	}, 
 	node : {
 		insert_node : 'Insertar nuevo nodo',

@@ -45,8 +45,6 @@ export default {
 	methods: {
 		collect: function(obj, column) {
 			
-			console.log(column.icon);
-			
 			if (typeof(column.field) === 'function')
 				return field(obj);
 			else if (typeof(column.field) === 'string')

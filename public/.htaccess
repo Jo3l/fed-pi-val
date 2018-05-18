@@ -7,11 +7,16 @@ Header set Cache-Control "max-age=2628000, public"
   RewriteEngine On
   RewriteBase /
 
+  RewriteCond %{HTTP_HOST} ^f\.indiza\.com$
+  RewriteCond %{REQUEST_FILENAME} !\.php$
+  RewriteRule ^(.*)$ api.php [L]
+  #RewriteRule . /index.php [L]
+  
   RewriteRule ^index\.html$ - [L]
 
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^api/(.*)$ index.php [L]
+  RewriteRule ^api/(.*)$ api.php [L]
 
   RewriteCond %{REQUEST_URI} !^(api|old_api)/ 
   RewriteCond %{REQUEST_FILENAME} !-f

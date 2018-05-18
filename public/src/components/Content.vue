@@ -86,6 +86,7 @@
 						        placeholder="..."
 						    />
 					</article>
+
 					<div class="buttonContainer" v-if="element.tipus == 'H'">
 						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
 					</div>
@@ -245,6 +246,8 @@
 	
 	{{nodeContent}}
 	
+	{{codeOn}}
+	
 </pre>
 
 
@@ -267,6 +270,7 @@ export default {
 		return {
 			selected:{},
 			selectedCancel:'',
+			codeOn: VuePellEditor.viewcode || false,
 			places:[],
 			teams:[],
 			textbox_lloc: false,
@@ -763,6 +767,8 @@ export default {
 				background-color:#87212e;
 			}
 		}
+		
+		a { text-decoration:underline; }
 		
 		.teaserImg, &>img {
 		    max-width: 100%;
