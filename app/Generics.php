@@ -9,6 +9,7 @@ use db;
 //use config;
 use \app\Auth;		// funcions d'autenticació i gestió de sessió
 use \app\Fun;		// funcions de la api
+use \app\Node;		// funcions per gestionar la jerarquia de nodes
 
 
 class Generics {
@@ -38,6 +39,8 @@ static public function generic_update(Request $request, Response $response, $par
 	// noticia: titol i contingut, acte: titol i contingut
 	$db->sql($sql);
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::update_idioma($params,$id,$json);
+	// en cas de guardar una partida, he de tornar els blocs
+	if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
 	Generics::generic_id($request,$response,$params);
 	return;
 }
@@ -50,10 +53,10 @@ static public function generic_query(Request $request, Response $response, $para
 	    Auth::verifyRol($request,0);
 	}
 	$options= array( 'limit'=>Fun::$itemsPerPage);
-	$options= array_merge(Fun::procesaparam($params['p1'],$options));
-	$options= array_merge(Fun::procesaparam($params['p2'],$options));
-	$options= array_merge(Fun::procesaparam($params['p3'],$options));
-	$options= array_merge(Fun::procesaparam($params['p4'],$options));
+	$options= array_merge(Generics::procesaparam($params['p1'],$options));
+	$options= array_merge(Generics::procesaparam($params['p2'],$options));
+	$options= array_merge(Generics::procesaparam($params['p3'],$options));
+	$options= array_merge(Generics::procesaparam($params['p4'],$options));
     $db = new db();
     $tabla= Fun::tables($params['tabla'],'select');
     $sql= "SELECT * FROM ".$tabla;
@@ -93,6 +96,8 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$id= $id[0]['id'];
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::insert_idioma($params,$id,$json);
 	$params['id']= $id;
+	// en cas de guardar una partida, he de tornar els blocs
+	if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
 	Generics::generic_id($request,$response,$params);
 }
 
@@ -208,6 +213,70 @@ private function insert_idioma($params, $id, $json) {
     $db->sql(" COMMIT;");
 }
 
+
+
+//  //  //  //  //  //  //  //
+static private function procesaparam($str,$options) {
+	$str= explode('/',$str);
+	switch($str[1]) {
+		case 'per_page':
+			Fun::$itemsPerPage= $str[2];
+			$options['limit']= Fun::$itemsPerPage;
+			break;
+		case 'p': // numpagina
+			// la pàgina 0 es la base sempre
+			$options['limit']= ($str[2]*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
+			break;
+		case 't':
+			if (empty($options['wheres'])) $options['wheres']= array('1=1');
+		    array_push( $options['wheres'], "instr('".$str[2]."',tags)>=0" );
+			break;
+		case 'i':
+		    Fun::$idioma= $str[2];
+			if (empty($options['wheres'])) $options['wheres']= array('1=1');
+		    array_push( $options['wheres'], "idioma='".$str[2]."'" );
+			break;
+		case 'slug': break;
+		case 's': // search
+			break;
+		case 'o':
+			$options['order']= str_replace('-',' desc',$str[2]);
+			break;
+		case 'destacada':
+		    array_push( $options['wheres'], "destacada=1" );
+		    $options['limit'] = '1';
+		    $options['order'] = 'publicacio desc';
+			break;
+		case 'j': //jerarquia
+			if (empty($options['wheres'])) $options['wheres']= array('1=1');
+			array_push( $options['wheres'], "jerarquia=".(Fun::$jerarquia=$str[2]) );
+			break;
+	}
+	return $options;
+}
+
+//  //  //  //  //  //  //  //
+static public function date_query(Request $request, Response $response, $params) {
+	$options= array( 'limit'=>Fun::$itemsPerPage);
+	$options= array_merge(Generics::procesaparam($params['p1'],$options));
+	$options= array_merge(Generics::procesaparam($params['p2'],$options));
+	$options= array_merge(Generics::procesaparam($params['p3'],$options));
+	$options= array_merge(Generics::procesaparam($params['p4'],$options));
+    $db = new db();
+    $tabla= Fun::tables('acte','select');
+    $sql= "SELECT * FROM ".$tabla;
+	array_push( $option['wheres'], "tipus='A'" );
+	$mes= $params['mes'];
+	$mes= strtotime( substr($mes,0,4).'-'.substr($mes,4,2) );
+	$mes0= date('Ym',$mes);
+	array_push( $options['wheres'], "(publicacio like '".$mes0."%')" );
+    if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
+    if (!empty($options['order'])) $sql.= " order by ".$options['order'];
+    if (!empty($options['limit'])) $sql.= " limit ".$options['limit'];
+    $db->sql($sql);
+    $data = $db->all();
+    Fun::render($data);
+}
 
 
 }

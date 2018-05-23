@@ -2,6 +2,8 @@
 
 namespace app;
 
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
 use \Firebase\JWT\JWT;
 use db;
 use config;
@@ -12,7 +14,21 @@ use config;
 class Auth
 {
 
+//  //  //  //  //  //  //  //
+/*
+* @description
+* funció que intenta fer login amb els paràmetres POSTejats
+*/
+static public function auth_login(Request $request, Response $response) {
+	$json = json_decode(file_get_contents("php://input"));
+	Auth::login($json);
+}
 
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obté un usuari a partir del seu token
+*/
 public function getUserByToken($token,$rol)
 {
     try{
@@ -25,9 +41,13 @@ public function getUserByToken($token,$rol)
     return $dectoken;
 }
 
+
 //  //  //  //  //  //  //  //
-// comprova si el nivell d'accés (rol) de l'usuari autenticat és inferior (igual o més privilegi) que el indicat
-// i per tant si té accés. En cas contrari genera excepció i casca
+/*
+* @description
+* comprova si el nivell d'accés (rol) de l'usuari autenticat és inferior (igual o més privilegi) que el indicat
+* i per tant si té accés. En cas contrari genera excepció i casca
+*/
 static public function verifyRol($request,$rolneeded) {
     $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
     if (empty($token)) throw new UnauthorizedException('Invalid Token');
@@ -39,7 +59,10 @@ static public function verifyRol($request,$rolneeded) {
 
 
 //  //  //  //  //  //  //  //
-// test d'accés
+/*
+* @description
+* prova d'accés a contingut protegit (només ha de permetre-ho amb un usuari autenticat de nivell 0). Si el nivell d'accés (rol) de l'usuari autenticat és inferior (igual o més privilegi) que el indicat i per tant si té accés. En cas contrari genera excepció i casca
+*/
 static public function authtest($request) {
 	// en la consulta get /api/authtest
 	// cal posar el token en el bearer en els paràmetres del header.
@@ -59,6 +82,10 @@ static public function authtest($request) {
 }
 
 
+/*
+* @description
+// funció bàsica d'autenticació amb les credencials introduides
+*/
 static public function login($json) /*use($app)*/ {
     $email = (isset($json->email)) ? trim($json->email) : "";
     $clau = (isset($json->clau)) ? trim($json->clau) : "";
@@ -105,6 +132,11 @@ static public function login($json) /*use($app)*/ {
 
 
 //  //  //  //  //  //  //  //
+
+/*
+* @description
+// funció d'obtenció del token d'autenticació
+*/
 static public function token($data) {
     $tokenId = base64_encode(random_bytes(32));
     $issueAt = time();
