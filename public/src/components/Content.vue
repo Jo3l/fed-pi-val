@@ -107,7 +107,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0">
+								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" v-bind:class="{ 'selected':element.selected }">
 									<td>{{ parseTime(element.data).toString('M/d/yyyy') }}</td>
 									
 									<td>{{element.local.nom}}</td>
@@ -129,6 +129,8 @@
 							 <vue-datepicker-local v-model="newGame.data" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
 							 </label>
 							 
+							 <input type="hidden" v-model="newGame.id">
+							 
 							<ui-select
 				                has-search
 				                floating-label
@@ -145,30 +147,36 @@
 							<ui-select
 				                has-search
 				                floating-label
+				            	placeholder="Busca l'equip local"
+		                		search-placeholder="Escriu el nom de l'equip"
 				                label="Local"
 				                :keys="{ label: 'nom'}"
-				                :options="teams"
+				                :options="local"
 				                v-model="newGame.local"
 				                error="This field is required"
 				                :invalid="textbox_local && newGame.local.length === 0"
 				                @touch="textbox_local = true"
-				                searchPlaceholder=""
+				                @query-change="onQueryChangeLocal"
 				            ></ui-select>
+				            
 				            
 				           <ui-select
 				                has-search
 				                floating-label
+				                placeholder="Busca l'equip visitant"
+		                		search-placeholder="Escriu el nom de l'equip"
 				                label="Visitant"
 				                :keys="{ label: 'nom'}"
-				                :options="teams"
+				                :options="visitant"
 				                v-model="newGame.visitant"
 				                error="This field is required"
 				                :invalid="textbox_visitant && newGame.visitant.length === 0"
 				                @touch="textbox_visitant = true"
-				                searchPlaceholder=""
+				        		@query-change="onQueryChangeVisitant"
 				            ></ui-select>
 				            
 							 <ui-textbox
+								v-if="newGame.selected"
 							    floating-label
 				                autocomplete="off"
 				                error="This field is required"
@@ -179,6 +187,7 @@
 				            ></ui-textbox>
 				            
 							 <ui-textbox
+								v-if="newGame.selected"
 							    floating-label
 				                autocomplete="off"
 				                error="This field is required"
@@ -244,9 +253,11 @@
 
 <pre v-if="$store.getters.isAuthenticatedWithRole(0)">
 	
+	{{newGame}}
+		
 	{{nodeContent}}
 	
-	{{codeOn}}
+
 	
 </pre>
 
@@ -269,6 +280,7 @@ export default {
 	data () {
 		return {
 			selected:{},
+			loading:false,
 			selectedCancel:'',
 			codeOn: VuePellEditor.viewcode || false,
 			places:[],
@@ -292,20 +304,56 @@ export default {
 			searchList:[],
 			newOrder:[],
 			nodeContent:[],
-			newGame:{}
+			newGame:{},
+			local:[],
+			visitant:[]
 			
 		}
 	},
 	methods: {
+		onQueryChangeLocal: function(query) {
+            if (query.length < 3) {
+                return;
+            }
+            
+        	var vm = this;
+	        vm.loading=true;
+	        vm.$http.get('/equip/search/'+query, { cache: false })
+	        .then(function (response) {
+	            vm.local = response.data;
+	            vm.loading=false;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            
+        },
+		onQueryChangeVisitant: function(query) {
+            if (query.length < 3) {
+                return;
+            }
+            
+        	var vm = this;
+	        vm.loading=true;
+	        vm.$http.get('/equip/search/'+query, { cache: false })
+	        .then(function (response) {
+	            vm.visitant = response.data;
+	            vm.loading=false;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            
+        },
 		parseTime: function(time) {
+			if(typeof time !== 'string') return time;
 			
-			var str = time;
-			var year = str.substring(0, 4);
-			var month = str.substring(4, 6);
-			var day = str.substring(6, 8);
-			var hour = str.substring(8, 10);
-			var minute = str.substring(10, 12);
-			var second = str.substring(12, 14);
+			var year = time.substring(0, 4);
+			var month = time.substring(4, 6);
+			var day = time.substring(6, 8);
+			var hour = time.substring(8, 10);
+			var minute = time.substring(10, 12);
+			var second = time.substring(12, 14);
 			
 			return new Date(year, month-1, day, hour, minute, second);	
 			
@@ -339,6 +387,7 @@ export default {
         },
         acceptModal:function(ref) {
         	console.log(this.selected.url);
+        	window.recoverFocus.focus(); //recuperem el focus definit al arxiu de config del pelleditor.
         	VuePellEditor.components.pell.exec('insertImage', this.selected.url);
         	this.selected={};
             this.$refs[ref].close();
@@ -364,7 +413,15 @@ export default {
 			
 		},
 		editMatch: function(element) {
-			console.log(element);
+			var vm=this;
+			
+			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
+			  element.selected=undefined;
+			});
+			
+			element.selected=true;
+			vm.newGame = element;
+			vm.newGame.data = vm.parseTime(element.data);
 
 		},
 		deleteMatch: function(element) {
@@ -437,6 +494,10 @@ export default {
 		resetMatch: function() {
 			var vm = this;
 			
+			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
+			  element.selected=undefined;
+			});
+			
 			vm.addNewGame(vm.nodeContent);
 
 			vm.textbox_lloc=false;
@@ -462,19 +523,22 @@ export default {
 	        });
 
 		},
-		saveMatch: function(gameBlock){
+		saveMatch: function(){
 			var vm = this;
 			
-			gameBlock.data = gameBlock.data.toString('yyyyMMddHHmmss');
+			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
+				element.selected = undefined;
+			});
+			
+			vm.newGame.data = vm.newGame.data.toString('yyyyMMddHHmmss');
+			vm.newGame.selected = undefined;
+
 			
 	        for(var i = 0; i < vm.nodeContent.length; i++) {
 				if(vm.nodeContent[i].tipus == 'J') {
-					
-					//vm.nodeContent[i].partides.push(gameBlock);
-					
-			        vm.$http.post('/partida', gameBlock)
+			        vm.$http.post('/partida/'+ vm.newGame.id || '', vm.newGame)
 			        .then(function (response) {
-			            vm.nodeContent = vm.delEmptyNodes(response.data);
+			            vm.nodeContent = response.data;
 						vm.addNewGame(vm.nodeContent);
 			        })
 			        .catch(function (error) {
@@ -482,7 +546,7 @@ export default {
 			        });
 				}
 			}
-			vm.resetMatch(gameBlock);
+			vm.resetMatch(vm.newGame);
 		},
 		removeContent: function(element) {
 
@@ -567,6 +631,7 @@ export default {
 			this.getTeams();
 			this.getPlaces();
     	}
+    	
 	},
 	watch: { 
       	nodeId: function(newVal, oldVal) {
@@ -693,11 +758,15 @@ export default {
 	};
 	table {
 		td, th {
-		    padding: 0;
+		    padding: .5rem 0 0 0!important;
 		    text-align:center;
 		    @media(max-width:@screenTablet) {
 	    		font-size:0.8em;
 			}
+		}
+		
+		tr.selected {
+		    background-color: #e9e9e9;
 		}
 
 

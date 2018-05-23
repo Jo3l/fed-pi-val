@@ -107,6 +107,7 @@ export default function(openModal) {
               	title:'Insertar Imatge',
                 result: () => {
                   openModal('uploadModal', {url:''}, '', 'img');
+                  window.recoverFocus=document.activeElement.parentNode.nextElementSibling;
                   //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
                 }
               },

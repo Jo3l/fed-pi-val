@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from '../../axios'
 import VueAuthenticate from 'vue-authenticate'
-import jwt_decode from "jwt-decode"
+import jwt_decode from 'jwt-decode'
 
 Vue.use(VueAuthenticate)
 

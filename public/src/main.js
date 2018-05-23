@@ -1,6 +1,7 @@
 //import promise from 'es6-promise' //this is needed for make axios work on ie11
 //promise.polyfill();  //this is needed for make axios work on ie11
 
+
 import Vue from 'vue'
 import KeenUI from 'keen-ui'
 import VueProgressiveImage from 'vue-progressive-image'
@@ -35,6 +36,6 @@ new Vue({
 	methods: {
 	},
 	mounted: function () {
-		console.log(this.$route)
+		console.log(this.$route.meta)
 	}
 })
