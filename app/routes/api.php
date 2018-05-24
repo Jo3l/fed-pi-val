@@ -66,6 +66,13 @@ $app->get('/api/test', '\app\Fun::test'); // obtindre un cami
 
 /*
 * @description
+* obtenció dels periodes treballats per nosaltres al codiad
+*/
+$app->get('/api/computa-horas', '\app\Fun::computahoras'); // processa el log d'accesos a codiad i trau els periodes treballats
+
+
+/*
+* @description
 * obtenció de tots els tags existents de productes, noticies o actes
 */
 $app->get('/api/tags/{tipus:producte|noticia|acte}', '\app\Fun::tags_query'); // buscar

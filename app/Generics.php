@@ -156,6 +156,10 @@ static public function generic_search(Request $request, Response $response, $par
     if (isset($options['limit'])) $sql.= " limit ".$options['limit'];
 	$db->sql($sql);
 	$data= $db->all();
+	if ($params['tabla']=='jugador') {
+		// kike demana un camp per a poblar el select al buscar
+		foreach($data as $a=>$v) { $data[$a]['nomcomplet']= $v['nom'].' '.$v['cognoms'].' '.$v['dni']; }
+	}
     echo json_encode($data);
     return $params;
 }

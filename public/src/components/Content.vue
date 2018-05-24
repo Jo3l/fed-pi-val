@@ -175,6 +175,74 @@
 				        		@query-change="onQueryChangeVisitant"
 				            ></ui-select>
 				            
+				            <div class="subForm" v-if="newGame.selected">
+							    <table class="table results">
+									<thead>
+										<tr>
+											<th>Jugador Local</th>
+											<th>Població</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for="element in newGame.equipLocal">
+											<td>{{element.nom}} {{element.cognoms}}</td>
+											<td>{{element.poblacio}}</td>
+											<th>
+												<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element, 'local')"></ui-icon-button>
+											</th>
+										</tr>
+									</tbody>
+								</table>
+						
+							    <table class="table results">
+									<thead>
+										<tr>
+											<th>Jugador Visitant</th>
+											<th>Població</th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for="element in newGame.equipVisitant">
+											<td>{{element.nom}} {{element.cognoms}}</td>
+											<td>{{element.poblacio}}</td>
+											<th>
+												<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element, 'visitant')"></ui-icon-button>
+											</th>
+										</tr>
+									</tbody>
+								</table>
+							<section>
+								<ui-select
+					                has-search
+					                floating-label
+					            	placeholder="Afegir jugador local"
+			                		search-placeholder="Escriu Nom o Dni"
+					                label="Jugador local"
+					                :keys="{ label: 'nomcomplet'}"
+					                :options="buscadorJugadorLocal"
+					                v-model="jugadorLocal"
+					                @query-change="onQueryChangePlayerLocal"
+					            ></ui-select>
+								<ui-fab color="primary" icon="add" size="small" @click="addLocal"></ui-fab>
+							</section>
+							<section>	
+								<ui-select
+					                has-search
+					                floating-label
+					            	placeholder="Afegir jugador visitant"
+			                		search-placeholder="Escriu Nom o Dni"
+					                label="Jugador visitant"
+					                :keys="{ label: 'nomcomplet'}"
+					                :options="buscadorJugadorVisitant"
+					                v-model="jugadorVisitant"
+					                @query-change="onQueryChangePlayerVisitant"
+					            ></ui-select>
+					            <ui-fab color="primary" icon="add" size="small" @click="addVisitant"></ui-fab>
+							</section>	
+				            </div>
+				            
 							 <ui-textbox
 								v-if="newGame.selected"
 							    floating-label
@@ -197,7 +265,7 @@
 				                v-model="newGame.resultatlocal"
 				            ></ui-textbox>
 							<div class="buttonContainer">
-								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Netejar</ui-button>
+								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Cancelar</ui-button>
 								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(newGame)">{{$i18n.t('node.save_game')}}</ui-button>
 							</div>
 
@@ -257,8 +325,6 @@
 		
 	{{nodeContent}}
 	
-
-	
 </pre>
 
 
@@ -306,11 +372,66 @@ export default {
 			nodeContent:[],
 			newGame:{},
 			local:[],
-			visitant:[]
+			visitant:[],
+			buscadorJugadorLocal:[],
+			buscadorJugadorVisitant:[],
+			jugadorLocal:'',
+			jugadorVisitant:''
 			
 		}
 	},
 	methods: {
+		deletePlayer(element, source){
+			var vm = this;
+			if(source=="local"){
+				vm.newGame.equipLocal.splice(vm.newGame.equipLocal.findIndex(function (obj) { return obj.id === element.id; }), 1)
+			}
+			if(source=="visitant"){
+				vm.newGame.equipVisitant.splice(vm.newGame.equipVisitant.findIndex(function (obj) { return obj.id === element.id; }), 1)
+			}
+		},
+		addVisitant: function() {
+			if(this.jugadorVisitant) this.newGame.equipVisitant.push(this.jugadorVisitant);
+			this.jugadorVisitant = '';
+		},
+		addLocal: function() {
+			if(this.jugadorLocal) this.newGame.equipLocal.push(this.jugadorLocal);
+			this.jugadorLocal = '';
+		},
+		onQueryChangePlayerLocal: function(query) {
+            if (query.length < 3) {
+                return;
+            }
+            
+        	var vm = this;
+	        vm.loading=true;
+	        vm.$http.get('/jugador/search/'+query, { cache: false })
+	        .then(function (response) {
+	            vm.buscadorJugadorLocal = response.data;
+	            vm.loading=false;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            
+        },
+		onQueryChangePlayerVisitant: function(query) {
+            if (query.length < 3) {
+                return;
+            }
+            
+        	var vm = this;
+	        vm.loading=true;
+	        vm.$http.get('/jugador/search/'+query, { cache: false })
+	        .then(function (response) {
+	            vm.buscadorJugadorVisitant = response.data;
+	            vm.loading=false;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            
+        },
 		onQueryChangeLocal: function(query) {
             if (query.length < 3) {
                 return;
@@ -363,7 +484,7 @@ export default {
 	        for(var i = 0; i < content.length; i++) {
 
 				if(content[i].tipus == 'J') {
-					vm.newGame = { data:new Date(), lloc:'', local:'', visitant:'', resultatvisitant:'0', resultatlocal:'0', jerarquia:vm.nodeId, registreid: content[i].id};
+					vm.newGame = { data:new Date(), equipLocal:[], equipVisitant:[], lloc:'', local:'', visitant:'', resultatvisitant:'0', resultatlocal:'0', jerarquia:vm.nodeId, registreid: content[i].id};
 				}
 			}
 		},
@@ -415,10 +536,28 @@ export default {
 		editMatch: function(element) {
 			var vm=this;
 			
+			console.log(element);
+			
 			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
 			  element.selected=undefined;
 			});
 			
+			element.equipLocal=[];
+			element.equipVisitant=[];
+			
+			/*
+			vm.$http.get('/node/'+vm.nodeId)
+	        .then(function (response) {
+
+	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	            vm.addNewGame(vm.nodeContent);
+				
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        */
+	        
 			element.selected=true;
 			vm.newGame = element;
 			vm.newGame.data = vm.parseTime(element.data);
@@ -755,7 +894,17 @@ export default {
     		max-width:initial;
 		}
     	
-	};
+	}
+	section {
+		display: flex;
+    	width: 49%;
+		.ui-select{
+			max-width: ~"calc(90% - 20px)";
+		}
+		button{
+			margin-top: 20px;
+		}
+	}
 	table {
 		td, th {
 		    padding: .5rem 0 0 0!important;
@@ -943,7 +1092,19 @@ export default {
 	}
 }
 
+.subForm {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap:wrap;
+    border: 1px dashed #cccccc;
+    padding: 20px;
+    margin-bottom:20px;
+    table {
+    	width:49%;
+    }
 
+}
 
 
 </style>

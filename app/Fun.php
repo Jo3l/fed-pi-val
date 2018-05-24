@@ -133,7 +133,7 @@ static public function jugadorsdequip(Request $request, Response $response, $par
 * @description
 * Vincula un jugador a un equip
 * URL: /api/pertany/[idjugador] POST {"id":[idequip]}
-* URL: /api/pertany/1 POST {"id":1}
+* URL: /api/pertany/1 POST {"id":1} 
 */
 static public function pertany(Request $request, Response $response, $params) {
 	$json = Fun::getPost($tabla);
@@ -280,6 +280,48 @@ static public function slugify($string, $replace = array(), $delimiter = '-') {
   return $clean;
 }
     
-    
+//  //  //  //  //  //  //  //
+/*
+* @description
+* obtenció dels periodes treballats per nosaltres al codiad
+*/
+static public function computahoras() {
+	$sz= filesize('../fedpival.txt');
+	echo '<h1>',$sz,'</h1>';
+	$i=0;
+	set_time_limit(600);
+	$kk= 500000;
+	echo '<pre>';
+	$ult= $init= date_create('2000-01-01 00:00:00');
+	$data= array();
+	while ($sz-$i>1000 /*&& $kk-->0*/ ) {
+		$s=file_get_contents('../fedpival.txt',false,null,$i,1000);
+		$pos= strpos($s,"\n");
+		$s= substr($s,0,$pos);
+		$s= substr($s,0,strpos($s,"]"));
+		$s= substr($s,strpos($s,"[")+1);
+		$d= strtotime($s);
+		if (!in_array($d,$data)) array_push($data, $d);
+		/*
+		$ara= date_create($s);
+		$dif= date_diff($ara,$ult,true);
+		$dif= $dif->format('%h');
+		//echo '',$init->format('d M Y H:i'),' - ',$ult->format('H:i'),'<br/>';
+		//echo $dif,',',$i,','; flush();
+		if ($dif>2) { // sessio nova
+			echo '<hr/>SESSIO: ',$init->format('d M Y H:i'),' - ',$ult->format('d H:i'),'<br/>';
+			$init= $ara;
+		} else echo '.';
+		$ult= $ara;
+		*/
+		$i+= $pos+1;
+	}
+	//ksort($data);
+	echo (count($data));
+	/*
+	una vegada tenint el array $data amb les dates codificades, uniques i ordenades, s'ha d'anar recorrent fent un diff entre
+	dates consecutives
+	*/
+}
     
 } // of class Fun
