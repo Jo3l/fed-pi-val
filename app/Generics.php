@@ -25,6 +25,7 @@ static public function generic_update(Request $request, Response $response, $par
 	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
+	$camps= Generics::getFields($tabla);
 	$id= $params['id'];
 	// comprovar q id existeix
 	if (empty($json['modificacio'])) $json['modificacio']= date('YmdHis');
@@ -32,7 +33,14 @@ static public function generic_update(Request $request, Response $response, $par
 	$db->sql('select id from '.($tabla).' where id='.$id);
 	if ($db->numRows()!=1) die('ERROR: No existeix la fila o hi ha més d\'una');
 	$pairs= array();
-	foreach($json as $key=>$value) if($value!=null || $key!='ordre') array_push($pairs,$key."='".$value."'");
+	foreach($json as $key=>$value) {
+		if($value!=null || $key!='ordre') {
+			// si el camp existeix...
+			if (in_array($key,$camps)) {
+				array_push($pairs,$key."='".$value."'");
+			}
+		}
+	}
 	$pairs= implode(', ',$pairs);
 	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
 	// falta canviar camps en idioma susceptibles d'estar subjectes a llengua
@@ -45,6 +53,57 @@ static public function generic_update(Request $request, Response $response, $par
 	return;
 }
 
+
+//  //  //  //  //  //  //  //
+// inserció genèrica de contingut
+public function generic_insert(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Auth::verifyRol($request,0);
+	}
+	$tabla= Fun::tables($params['tabla'],'modify');
+	$json = Fun::getPost($tabla);
+	$camps= Generics::getFields($tabla);
+	$filtrekeys= array();
+	$filtrevalues= array();
+	foreach($json as $key=>$value) {
+		// si el camp existeix, inserte...
+		if (in_array($key,$camps)) {
+			array_push($filtrekeys,$key);
+			array_push($filtrevalues,$value);
+		}
+	}
+	$keys= implode(',',$filtrekeys);
+	$values= "'".implode("','",$filtrevalues)."'";
+	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
+	$db= new db();
+	$db->sql($sql);
+	$sql= "SELECT LAST_INSERT_ID() as id";
+	$db->sql($sql);
+	$id = $db->all();
+	$id= $id[0]['id'];
+	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::insert_idioma($params,$id,$json);
+	$params['id']= $id;
+	// en cas de guardar una partida, he de tornar els blocs
+	if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
+	Generics::generic_id($request,$response,$params);
+}
+
+
+//  //  //  //  //  //  //  //
+public function generic_delete(Request $request, Response $response, $params) {
+	if ($params['tabla']=='usuari') {
+		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	    Auth::verifyRol($request,0);
+	}
+    // considerar dependencies ací
+    // per exemple, jugador amb pertany
+	$tabla= Fun::tables($params['tabla'],'modify');
+    $db = new db();
+    try{
+    	$db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
+    } catch(Exception $e) { Fun::render(array("error"=>$e->getMessage())); }
+}
 
 //  //  //  //  //  //  //  //
 static public function generic_query(Request $request, Response $response, $params) {
@@ -76,46 +135,6 @@ static public function generic_query(Request $request, Response $response, $para
     Fun::render($data);
 }
 
-//  //  //  //  //  //  //  //
-// inserció genèrica de contingut
-public function generic_insert(Request $request, Response $response, $params) {
-	if ($params['tabla']=='usuari') {
-		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
-	    Auth::verifyRol($request,0);
-	}
-	$tabla= Fun::tables($params['tabla'],'modify');
-	$json = Fun::getPost($tabla);
-	$keys= implode(',',array_keys($json));
-	$values= "'".implode("','",array_values($json))."'";
-	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
-	$db= new db();
-	$db->sql($sql);
-	$sql= "SELECT LAST_INSERT_ID() as id";
-	$db->sql($sql);
-	$id = $db->all();
-	$id= $id[0]['id'];
-	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::insert_idioma($params,$id,$json);
-	$params['id']= $id;
-	// en cas de guardar una partida, he de tornar els blocs
-	if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
-	Generics::generic_id($request,$response,$params);
-}
-
-
-//  //  //  //  //  //  //  //
-public function generic_delete(Request $request, Response $response, $params) {
-	if ($params['tabla']=='usuari') {
-		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
-	    Auth::verifyRol($request,0);
-	}
-    // considerar dependencies ací
-    // per exemple, jugador amb pertany
-	$tabla= Fun::tables($params['tabla'],'modify');
-    $db = new db();
-    try{
-    	$db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
-    } catch(Exception $e) { Fun::render(array("error"=>$e->getMessage())); }
-}
 
 //  //  //  //  //  //  //  //
 static public function generic_id(Request $request, Response $response, $params) {
@@ -218,6 +237,13 @@ private function insert_idioma($params, $id, $json) {
 }
 
 
+//  //  //  //  //  //  //  //
+static private function getFields($tabla) {
+	$db= new db();
+	$db->sql("SELECT group_concat(column_name) as camps FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$tabla."';");
+	$que= $db->all();
+	return explode(',',$que[0]['camps']);
+}
 
 //  //  //  //  //  //  //  //
 static private function procesaparam($str,$options) {
