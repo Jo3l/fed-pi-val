@@ -108,7 +108,13 @@ static public function list_elements(Request $request, Response $response, $para
 * Mostra la jerarquia sencera de nodes a partir d'un
 */
 static public function list_nodes(Request $request, Response $response, $params) {
-    Fun::render(Nodes::jerarquia($params['id']), true);
+	switch($params['id']) {
+		case 'competicions':
+		case 'federacio': Fun::$idioma= 'val'; break;	
+		case 'competiciones':
+		case 'federacion': Fun::$idioma= 'es'; break;	
+	}
+    Fun::render(Nodes::jerarquia($params['id']), false);
 }
 
 //  //  //  //  //  //  //  //
@@ -118,7 +124,7 @@ static public function list_nodes(Request $request, Response $response, $params)
 */
 static private function jerarquia($fill='competicions') {
     $db = new db();
-	$db->sql("select *, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
+	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
 	$result= $db->getResult();
 	$resultids= array();
 	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma] ) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
@@ -258,7 +264,7 @@ static public function contingutnode($id) {
 		//if (empty($result2)) $result2= array();
 		foreach($result as $i=>$elm) {
 		    if($elm['tipus']=='J') 
-		        $result[$i]['partides']= $partides[$elm['id']];
+		        $result[$i]['partides']= $partides[$elm['id']] ? $partides[$elm['id']] : array();
 		}
 	}
     return $result;

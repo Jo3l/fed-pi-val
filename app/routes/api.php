@@ -22,7 +22,15 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
 });
 
 $app->add(function ($req, $res, $next) {
+
+	$cache= Fun::cache($req);
+
+	if ($cache) exit;
+
     $response = $next($req, $res);
+
+    if (!$cache) Fun::cache($req,$response);
+
     return $response
         //->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Origin', 'http://fedpival.indiza.com')
@@ -157,7 +165,7 @@ $app->get('/api/jugadorsdequip/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\ap
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari|pertany|participa}/{id:[0-9]+}', '\app\Generics::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari|pertany}/{id:[0-9]+}', '\app\Generics::generic_id');
 
 /*
 * @description
@@ -229,6 +237,21 @@ $app->post('/api/pertany/{jugador:[0-9]+}', '\app\Fun::pertany');
 * URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
 */
 $app->post('/api/participa/{partida:[0-9]+}', '\app\Fun::participa'); 
+
+/*
+* @description
+* Elimina un jugador d'una partida
+* URL: /api/participa/[idpartida]/[idjugador] DELETE
+*/
+$app->delete('/api/participa/{partida:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_participa'); 
+
+
+/*
+* @description
+* Vincula un jugador i equip a una partida
+* URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
+*/
+$app->get('/api/participa/{partida:[0-9]+}', '\app\Fun::participants'); 
 
 /*
 ok /api/pertany/[idjugador] GET per obtindre l’equip al que pertany actualment

@@ -26,6 +26,7 @@ static public function generic_update(Request $request, Response $response, $par
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$camps= Generics::getFields($tabla);
+	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$id= $params['id'];
 	// comprovar q id existeix
 	if (empty($json['modificacio'])) $json['modificacio']= date('YmdHis');
@@ -36,15 +37,17 @@ static public function generic_update(Request $request, Response $response, $par
 	foreach($json as $key=>$value) {
 		if($value!=null || $key!='ordre') {
 			// si el camp existeix...
+			if ($value===false) $value='0'; // per a camps com destacada (rebre false)
 			if (in_array($key,$camps)) {
-				array_push($pairs,$key."='".$value."'");
+				//array_push($pairs,$key."='".$db->escapeString($value)."'");
+				if (!isset($value)) continue;
+				if (is_string($value)) $value= $db->escapeString($value);
+				array_push($pairs,$key."=".$value."");
 			}
 		}
 	}
 	$pairs= implode(', ',$pairs);
 	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
-	// falta canviar camps en idioma susceptibles d'estar subjectes a llengua
-	// noticia: titol i contingut, acte: titol i contingut
 	$db->sql($sql);
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::update_idioma($params,$id,$json);
 	// en cas de guardar una partida, he de tornar els blocs
@@ -61,22 +64,26 @@ public function generic_insert(Request $request, Response $response, $params) {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
 	}
+	$db= new db();
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	$camps= Generics::getFields($tabla);
+	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$filtrekeys= array();
 	$filtrevalues= array();
 	foreach($json as $key=>$value) {
+		if (empty($value)) continue;
 		// si el camp existeix, inserte...
 		if (in_array($key,$camps)) {
+			if (is_string($value)) $value= $db->escapeString($value);
 			array_push($filtrekeys,$key);
 			array_push($filtrevalues,$value);
+			//array_push($filtrevalues,$db->escapeString($value));
 		}
 	}
 	$keys= implode(',',$filtrekeys);
-	$values= "'".implode("','",$filtrevalues)."'";
+	$values= implode(",",$filtrevalues);
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
-	$db= new db();
 	$db->sql($sql);
 	$sql= "SELECT LAST_INSERT_ID() as id";
 	$db->sql($sql);
@@ -103,6 +110,7 @@ public function generic_delete(Request $request, Response $response, $params) {
     try{
     	$db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
     } catch(Exception $e) { Fun::render(array("error"=>$e->getMessage())); }
+	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::delete_idioma($params,$params['id'],$json);
 }
 
 //  //  //  //  //  //  //  //
@@ -111,7 +119,7 @@ static public function generic_query(Request $request, Response $response, $para
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
 	}
-	$options= array( 'limit'=>Fun::$itemsPerPage);
+	$options= array( 'limit'=>Fun::$itemsPerPage );
 	$options= array_merge(Generics::procesaparam($params['p1'],$options));
 	$options= array_merge(Generics::procesaparam($params['p2'],$options));
 	$options= array_merge(Generics::procesaparam($params['p3'],$options));
@@ -147,7 +155,8 @@ static public function generic_id(Request $request, Response $response, $params)
     // no use les vistes per a tornar un únic objecte...
     // PENDENT: caldrà verificar permisos per accedir a la info...
     ///$db->sql("SELECT * FROM ".$params['tabla']." where id=".$params['id']);
-    $db->sql("SELECT * FROM ".$tabla." where id=".$params['id']);
+    $sql= "SELECT * FROM ".$tabla." where id=".$params['id'];
+    $db->sql($sql);
     $data = $db->all();
     echo json_encode($data);
     return $params;
@@ -187,6 +196,7 @@ static public function generic_search(Request $request, Response $response, $par
 // actualització de contingut segons idioma
 private function update_idioma($params, $id, $json) {
 	$tipus= $params['tabla'];
+	if ($tipus=='noticia') $json['slug']= Fun::slugify($json['titol'],$id);
 	switch ($tipus) {
 		case 'noticia': $camps= array('titol','contingut','slug'); break;
 		case 'acte': $camps= array('titol','contingut'); break;
@@ -197,7 +207,7 @@ private function update_idioma($params, $id, $json) {
 	}
 	if (empty($camps)) return;
 	$campsnous= array();
-	foreach($camps as $camp) $campsnous[$camp]= $json[$camp];
+	foreach($camps as $camp) if (isset($json[$camp])) $campsnous[$camp]= $json[$camp];
 	//tipus: acte,noticia,jerarquia,element
 	//camp: categoria,producte,titol,contingut,slug
 	$db= new db();
@@ -214,6 +224,7 @@ private function update_idioma($params, $id, $json) {
 // inserció de contingut segons idioma
 private function insert_idioma($params, $id, $json) {
 	$tipus= $params['tabla'];
+	if ($tipus=='noticia') $json['slug']= Fun::slugify($json['titol']);
 	switch ($tipus) {
 		case 'noticia': $camps= array('titol','contingut','slug'); break;
 		case 'acte': $camps= array('titol','contingut'); break;
@@ -228,10 +239,43 @@ private function insert_idioma($params, $id, $json) {
 	//tipus: acte,noticia,jerarquia,element
 	//camp: categoria,producte,titol,contingut,slug
 	$db= new db();
+	// al insertar (primera vegada), cree tots els idiomes disponibles a la vegada
     $db->sql(" START TRANSACTION;");
 	foreach($campsnous as $camp=>$val) {
-		$sql= "insert into idioma(registreid,idioma,tipus,camp,text) values ( ".$id.",'".Fun::$idioma."','".$tipus."','".$camp."' ,".$db->escapeString($val).")";
-		$db->sql($sql);
+		foreach(Fun::$idiomes as $idioma) {
+			$sql= "insert into idioma(registreid,idioma,tipus,camp,text) values ( ".$id.",'".$idioma."','".$tipus."','".$camp."' ,".$db->escapeString($val).")";
+			$db->sql($sql);
+		}
+	}
+    $db->sql(" COMMIT;");
+}
+
+
+//  //  //  //  //  //  //  //
+// elimina idioma
+private function delete_idioma($params, $id, $json) {
+	$tipus= $params['tabla'];
+	switch ($tipus) {
+		case 'noticia': $camps= array('titol','contingut','slug'); break;
+		case 'acte': $camps= array('titol','contingut'); break;
+		case 'jerarquia': $camps= array('titol'); break;
+		case 'element': $camps= array('titol','contingut'); break;
+		case 'categoria': $camps= array('categoria'); break;
+		case 'producte': $camps= array('producte'); break;
+	}
+	if (empty($camps)) return;
+	$campsnous= array();
+	foreach($camps as $camp) $campsnous[$camp]= $json[$camp];
+	//tipus: acte,noticia,jerarquia,element
+	//camp: categoria,producte,titol,contingut,slug
+	$db= new db();
+	// al eliminar, borre tots els idiomes disponibles a la vegada
+    $db->sql(" START TRANSACTION;");
+	foreach($campsnous as $camp=>$val) {
+		foreach(Fun::$idiomes as $idioma) {
+			$sql= "delete from idioma where registreid=".$id." and idioma='".$idioma."';";
+			$db->sql($sql);
+		}
 	}
     $db->sql(" COMMIT;");
 }
@@ -248,6 +292,7 @@ static private function getFields($tabla) {
 //  //  //  //  //  //  //  //
 static private function procesaparam($str,$options) {
 	$str= explode('/',$str);
+	if (!isset($options['wheres'])) $options['wheres']= array();
 	switch($str[1]) {
 		case 'per_page':
 			Fun::$itemsPerPage= $str[2];
@@ -274,7 +319,7 @@ static private function procesaparam($str,$options) {
 			break;
 		case 'destacada':
 		    array_push( $options['wheres'], "destacada=1" );
-		    $options['limit'] = '1';
+		    $options['limit'] = '10';
 		    $options['order'] = 'publicacio desc';
 			break;
 		case 'j': //jerarquia

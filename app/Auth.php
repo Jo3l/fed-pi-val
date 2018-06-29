@@ -29,7 +29,7 @@ static public function auth_login(Request $request, Response $response) {
 * @description
 * Obté un usuari a partir del seu token
 */
-public function getUserByToken($token,$rol)
+public function getUserByToken($token,$rol=9999)
 {
     try{
     	$secretKey = base64_decode(config::SECRET_KEY);
@@ -51,6 +51,7 @@ public function getUserByToken($token,$rol)
 static public function verifyRol($request,$rolneeded) {
     $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
     if (empty($token)) throw new UnauthorizedException('Invalid Token');
+    Auth::extend($token);
     $data= Auth::getUserByToken($token,$rolneeded);
     //$rolauth= $data->data->rol;
     // innecessari, ja fa la comprovació en getUserByToken: if ($rolneeded<$rolauth) throw new UnauthorizedException('Rol insuficient');
@@ -67,18 +68,30 @@ static public function authtest($request) {
 	// en la consulta get /api/authtest
 	// cal posar el token en el bearer en els paràmetres del header.
 	// el token el dona al autenticar-se
-    echo "m'has pillaO";
-    $secretKey = base64_decode("SECRET_KEY");
+    echo "m'has pillao.<br>";
+    $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
+    $data= Auth::getUserByToken($token);
+    echo 'Faltan: ', round(($data->exp - time())/60) ,' min<br>';
+    Auth::extend($token);
+    echo Auth::verifyRol($request,0) ? 'true':'false';
+}
+
+
+/*
+* @description
+// funció d'extensió del temps d'expiració de la sessió i token (suposadament canviarà el token)
+*/
+static private function extend($token) {
+    $data= Auth::getUserByToken($token,1000);
+	$secretKey = base64_decode(config::SECRET_KEY);
+	$noutoken= Auth::token($data->data,$data->jti);
     // encode the array
     $jwt = JWT::encode(
-        Auth::token("1", "alfon7", "putoamo"),
+        $noutoken,
         $secretKey,
         'HS256'
     );
-    $enencodedArray = array('jwt' => $jwt);
-    // return the Token to the client.
-    echo Auth::verifyRol($request,0) ? 'true':'false';
-    echo '<hr/>ok';
+	return;	
 }
 
 
@@ -137,8 +150,8 @@ static public function login($json) /*use($app)*/ {
 * @description
 // funció d'obtenció del token d'autenticació
 */
-static public function token($data) {
-    $tokenId = base64_encode(random_bytes(32));
+static public function token($data, $tokenId=null) {
+    if (empty($tokenId)) $tokenId= base64_encode(random_bytes(32));
     $issueAt = time();
     $notBefore = $issueAt + 10; //Adding 10 seconds
     $expire = $notBefore + 1800; // adding 30 minutes

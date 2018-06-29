@@ -41,6 +41,7 @@ class Fun
     private static $id= null; // id del registre que se va a editar
     private static $mes= null; // mes a partir del qual es consulten dades
     public static $idioma= 'val'; // idioma actual
+    public static $idiomes= array('val','es'); // tots els idiomes disponibles
     private static $rowcount= null; 
 
 
@@ -64,7 +65,7 @@ static public function render($result,$doexit=false) {
             "total"=> (Fun::$rowcount ?: null )
         );
 	echo json_encode($result);
-	if ($doexit) exit;
+	if ($doexit) exit; // ojo, se carrega el postproces (caché)
 	return $result;
 }
 
@@ -150,17 +151,50 @@ static public function pertany(Request $request, Response $response, $params) {
 //  //  //  //  //  //  //  //
 /*
 * @description
+* Obtindre llista de jugadors vinculats a una partida
+* URL: /api/participa/[idpartida] GET
+*/
+static public function participants(Request $request, Response $response, $params) {
+	$json = Fun::getPost($tabla);
+	$id= $params['partida'];
+	$db= new db();
+	$db->sql("select participa.equip as equip, jugador.* from jugador, participa where participa.jugador=jugador.id and participa.partida=".$id.";'".date('YmdHis')."');");
+	$data= $db->all();
+	return Fun::render($data);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
 * Vincula un jugador i equip a una partida
 * URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
 */
 static public function participa(Request $request, Response $response, $params) {
 	$json = Fun::getPost($tabla);
 	$id= $params['partida'];
-	$jugador= $json['jugador'];
+	$jugador= $json['id'];
 	$equip= $json['equip'];
 	$db= new db();
+	$db->sql("select count(*) as yaexiste from participa where jugador=".$jugador." and partida=".$id);
+	$ya = $db->all();
+	$ya= $ya[0]['yaexiste'];
+	if ($ya>0) die('{"error":"Ja existeix eixe jugador en aquesta partida"}');
 	$db->sql("insert into participa (jugador,equip,partida,creacio) values (".$jugador.",".$equip.",".$id.",'".date('YmdHis')."');");
-	return;	
+	return Fun::participants($request,$response,$params);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Elimina jugador d'una partida
+* URL: /api/participa/[idpartida]/[idjugador] DELETE
+*/
+static public function delete_participa(Request $request, Response $response, $params) {
+	$partida= $params['partida'];
+	$jugador= $params['jugador'];
+	$db= new db();
+	$db->sql("delete from participa where jugador=".$jugador." and partida=".$partida.";");
+	return Fun::participants($request,$response,$params);
 }
 
 //  //  //  //  //  //  //  //
@@ -244,14 +278,14 @@ static public function tags_query(Request $request, Response $response, $params)
 * @description
 * funció sense dependències que comprova que un slug siga únic
 */
-static private function slugunic($propos) {
+static private function slugunic($propos,$id) {
 	$sufixe= '-';
 	Fun::$db= new db();
-	do {
-		Fun::$db->sql("select slug from pagina where slug='".$propos."';");
-		$propos.= $sufixe;
-	} while (Fun::$db->numRows()!=0);
-	return substr($propos,0,-1); // està correcte el proposat
+	Fun::$db->sql("select text from idioma where camp='slug' ".($id?" and registreid<>".$id:";"));
+	$all= array();
+	foreach(Fun::$db->all() as $e) array_push($all,$e['text']);
+	while (in_array($propos,$all)) $propos.= $sufixe;
+	return $propos;
 }
 
 //  //  //  //  //  //  //  //
@@ -259,25 +293,28 @@ static private function slugunic($propos) {
 * @description
 * funció sense dependències que converteix un text a slug
 */
-static public function slugify($string, $replace = array(), $delimiter = '-') {
-  // https://github.com/phalcon/incubator/blob/master/Library/Phalcon/Utils/Slug.php
-  if (!extension_loaded('iconv')) {
-    throw new Exception('iconv module not loaded');
-  }
-  // Save the old locale and set the new locale to UTF-8
-  $oldLocale = setlocale(LC_ALL, '0');
-  setlocale(LC_ALL, 'en_US.UTF-8');
-  $clean = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
-  if (!empty($replace)) {
-    $clean = str_replace((array) $replace, ' ', $clean);
-  }
-  $clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
-  $clean = strtolower($clean);
-  $clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
-  $clean = trim($clean, $delimiter);
-  // Revert back to the old locale
-  setlocale(LC_ALL, $oldLocale);
-  return $clean;
+static public function slugify($string, $id=null) {
+	$replace = array();
+	$delimiter = '-';
+	// https://github.com/phalcon/incubator/blob/master/Library/Phalcon/Utils/Slug.php
+	if (!extension_loaded('iconv')) {
+		throw new Exception('iconv module not loaded');
+	}
+	// Save the old locale and set the new locale to UTF-8
+	$oldLocale = setlocale(LC_ALL, '0');
+	setlocale(LC_ALL, 'en_US.UTF-8');
+	$clean = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+	if (!empty($replace)) {
+		$clean = str_replace((array) $replace, ' ', $clean);
+	}
+	$clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
+	$clean = strtolower($clean);
+	$clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
+	$clean = trim($clean, $delimiter);
+	// Revert back to the old locale
+	setlocale(LC_ALL, $oldLocale);
+	$clean= Fun::slugunic($clean,$id);
+	return $clean;
 }
     
 //  //  //  //  //  //  //  //
@@ -324,4 +361,44 @@ static public function computahoras() {
 	*/
 }
     
+//  //  //  //  //  //  //  //
+/*
+* @description
+* sistema de cache simple
+*/
+static public function cache($req,$res = null) {
+	$path= $req->getUri()->getPath();
+	$method= $req->getMethod();
+	$cachedir= '../data/cache';
+	$file= $cachedir.'/'.md5($path).'.txt';
+	if (!empty($res)) {
+		// After
+		// Get content for saving to file ...
+		$body = $res->getBody();
+		$body->rewind();
+		$output = $body->getContents();
+		file_put_contents($file,$output);
+		// save output to cache file ..
+		return false;
+	}
+	
+	// tot mètode que no siga GET invalida l'arxiu de catxe d'aquesta URL
+	// si l'arxiu té més de 6 h, borre caché
+	if ($method!='GET') {
+		echo $method,',',time(),',',filemtime($file),',',time()-filemtime($file)>6*3600?1:0,',',$file;exit;
+		unlink($file);
+		return false;
+	}
+	if (file_exists($file)) {
+		if (time()-filemtime($file) > 6 * 3600 ) {
+			unlink($file);
+			return false;
+		}
+		// torne la eixida catxeada
+		readfile($file);
+		return true;
+	}
+	return false;
+}
+
 } // of class Fun
