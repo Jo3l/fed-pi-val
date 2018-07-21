@@ -127,7 +127,7 @@ static private function jerarquia($fill='competicions') {
 	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
 	$result= $db->getResult();
 	$resultids= array();
-	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma] ) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
+	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
 	unset($result);
 	$estructura= array();
 	//echo '<pre>',print_r($resultids),'</pre>';exit;

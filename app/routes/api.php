@@ -23,13 +23,13 @@ $app->options('/{routes:.+}', function ($request, $response, $args) {
 
 $app->add(function ($req, $res, $next) {
 
-	$cache= Fun::cache($req);
+	//$cache= Fun::cache($req);
 
-	if ($cache) exit;
+	//if ($cache) exit;
 
     $response = $next($req, $res);
 
-    if (!$cache) Fun::cache($req,$response);
+    //if (!$cache) Fun::cache($req,$response);
 
     return $response
         //->withHeader('Access-Control-Allow-Origin', '*')
@@ -158,6 +158,14 @@ $app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\F
 * URL: /api/jugadorsdequip/12
 */
 $app->get('/api/jugadorsdequip/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::jugadorsdequip'); // buscar
+
+/*
+* @description
+* Guarda les partides creades amb el generador i transmeses amb un json
+* URL: /api/equips/genera
+* Exemple de paràmetre: [ {"data":"2018-07-21T15:45:40.480Z","enfrontaments":[[{"id":"1","nom":"TEST: equip-prova","club":"1"},{"id":"2","nom":"TEST: equip-prova 2","club":"2"}]]} , {"data":"2018-07-28T15:45:40.000Z","enfrontaments":[[{"id":"2","nom":"TEST: equip-prova 2","club":"2"},{"id":"1","nom":"TEST: equip-prova","club":"1"}]]} ]
+*/
+$app->post('/api/equip/genera', '\app\Fun::generaPartides'); // buscar
 
 /*
 * @description
@@ -296,7 +304,7 @@ $app->post('/api/static/uploadpdf', '\app\Filem::uploadpdf'); // guardar pdf
 * Eliminar un arxiu
 * URL: /api/static/jugadors/2018/02/escut falla-1.jpg
 */
-$app->delete('/api/static/{path:[\.\/-_0-9A-Za-z]+}', '\app\Filem::delete'); // esborrar arxiu
+$app->delete('/api/static/{path:[0-9A-Za-z\.\/\-\_]+}', '\app\Filem::delete'); // esborrar arxiu
 
 /*
 **

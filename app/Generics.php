@@ -224,7 +224,7 @@ private function update_idioma($params, $id, $json) {
 // inserció de contingut segons idioma
 private function insert_idioma($params, $id, $json) {
 	$tipus= $params['tabla'];
-	if ($tipus=='noticia') $json['slug']= Fun::slugify($json['titol']);
+	if ($tipus=='noticia') $json['slug']= Fun::slugify($json['titol'],$id);
 	switch ($tipus) {
 		case 'noticia': $camps= array('titol','contingut','slug'); break;
 		case 'acte': $camps= array('titol','contingut'); break;

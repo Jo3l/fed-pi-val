@@ -1,50 +1,78 @@
 <template>
     <transition name="fade">
-    	
-	    <div class="test">
-		
-    	<h1>Generador de partides</h1>
-    		
-			
-		<ui-switch id="trofeu" v-model="esTrofeu" >Lliga</ui-switch>
 
-		<ui-select
-                has-search
-                floating-label
-                placeholder="Busca l'equip visitant"
-        		search-placeholder="Escriu el nom de l'equip"
-                label="Equip"
-                :keys="{ label: 'nom'}"
-                :options="equipssel"
-                v-model="equipSeleccionat"
-                error="This field is required"
-        		@query-change="onQueryChangeEquip"
-        		@select="afegirEquip"
-          ></ui-select>
-          
-          <div v-for="(equip,key) in equips" class="ui-button ui-button--type-secondary ui-button--color-red ui-button--icon-position-left ui-button--size-small">  
-        	{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
-          </div>
+		<div v-if="!acabat">
+			<h1>Generador de partides</h1>
+		
+			<div class="test">
 			
-{{ (equips.length>0)?(equips.length-1)*2 : 0 }}
-			<div id="dates">
-				<div v-for="index in (equips.length>0)?(equips.length-1)*2 : 0" v-if="equips && equips.length">
-					<label>Jornada {{index}}:
-						<vue-datepicker-local class="dplocal" v-model="dates[index]" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
+			<ui-switch id="trofeu" v-model="esTrofeu" @change="genera()">Lliga</ui-switch>
+			
+			<ui-switch id="tornades" v-model="tornades" @change="genera()">Generar tornades</ui-switch>
+			
+			<ui-select
+			    has-search
+			    floating-label
+			    placeholder="Busca l'equip"
+				search-placeholder="Escriu el nom de l'equip"
+			    label="Equip"
+			    :keys="{ label: 'nom'}"
+			    :options="equipssel"
+			    v-model="equipSeleccionat"
+			    error="Camp obligatori"
+				@query-change="onQueryChangeEquip"
+				@select="afegirEquip"
+			></ui-select>
+			
+			<div v-for="(equip,key) in equips" class="ui-button ui-button--type-secondary ui-button--color-red ui-button--icon-position-left ui-button--size-small">  
+			{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
+			</div>
+			
+			<h2 v-if="esTrofeu && equips.length==16">Octaus de final</h2>
+			<h2 v-if="esTrofeu && equips.length==8">Quarts de final</h2>
+			<h2 v-if="esTrofeu && equips.length==4">Semifinals</h2>
+			<h2 v-if="esTrofeu && equips.length==2">Final</h2>
+			<h2 v-if="!esTrofeu">Lliga</h2>
+			
+			<div id="lesdates">
+				<div v-if="jornades && jornades.length" v-for="(jor,index) in jornades" class="jornada">
+					
+					<label v-if="jor?true:false">Jornada {{ index+1 }}:
+						<vue-datepicker-local class="dplocal" 
+							v-model="jor.data" 
+							:local="datePickerOptions" 
+							format="DD-MM-YYYY" 
+							@onDateChange="inpChangedForCode(index,jor.data)">
+						</vue-datepicker-local>
 					</label>
+					
+					<div v-if="jor?true:false">
+						<div v-if="jor.enfrontaments.length" v-for="j in (jor.enfrontaments)">
+							<span class="local">{{ j[0].nom }}</span> - <span class="visitante">{{ j[1].nom }}</span>
+							<br/>
+						</div>
+					</div>
+					
 				</div>
 			</div>
 			
-			<pre id="result">
-				
-				{{equips}}
-				
-				{{dates}}
-				
-			</pre>
+			<br/><br/>
+	
+			<ui-button v-if="jornades.length>0 && jornades[0]" color="fedpival" icon="done_all" @click="enviar">Generar aquestes partides</ui-button>
+
+			</div>
+
 	    </div>
     </transition>
 </template>
+
+<style lang="less">
+	@import "../assets/less/defines.less";
+	.test { margin: 0 20px; text-align:center; }
+	.local { margin-left:30px; background-color:#fee !important; }
+	.local, .visitante { border:1px outset white; color:gray; padding:0 4px; margin-bottom:8px; background-color:#eef; }
+	.jornada { padding-bottom:4px; text-align:center; }
+</style>
 
 <script>
 import draggable from 'vuedraggable'
@@ -57,6 +85,10 @@ export default {
 		return {
 			/// http://tournamentscheduler.net
 			roundrobin: {
+				1: {},
+				2:{
+					0:[[0,1]]
+				},
 				//3 equips, 3 partides 3 jornades
 				3:{
 				  0:[[0,1]],
@@ -132,8 +164,11 @@ export default {
 			equipSeleccionat: '',
 			equips: [],
 			equipssel: [],
+			equipsnosel: [],
+			jornades:[],
 			esTrofeu: false,
-			dates: [],
+			tornades:true,
+			acabat:false,
 			eixida: '',
 			datePickerOptions: {
 				yearSuffix: '',
@@ -151,7 +186,11 @@ export default {
 		borraEquip: function(e,k) { 
 			var vm= this;
 			vm.equips= vm.equips.filter( (elm) => { return (elm.id!=e.id); } );
-			console.log(vm.equips)
+			vm.equipsnosel.forEach( (a,b)=>{ 
+				if (a.id==e.id) vm.equipsnosel.splice(b,1); 
+			} )
+			vm.equipssel.push(e);				
+			this.genera();
 		},
 		afegirEquip: function(){
 			var vm= this;
@@ -159,11 +198,13 @@ export default {
 			vm.equips.forEach( (eq) => { if (eq.id==vm.equipSeleccionat.id) abort=true; } )
 			if (abort) return alert("Ja estava en la llista");
 			vm.equips.push(vm.equipSeleccionat)
-			console.log(vm.equipSeleccionat,vm.equips.length+' equips ara');
-			console.log(vm.equips)
+			vm.equipssel.forEach( (a,b)=>{ 
+				if (a.nom==vm.equipSeleccionat.nom) vm.equipssel.splice(b,1); 
+				vm.equipsnosel.push(vm.equipSeleccionat);				
+			} )
 			vm.equipSeleccionat= '';
-			var jornades= (vm.equips.length>0)?(vm.equips.length-1)*2 : 0;
-			vm.dates.length= jornades;
+			var numjornades= vm.roundrobin[vm.equips.length].length || 1;
+			vm.jornades.length= numjornades*2;
 			this.genera();
 		},
 		seeding: function(numPlayers){
@@ -188,83 +229,102 @@ export default {
 			var l= vm.equips.length;
 			var rr= vm.roundrobin[l];
 			var html='';
+			vm.jornades= [];
+			vm.ultimagenera= new Date();
 			if (vm.esTrofeu) {
-				html= 'trofeu';
 				// casuistica: 2-16 equips. cas de potències de dos està clar.
 				var eqs= vm.equips;
-				console.log(this.seeding(l))
+				var enfrontaments= this.seeding(l)
+				if (enfrontaments.length!=l) return;
+				var jornada=0;
+				var jorobj= { data: new Date(), enfrontaments: [] }
+				var tornades= [];
+				while(enfrontaments.length) {
+					var a= enfrontaments.pop();
+					var b= enfrontaments.pop();
+					jorobj.enfrontaments.push( [ vm.equips[a-1], vm.equips[b-1] ] );
+					if (vm.tornades) tornades.push( [ vm.equips[b-1], vm.equips[a-1] ] )
+				}
+				vm.jornades[jornada]= jorobj;
+				jornada++;
+				if (vm.tornades) vm.jornades[jornada] = { data: new Date(), enfrontaments: tornades };
+
 			} else {
 				// generació de partides de lliga (tots contra tots, anada i tornada) amb taula pregenerada :
 				var anades=[], tornades=[];
-				var jornada= 1;
+				var jornada= 0;
 				for(var j in rr) {
-					html+='<h3>jornada '+(jornada++)+'</h3><ul>';
+					if (!vm.jornades[jornada]) vm.jornades[jornada]=[];
 					j= rr[j];
+					var jorobj= { data: new Date(), enfrontaments:[] }
 					for(var p in j) {
-						html+= '<li>'+vm.equips[j[p][0]].nom+' - '+vm.equips[j[p][1]].nom+'</li>';
+						jorobj.enfrontaments.push([ vm.equips[j[p][0]],vm.equips[j[p][1]] ])
 					}
-					html+= '</ul>';
+					vm.jornades[jornada]= jorobj;
+					jornada++;
 				}
+				if (vm.tornades)
 				for(var j in rr) {
-					html+='<h3>jornada '+(jornada++)+'</h3><ul>';
+					if (!vm.jornades[jornada]) vm.jornades[jornada]=[];
 					j= rr[j];
+					var jorobj= { data: new Date(), enfrontaments:[] }
 					for(var p in j) {
-						html+= '<li>'+vm.equips[j[p][1]].nom+' - '+vm.equips[j[p][0]].nom+'</li>';
+						jorobj.enfrontaments.push([ vm.equips[j[p][1]],vm.equips[j[p][0]] ])
 					}
-					html+='</ul>';
+					vm.jornades[jornada]= jorobj;
+					jornada++;
 				}
-/*
-				// generació de partides de lliga (tots contra tots, anada i tornada) :
-				var anades=[], tornades=[];
-				for (var i= 0; i<l; i++)
-					for (var j= i+1; j<l; j++) {
-						anades.push(vm.equips[i].nom+'-<span style="font-weight:bold">'+vm.equips[j].nom+'</span>');
-						tornades.push(vm.equips[j].nom+'-<span style="font-weight:bold">'+vm.equips[i].nom+'</span>');
-					}
-				html+= 'anades:<ul><li>'+anades.join('<li>')+'</ul>tornades:<ul><li>'+tornades.join('<li>')+'</ul>';
-*/
 			}
-			document.querySelector("#result").innerHTML= html;
+			vm.ultimagenera= new Date();
+			
+			this.inpChangedForCode(0,new Date(),true)
 		},
+        inpChangedForCode: function(idx,d,forza=false) { 
+        	var vm = this;
+			if (!forza && "ultimagenera" in vm) {
+				var timeDiff = Math.abs( (new Date()).getTime() - vm.ultimagenera.getTime() );
+				var diff = Math.ceil(timeDiff / (1000)); 
+				// si menos de 3 segons, no re-execute
+				if (diff<3) return; //massa prompte
+			}
+			vm.ultimagenera= new Date();
+        	if (!d) return console.log('no hi ha data');
+        	for( var i= idx+1; i < this.jornades.length; i++ ) if (this.jornades[i].data) this.jornades[i].data= null;
+        	var d= new Date( d );
+			for( var i= idx+1; i < this.jornades.length; i++ ) vm.jornades[i].data= (new Date(d.addDays(7).toString())).toString();
+			vm.jornades.push(vm.jornades.pop());
+        },
 		onQueryChangeEquip: function(query) {
             if (query.length < 3) return;
-
         	var vm = this;
 	        vm.loading=true;
 	        vm.$http.get('/equip/search/'+query, { cache: false })
 	        .then(function (response) {
 	            vm.equipssel = response.data;
+	            vm.equipssel.push({id:0,nom:'__Descans A__'});
+	            vm.equipssel.push({id:0,nom:'__Descans B__'});
 	            vm.loading=false;
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-            
+        },
+        enviar: function() {
+        	var vm= this;
+        	vm.jornades.forEach(function(a){ 
+        		a.data= (new Date(a.data)).toISOString(); 
+        		window.enf= a.enfrontaments;
+        		a.enfrontaments= a.enfrontaments.filter(function(a){ return a[0].id!=0 && a[1].id!=0 });
+        	})
+        	vm.$http.post('/equip/genera', JSON.stringify(vm.jornades) );
+        	vm.acabat= true;
         }
     },
 	watch: {
-		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; },
-		dates: function(n) {
-			var d= new Date( n );
-			console.log(d);
-			for(var i=0;i<this.dates.length;i++) {
-				d= d.addDays(7);
-				this.dates[i]= d;
-				console.log( d, this.dates );
-			}
-			console.dir(this.dates)
-		}
+		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; }
 	},
 	mounted: function () {
 	}
 }
+
 </script>
-
-<style lang="less">
-
-@import "../assets/less/defines.less";
-
-#dates > div { width:29% !important; }
-#dates { display:flex; flex-flow: row wrap; align-content: space-between; }
-
-</style>

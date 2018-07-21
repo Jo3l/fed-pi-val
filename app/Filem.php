@@ -27,7 +27,7 @@ class Filem
 	static private $allow_upload = true; 
 	static private $allow_direct_link = true; 
 
-	static private $disallowed_extensions = ['php']; 
+	static private $disallowed_extensions = ['php','exe','bat','js']; 
 	static private $hidden_extensions = ['php']; 
 
 	static private $absolutePath = null;
@@ -154,6 +154,8 @@ class Filem
 		if (Filem::$allow_upload != true) Filem::err(404,'Sense permis per enviar info');
 		$file= Filem::prepare( );
 		
+		$_FILES['files']['name']= str_replace(' ','_',$_FILES['files']['name']);
+		
 		foreach(Filem::$disallowed_extensions as $ext) 
 			if(preg_match(sprintf('/\.%s$/',preg_quote($ext)), $_FILES['files']['name'])) 
 				err(403,"Files of this type are not allowed.");
@@ -174,6 +176,7 @@ class Filem
 			move_uploaded_file($_FILES['files']['tmp_name'], $file.$fileDestination.'/'.$_FILES['files']['name']);
 			echo json_encode(['success' => true, 'file' => $fileDestination.'/'.$_FILES['files']['name'] ]);
 		}
+
 		exit;
 	}
 	
@@ -182,5 +185,13 @@ class Filem
 	static public function uploadimg(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'upload'); }
 
 	static public function uploadpdf(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'pdf'); }
+	
+	static public function get_tinified_url($file_path,$TinyPNG_API_KEY){
+    $tiny_curl = curl_init();
+    $Opts = array(CURLOPT_RETURNTRANSFER => 1,CURLOPT_URL => 'https://api.tinify.com/shrink',CURLOPT_POST => 1,CURLOPT_USERPWD => 'api:' . $TinyPNG_API_KEY,CURLOPT_BINARYTRANSFER => 1,CURLOPT_POSTFIELDS => file_get_contents($file_path));
+    curl_setopt_array($tiny_curl, $Opts);
+    $result = json_decode(curl_exec($tiny_curl),true);
+    return($result['output']['url']);
+}
 
 }

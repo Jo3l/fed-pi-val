@@ -132,6 +132,30 @@ static public function jugadorsdequip(Request $request, Response $response, $par
 //  //  //  //  //  //  //  //
 /*
 * @description
+* generar les partides creades en el generador
+*/
+static public function generaPartides(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	//	jerarquia	registreid	data	lloc	local	visitant	resultatlocal	resultatvisitant	alta
+	$sql='';
+	foreach($json as $jornada) {
+		foreach($jornada['enfrontaments'] as $partida)
+			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant)values(%d,%d,'%s',%d,%d);",
+				0,
+				0,
+				$jornada['data'],
+				$partida[0]['id'],	
+				$partida[1]['id']
+			);
+	}
+    echo $sql;
+    $db= new db();
+	//$db->sql($sql);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
 * Vincula un jugador a un equip
 * URL: /api/pertany/[idjugador] POST {"id":[idequip]}
 * URL: /api/pertany/1 POST {"id":1} 
@@ -254,7 +278,8 @@ static public function tables($elm, $for='select') {
 static public function noticia_query(Request $request, Response $response, $params) {
 	$slug= $params['slug'];
     $db = new db();
-    $db->sql("select * from _noticia where slug='".$slug."';");
+    //$db->sql("select * from _noticia where slug='".$slug."';");
+    $db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
     $data = $db->all();
 	Fun::render($data);
 }
@@ -313,7 +338,7 @@ static public function slugify($string, $id=null) {
 	$clean = trim($clean, $delimiter);
 	// Revert back to the old locale
 	setlocale(LC_ALL, $oldLocale);
-	$clean= Fun::slugunic($clean,$id);
+	if ($id!=false) $clean= Fun::slugunic($clean,$id);
 	return $clean;
 }
     
@@ -367,6 +392,9 @@ static public function computahoras() {
 * sistema de cache simple
 */
 static public function cache($req,$res = null) {
+	
+	// RENUNCIE a fer memòria cau perquè no gestione bé les capçaleres i això genera un conflicte
+	// amb les sessions autenticades
 	$path= $req->getUri()->getPath();
 	$method= $req->getMethod();
 	$cachedir= '../data/cache';
