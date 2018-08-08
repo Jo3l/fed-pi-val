@@ -2,7 +2,7 @@
     <transition name="fade">
     <div id="news">
 	
-	<div class="news">
+	<div class="news" v-if="news">
 		
 		<aside v-if="$store.getters.isAuthenticatedWithRole(0)" class="nodeContentElement">
 			
@@ -11,30 +11,14 @@
 			
 			
 	<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="star" x="0px" y="0px" viewBox="0 0 32.218 32.218" xml:space="preserve" @click="destacada=!destacada">
-		<g>
 			<path v-bind:class="{ active: destacada }" d="M32.143,12.403c-0.494-1.545-3.213-1.898-6.092-2.279c-1.578-0.207-3.371-0.441-3.912-0.842 c-0.545-0.398-1.305-2.035-1.977-3.482c-1.222-2.631-2.379-5.113-3.997-5.117l-0.03-0.005c-1.604,0.027-2.773,2.479-4.016,5.082 c-0.685,1.439-1.464,3.07-2.007,3.465C9.563,9.616,7.77,9.836,6.187,10.028c-2.876,0.35-5.599,0.678-6.107,2.215 s1.479,3.426,3.585,5.422c1.156,1.098,2.465,2.342,2.671,2.982s-0.143,2.416-0.448,3.977c-0.558,2.844-1.085,5.537,0.219,6.5 c0.312,0.223,0.704,0.336,1.167,0.326c1.331-0.021,3.246-1.057,5.097-2.061c1.387-0.758,2.96-1.613,3.66-1.621 c0.677,0,2.255,0.879,3.647,1.654c1.893,1.051,3.852,2.139,5.185,2.117c0.416-0.006,0.771-0.113,1.061-0.322 c1.312-0.945,0.812-3.637,0.285-6.492c-0.29-1.564-0.615-3.344-0.41-3.984c0.212-0.637,1.536-1.865,2.703-2.955 C30.627,15.809,32.633,13.948,32.143,12.403z"/>
 			<title>Noticia Portada</title>
-		</g>
 	</svg>
 			
 			
 			</progressive-background>
 
 	        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
-
-			<div class="page__demo-group icon-right" v-if="$store.getters.isAuthenticatedWithRole(0)">
-                <ui-icon-button color="primary" has-dropdown icon="code" ref="dropdownButton">
-                    <ui-menu
-                        contain-focus
-                        has-icons
-                        slot="dropdown"
-                        :options="menuOptions"
-                        @close="$refs.dropdownButton.closeDropdown()"
-                        @select="menuSelection"
-                    ></ui-menu>
-                </ui-icon-button>
-            </div>
-            
             
 			 <label>Data Publicació:
 			 <vue-datepicker-local v-model="publishedDate" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
@@ -52,7 +36,7 @@
 		    />
 			
 			<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="SaveNews()">{{$i18n.t('common.save')}}</ui-button>
-			Noticia ID:{{news.id}}
+			<ui-button v-if="news.id" color="blue" icon="delete" size="small" type="secondary" @click="deleteNews(news.id)">Borrar noticia ID:{{news.id}}</ui-button>
 	
 		</aside>
 					
@@ -62,8 +46,32 @@
 			</progressive-background>
 			
 			<h1>{{ news.titol }}</h1>
-			<small>{{ dateFixed }}</small>
+			<small>{{ publishedDateText }}</small>
+			
 			<article v-html="news.contingut"></article>
+			
+			<em class="social">
+				<vue-goodshare-facebook 
+					title_social="Facebook"
+				    has_counter
+				    has_icon 
+				></vue-goodshare-facebook>
+				<vue-goodshare-twitter 
+					title_social="Twitter"
+				    has_icon 
+				></vue-goodshare-twitter>
+				<vue-goodshare-whatsapp 
+					v-if="isMobileDevice()"
+					title_social="WhatsApp"
+				    has_icon 
+				></vue-goodshare-whatsapp>
+				<vue-goodshare-telegram 
+					v-if="isMobileDevice()"
+					title_social="Telegram"
+				    has_icon 
+				></vue-goodshare-telegram>
+			</em>
+
 			<em>{{ news.autor }}</em>
 			
 		</aside>
@@ -83,7 +91,7 @@
 
 	<pre v-if="$store.getters.isAuthenticatedWithRole(0)">
 		
-		{{news}}
+
 		
 	</pre>
 
@@ -99,27 +107,24 @@ import VueDatepickerLocal from 'vue-datepicker-local'
 import VuePellEditor from 'vue-pell-editor'
 import VuePellEditorConfig from '../config/pelleditor'
 import FileManager from './FileManager.vue'
+import VueGoodshareFacebook from 'vue-goodshare/src/providers/Facebook.vue'
+import VueGoodshareTwitter from 'vue-goodshare/src/providers/Twitter.vue'
+import VueGoodshareWhatsapp from 'vue-goodshare/src/providers/WhatsApp.vue'
+import VueGoodshareTelegram from 'vue-goodshare/src/providers/Telegram.vue'
 
 export default {
 	name: 'News',
-  	components: {'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager, VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
+  	components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram, 'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager, VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
 		    selected:{},
 		    destacada:false,
-		    news:{
-				titol: '',
-				contingut: '',
-				url:''
-		    },
+		    news: '',
 		    showMobileMenu: false,
+		    publishedDateText: '',
 		    publishedDate: '',
 		    unPublishedDate: '',
 			menuOptions: [
-			    {
-			        label: 'Duplicar',
-			        icon: 'edit'
-			    },
 			    {
 			        label: 'Borrar',
 			        icon: 'delete'
@@ -138,21 +143,19 @@ export default {
 			editorOptions: VuePellEditorConfig(this.openModal),
 		}
 	},
-    head: {
-		title: function () {
-	        return {
-	          inner: this.news.titol,
-	        }
-    	},
-	    meta: function () {
-	        return [
-				  { name: 'description', content: this.news.contingut, id: 'desc' },
-				  { property: 'og:title', content: this.news.titol },
-				  { p: 'og:image', c: window.location.protocol + '//' + window.location.host + this.news.url },
-	        ]
-	    }
-    },
+	head : function() {
+		return {...this.$route.meta,
+	    	...{
+		    	title: {
+				  inner: this.news.titol
+				},
+		    }
+		}    
+	},
 	methods: {
+		isMobileDevice: function() {
+		    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+		},
 		openModal:function(ref, object, cancel, tipo) {
 			this.$refs.upload.activate(tipo);
 			this.selectedCancel = cancel;
@@ -174,8 +177,14 @@ export default {
 			var vm=this;
 			vm.news.url = '/static'+res.file;
 		},
-		menuSelection: function(e) {
-			if(e.label == 'Editar')  this.$router.push('/'+this.$i18n.locale+'/'+this.$i18n.t('common.news')+'/edit/');
+		deleteNews: function(id){
+			var vm=this;
+			vm.$http.delete('/noticia/'+id).then(function (response) {
+	             window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('common.newss');
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
 		},
 		SaveNews: function() {
 			var vm = this;
@@ -185,7 +194,7 @@ export default {
 					idioma: vm.$i18n.locale,
 					id: vm.news.id ? vm.news.id : null,
 					tipus: "N",
-					destacada: vm.destacada,
+					destacada: vm.destacada?vm.destacada:false,
 					categoria: "noticies",
 					tags:null,
 					url: vm.news.url,
@@ -198,8 +207,7 @@ export default {
 				}	
 			).then(function (response) {
 				vm.news = response.data[0];
-	            vm.publishedDate = new Date.parse(vm.fixDateForParse(response.data[0].publicacio));
-	            vm.destacada = response.data[0].destacada;
+	             window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('common.newss');
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -209,21 +217,27 @@ export default {
 		getData: function(apiUrl) {
 	
 	        var vm = this;
-	        vm.$http.get(apiUrl, { useCache: true })
+	        this.$http.get(apiUrl)
 	        .then(function (response) {
-	            vm.news = response.data[0];
-	            vm.publishedDate = new Date.parse(vm.fixDateForParse(response.data[0].publicacio));
+	        	var n = response.data.find(function(element) {  return element.idioma == vm.$i18n.locale });
+	            vm.news = n;
+	            vm.destacada = n.destacada=='1';
+	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio));
+	            vm.publishedDateText = vm.fixDateForParse(n.publicacio||n.alta);
+	            
+	            vm.$emit('updateHead')
+	            
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-    	            		    	
+	        
 	    },
 	  	fixDate: function (date) { 
-		  return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("d/M/yyyy");
+		  if(date) return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("d/M/yyyy");
 		},
 	  	fixDateForParse: function (date) { 
-		  return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("yyyy/M/d");
+		  if(date) return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("yyyy/M/d");
 		},
 	   	scrollToTop: function (scrollDuration) {
 		const   scrollHeight = window.scrollY,
@@ -258,16 +272,12 @@ export default {
 			this.$router.push({ path: `/` });
 		}
 		this.scrollToTop(0);
-
+		
+		
 	},
-    watch: { 
-      	news: function(newVal, oldVal) { // watch it
-			this.$emit('updateHead');
-        }
-    },
-	computed: {
-		dateFixed: function() {
-			return this.publishedDate.toString("d/M/yyyy");
+	watch: {
+		destacada: function(old, newv){
+			this.news.destacada=newv?false:true;
 		}
 	},
 	beforeRouteUpdate (to, from, next) {
@@ -401,6 +411,9 @@ export default {
 	}
 	em {
 	    padding: 0px 5vw;
+	    &.social{
+	    	display:block;
+	    }
 	}
 }
 

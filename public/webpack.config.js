@@ -20,7 +20,6 @@ module.exports = {
           'less-loader'
         ]
       },
-      { test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.woff2$|\.ttf$|\.wav$|\.mp3$/, loader: "file-loader" },
       {
         test: /\.vue$/,
         loader: 'vue-loader',
@@ -41,11 +40,13 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /\.(png|jpg|gif|svg)$/,
-        loader: 'file-loader',
+        test: /\.(png|woff|woff2|eot|ttf|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader',
+        /*
         options: {
           name: '[name].[ext]?[hash]'
         }
+        */
       }
     ]
   },

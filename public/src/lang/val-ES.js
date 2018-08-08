@@ -15,7 +15,8 @@ export default {
 		addToBasket : 'Afegir a la cistella',
 		basket : 'Cistella',
 		online_shop : 'Tenda Online',
-		added : 'Afegit'
+		added : 'Afegit',
+		itemNotAvailable: 'Model no disponible'
 	},
 	common : {
 		label: 'Valencià',

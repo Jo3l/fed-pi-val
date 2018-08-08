@@ -36,20 +36,28 @@ export default {
 		    mes:''
 		}
 	},
+	head : function() {
+		return this.$route.meta;
+	},
 	methods: {
 		incPage: function() {
 			this.pagina++;
-			this.$router.push({ path: `/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.pagina}` });
+			var cami= location.pathname.split('/');
+			this.$router.push({ path: `/${cami[1]}/${cami[2]}/${this.pagina}` });
+			//this.$router.push({ path: `/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.pagina}` });
 		},
 		decPage: function() {
 			if(this.pagina >= 1) this.pagina--;
-			this.$router.push({ path: `/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.pagina}` });
+			var cami= location.pathname.split('/');
+			this.$router.push({ path: `/${cami[1]}/${cami[2]}/${this.pagina}` });
+			//this.$router.push({ path: `/${location.pathname.split('/')[1]}/${location.pathname.split('/')[2]}/${this.pagina}` });
 		},
 	},
 	mounted: function () {
 		if(this.$route.params.page>0) this.pagina = this.$route.params.page;
 	},
 	beforeRouteUpdate (to, from, next) {
+		console.log(from);
 		next();
 	}
 }

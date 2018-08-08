@@ -2,10 +2,10 @@
     <transition name="fade">
     	
 	    <div v-if=" pagina==null ">
-			<carousel :perPageCustom="[[0, 1],[480, 1],[768, 2],[992, 2], [1200, 3]]" :minSwipeDistance=30 :navigationEnabled="true" :paginationPadding=5 paginationActiveColor="#87212e" paginationColor="#e28b96" class="newsCarousel">
+	    	
+			<swiper :options="swiperOption" class="newsCarousel">
 	
-			  <slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
-			  	
+			  <swiper-slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
 			    <progressive-background class="articleP" :src="noticia.url">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
@@ -18,8 +18,13 @@
 			    	</router-link>
 			    </progressive-background>
 			    
-			  </slide>
-			</carousel>
+			  </swiper-slide>
+			  
+			  <div class="swiper-pagination nuws" slot="pagination"></div>
+		  	  <ui-icon-button icon="chevron_left" type="primary" class="swiper-button-prev nuws" slot="button-prev"></ui-icon-button>
+			  <ui-icon-button icon="chevron_right" type="primary" class="swiper-button-next nuws" slot="button-next"></ui-icon-button>
+			  
+			</swiper>
 		</div>
 		<div class="flex" v-else="v-else">
 
@@ -47,21 +52,53 @@
 
 <script>
 
-import { Carousel, Slide } from 'vue-carousel';
+import 'swiper/dist/css/swiper.css'
+import { swiper, swiperSlide } from 'vue-awesome-swiper'
 
 export default {
   name: 'Noticias',
-  components: { 'carousel': Carousel, 'slide': Slide},
+  components: { swiper, swiperSlide },
   props: {
         pagina: {
             type: Number,
         }
   },
+  head : function() {
+	return this.$route.meta;
+  },
   data () {
     return {
     	newsCarousel:'',
     	updPage:'',
-    	request:''
+    	request:'',
+	    swiperOption: {
+	        slidesPerView: 4,
+	        slidesPerColumn: 1,
+	        spaceBetween: 10,
+	        navigation: {
+	          nextEl: '.swiper-button-next.nuws',
+	          prevEl: '.swiper-button-prev.nuws'
+	        },
+	        pagination: {
+	          el: '.swiper-pagination.nuws',
+	          type: 'bullets',
+	          clickable: true
+	        },
+	        breakpoints: {
+	          768: {
+	            slidesPerView: 2,
+	            spaceBetween: 10
+	          },
+	          480: {
+	            slidesPerView: 2,
+	            spaceBetween: 10
+	          },
+	          320: {
+	            slidesPerView: 1,
+	            spaceBetween: 10
+	          }
+	        }
+	    },
     }
   },
   methods: {
@@ -152,8 +189,8 @@ export default {
 	    flex-direction: column;
 	    justify-content: flex-end;
 	    background-repeat: no-repeat;
-	    border-right: 2px solid white;
-    	border-left: 2px solid white;
+	    //border-right: 2px solid white;
+    	//border-left: 2px solid white;
 		cursor:e-resize;
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);

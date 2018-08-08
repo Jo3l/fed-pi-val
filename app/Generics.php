@@ -19,9 +19,9 @@ private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // ta
 
 //  //  //  //  //  //  //  //
 static public function generic_update(Request $request, Response $response, $params) {
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	if ($params['tabla']=='usuari') {
-	    echo Auth::verifyRol($request,0) ? 1 : 0;
-		//die(print_r($_SESSION));
+	    if ( !Auth::verifyRol($request,0) ) die('error auth:24 usuari '.print_r($_SESSION));
 	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
@@ -51,7 +51,8 @@ static public function generic_update(Request $request, Response $response, $par
 	$db->sql($sql);
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::update_idioma($params,$id,$json);
 	// en cas de guardar una partida, he de tornar els blocs
-	if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
+	// 1AGO, kike em diu q ja no cal
+	// if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
 	Generics::generic_id($request,$response,$params);
 	return;
 }
@@ -60,6 +61,7 @@ static public function generic_update(Request $request, Response $response, $par
 //  //  //  //  //  //  //  //
 // inserció genèrica de contingut
 public function generic_insert(Request $request, Response $response, $params) {
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	if ($params['tabla']=='usuari') {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
@@ -91,14 +93,16 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$id= $id[0]['id'];
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::insert_idioma($params,$id,$json);
 	$params['id']= $id;
-	// en cas de guardar una partida, he de tornar els blocs
-	if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
+	// en cas de guardar una partida, he de tornar els blocs :
+	// 1AGO, kike em diu q ja no cal
+	// if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
 	Generics::generic_id($request,$response,$params);
 }
 
 
 //  //  //  //  //  //  //  //
 public function generic_delete(Request $request, Response $response, $params) {
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	if ($params['tabla']=='usuari') {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);

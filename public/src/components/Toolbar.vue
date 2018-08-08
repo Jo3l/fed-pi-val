@@ -22,15 +22,16 @@
 	                    @close="$refs.localeSelector.closeDropdown()"
 	                ></ui-menu>
 	    	</ui-button>
-	    	
+
             <ui-icon-button
             	v-else
                 color="black"
                 icon="account_circle"
                 size="large"
                 type="secondary"
-                @click="goLogin()"
+                @click="$router.push({ path: `/login` })"
             ></ui-icon-button>
+            
             <ui-icon-button
             	has-dropdown
                 color="black"
@@ -49,6 +50,19 @@
 	                    @close="$refs.localeSelector.closeDropdown()"
 	                ></ui-menu>
             </ui-icon-button>
+            
+            <ui-icon-button
+            	class="cartBasket"
+                color="black"
+                icon="shopping_cart"
+                size="large"
+                type="secondary"
+                @click="$router.push({ path: `/`+$i18n.locale+`/`+$i18n.t('cart.basket').toLowerCase() })"
+            >
+            	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
+            </ui-icon-button>
+                        	
+            
             <ui-icon-button
                 color="black"
                 icon="search"
@@ -90,6 +104,7 @@
 
 <script>
 
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
 	name: 'Toolbar',
@@ -107,9 +122,6 @@ export default {
 	}
 	},
 	methods: {
-		goLogin: function() {
-			this.$router.push({ path: `/login` });
-		},
 		selectUserOptions:function(selected){
 			if(selected.action=='logout') this.logout();
 		},
@@ -174,22 +186,50 @@ export default {
 		});
 		
 	},
-    watch: {
-
-    }
+	computed: {
+	    ...mapGetters({
+	    	countCart: 'countCart',
+	    	carto: 'cart',
+	    	checkoutStatus: 'checkoutStatus',
+	    })
+	},
 }
 </script>
 
 <style lang="less">
 
+@import "../assets/less/defines.less";
+
 #toolbarContainer {
+	width:100%;
 	.menu {
 		a {
 			text-decoration: none;
 			color: #232323;
-		&:hover {text-decoration:underline;text-shadow:inherit;}
-		&:visited {color: #232323;}
+			&:hover {
+				text-decoration:none;
+				text-shadow:inherit;
+				border-bottom: 3px solid @fedcolor;
+			}
+			&:visited {color: #232323;}
+			&.router-link-active {
+				border-bottom: 3px solid @fedcolor;
+			}
 		}
+	}
+	.amount{
+	    position: absolute;
+	    left: 57%;
+	    top: -24%;
+	    z-index: 10;
+	    color: white;
+	    font-size: 11px;
+	    width: 15px;
+	    font-family: 'Yantramanav', monospace;
+	    line-height: 16px;
+	    height: 15px;
+	    border-radius: 50px;
+	    background-color: rgba(255, 0, 0, 0.5);
 	}
 }
 

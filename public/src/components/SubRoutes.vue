@@ -60,7 +60,6 @@
 			</div>
         </ui-modal>
   
-
   </div>
 
 </template>
@@ -74,6 +73,15 @@ export default {
 		draggable, 'node-content':Content
     },
   	props: ['propDisable'],
+	head : function() {
+		return {...this.$route.meta,
+	    	...{
+		    	title: {
+				  inner: this.breadCrumb.map(function(e){return e.name}).join(" -> ")
+				},
+		    }
+		}    
+	},
     data () {
       return {
       	newOrder: [],
@@ -91,7 +99,7 @@ export default {
       	currentPageId: '',
         newTree: {},
         refs: this.$refs,
-        breadCrumb: {},
+        breadCrumb: [],
         treeLevel: {},
         basePath: this.$route.path+'/',
         tree: [],
@@ -183,6 +191,8 @@ export default {
         .then(function (response) {
             vm.tree = [response.data];
             vm.updateBreadcrumb();
+            
+            vm.$emit('updateHead')
         })
         .catch(function (error) {
             console.log(error);

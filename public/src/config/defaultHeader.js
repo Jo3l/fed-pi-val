@@ -1,7 +1,6 @@
 export default {
 	title: {
-	  inner: 'It will be a pleasure',
-	  separator: '-'
+	  inner: 'Fedpival'
 	},
 	// Meta tags
 	meta: [

@@ -1,14 +1,39 @@
+import axios from '../../axios'
 
-const state = {
-  added: [],
-  checkoutStatus: null
-}
+const state = loadState();
+
+function loadState() {
+  try {
+    var serializedState = localStorage.getItem('fedpival_cart');
+    if (serializedState === null) {
+      return { added: [], checkoutStatus: null }
+    }
+    return JSON.parse(serializedState);
+  } catch (err) {
+    return undefined;
+  }
+};
+
+function saveState(state) {
+  try {
+    var serializedState = JSON.stringify(state);
+    localStorage.setItem('fedpival_cart', serializedState);
+  } catch (err) {
+    console.error('Error: ' + err);
+  }
+};
+
+
 
 // getters
 const getters = {
   checkoutStatus: function(state){return state.checkoutStatus},
   countCart: function(state) {
-		return state.added.length;
+  		var number=0;
+		state.added.forEach(function(element) {
+		  number+=element.quantity;
+		});
+		return number;
   },
   cart: function(state) {
   	return state.added;
@@ -25,24 +50,34 @@ const actions = {
 	
   addProductToCart ({ state, commit }, product) {
     commit('setCheckoutStatus', null)
-    if (product.inventory > 0) {
-      const cartItem = state.added.find(function(item) {return item.id === product.id})
+
+	console.log(product.stock);
+	
+    if (product.stock > 0) {
+    	
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
       if (!cartItem) {
-        commit('pushProductToCart', { id: product.id })
+        commit('pushProductToCart', { id: product.id, typeId: product.typeId });
+        saveState(state);
       } else {
-        commit('incrementItemQuantity', cartItem)
+        commit('incrementItemQuantity', cartItem);
+        saveState(state);
       }
-      // remove 1 item from stock
-      commit('decrementProductInventory', { id: product.id })
+      
+      
+      
     }
+    
+    console.log(state);
   }
 }
 
 // mutations
 const mutations = {
-  pushProductToCart (state, { id }) {
+  pushProductToCart (state, { id, typeId }) {
     state.added.push({
       id,
+      typeId,
       quantity: 1
     })
   },

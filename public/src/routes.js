@@ -2,35 +2,57 @@ import Vue from 'vue';
 import VueHead from 'vue-head'
 import Router from 'vue-router'
 
-import Login from './components/admin/Login.vue'
-import Start from './components/Start.vue'
-import News from './components/News.vue'
-import SingleNews from './components/SingleNews.vue'
-import Calendar from './components/Calendar.vue'
-import Cart from './components/Cart.vue'
+const Login = function(resolve) {require(['./components/admin/Login.vue'], resolve)}
+const PageNotFound = function(resolve) {require(['./components/PageNotFound.vue'], resolve)}
 
-import SubRoutes from './components/SubRoutes.vue'
-import PageNotFound from './components/PageNotFound.vue'
+const Start = function(resolve) {require(['./components/Start.vue'], resolve)}
+const News = function(resolve) {require(['./components/News.vue'], resolve)}
+const SingleNews = function(resolve) {require(['./components/SingleNews.vue'], resolve)}
+const Calendar = function(resolve) {require(['./components/Calendar.vue'], resolve)}
+const Cart = function(resolve) {require(['./components/Cart.vue'], resolve)}
+const Product = function(resolve) {require(['./components/shop/Product.vue'], resolve)}
 
-import Jugadors from './components/admin/Jugadors.vue'
-import Jugador from './components/admin/Jugador.vue'
-import Clubs from './components/admin/Clubs.vue'
-import Club from './components/admin/Club.vue'
-import Equip from './components/admin/Equip.vue'
+const SubRoutes = function(resolve) {require(['./components/SubRoutes.vue'], resolve)}
+
+const Jugadors = function(resolve) {require(['./components/admin/Jugadors.vue'], resolve)}
+const Jugador = function(resolve) {require(['./components/admin/Jugador.vue'], resolve)}
+const Clubs = function(resolve) {require(['./components/admin/Clubs.vue'], resolve)}
+const Club = function(resolve) {require(['./components/admin/Club.vue'], resolve)}
+const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resolve)}
+
+//import Login from './components/admin/Login.vue'
+//import Start from './components/Start.vue'
+
+//import News from './components/News.vue'
+//import SingleNews from './components/SingleNews.vue'
+//import Calendar from './components/Calendar.vue'
+
+//import Cart from './components/Cart.vue'
+//import Product from './components/Product.vue'
+
+//import SubRoutes from './components/SubRoutes.vue'
+
+//import PageNotFound from './components/PageNotFound.vue'
+
+//import Jugadors from './components/admin/Jugadors.vue'
+//import Jugador from './components/admin/Jugador.vue'
+//import Clubs from './components/admin/Clubs.vue'
+//import Club from './components/admin/Club.vue'
+//import Equip from './components/admin/Equip.vue'
+
+import Test from './components/Test.vue'
+import Trofeu from './components/Tournament.vue'
 
 import defaultHead from './config/defaultHeader'
 
 Vue.use(VueHead)
 Vue.use(Router)
 
-export default new Router({
-	mode: 'history',	
-	base: __dirname,
-    routes: [
+const routes = [
 	  {
 	    path: '/',
 	    component: Start,
-	    redirect: '/val/inici'
+	    redirect: '/val/inici',
 	  },
 	  {
 	    path: '/val',
@@ -47,147 +69,196 @@ export default new Router({
 	    name: 'Inici',
 	    component: Start,
 	    lang:'val',
-	    meta: Object.assign(defaultHead, {
-	    	title: {
-			  inner: 'Yeeeeessssss'
-			},
-	    }),
+	    meta: {...defaultHead,
+	    	...{
+		    	title: {
+				  inner: 'aço es l´inici'
+				},
+		    }
+	    }
 	  },
 	  {
 	    path: '/es/inicio',
 	    name: 'Inicio',
 	    component: Start,
-	    lang:'es'
+	    lang:'es', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/noticies',
 	    name: 'Noticies',
 	    component: News,
 	    lang:'val',
-	    redirect: '/val/noticies/0'
+	    redirect: '/val/noticies/0', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/noticias',
 	    name: 'Noticias',
 	    component: News,
 	    lang:'es',
-	    redirect: '/val/noticies/0'
+	    redirect: '/es/noticias/0', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/noticies/:page',
 	    name: 'NoticiesPagina',
 	    component: News,
-	    meta: Object.assign(defaultHead, {
-	    	title: {
-			  inner: 'Yeeeeessssss'
-			},
-	    })
+	    meta: {...defaultHead,
+		    ...{
+			    	title: {
+					  inner: 'Noticies'
+					},
+			    }
+		    }
 	  },
 	  {
 	    path: '/es/noticias/:page',
 	    name: 'NoticiasPagina',
-	    component: News,
+	    component: News, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/noticia',
 	    name: 'Nova Noticia',
-	    component: SingleNews,
+	    component: SingleNews, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/noticia',
 	    name: 'Nueva Noticia',
-	    component: SingleNews,
+	    component: SingleNews, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/noticia/:slug',
 	    name: 'Noticia',
-	    component: SingleNews,
+	    component: SingleNews, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/noticia/:slug',
 	    name: 'Noticia-es',
-	    component: SingleNews,
+	    component: SingleNews, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/calendari',
 	    name: 'Calendari',
 	    component: Calendar,
 	    lang:'val',
-		meta: Object.assign(defaultHead, {
-		    	title: {
-				  inner: 'Cal cal'
-				},
-		    }),
+	    meta: {...defaultHead,
+		    ...{
+			    	title: {
+					  inner: 'Calendari'
+					},
+			    }
+		    }
 		},
 	    {
 	    path: '/es/calendario',
 	    name: 'Calendario',
 	    component: Calendar,
-	    lang:'es'
+	    lang:'es', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/tenda',
 	    name: 'Tenda',
 	    component: Cart,
-	    lang:'val'
+	    lang:'val', 
+	    meta: defaultHead
 	  },
 	    {
 	    path: '/es/tienda',
 	    name: 'Tienda',
 	    component: Cart,
-	    lang:'es'
+	    lang:'es', 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/val/tenda/:slug*',
+	    name: 'Producte',
+	    component: Product, 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/es/tienda/:slug*',
+	    name: 'Producto',
+	    component: Product, 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/val/cistella',
+	    name: 'Cistella',
+	    component: Cart,
+	    meta: defaultHead
+	  },
+	    {
+	    path: '/es/carrito',
+	    name: 'Carrito',
+	    component: Cart,
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/competicions',
 	    props: {propDisable:'competicions'},
 	    name: 'Competicions',
 	    component: SubRoutes,
-	    lang:'val'
+	    lang:'val', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/competiciones',
 	    props: {propDisable:'competicions'},
 	    name: 'Competiciones',
 	    component: SubRoutes,
-	    lang:'es',
+	    lang:'es', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/federacio',
 	    props: {propDisable:'competicions'},
 	    name: 'Federació',
 	    component: SubRoutes,
-	    lang:'val'
+	    lang:'val', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/federacion',
 	    props: {propDisable:'competicions'},
 	    name: 'Federación',
 	    component: SubRoutes,
-	    lang:'es'
+	    lang:'es', 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/competicions/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Competicions node',
-	    component: SubRoutes,
+	    component: SubRoutes, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/competiciones/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Competiciones nodo',
-	    component: SubRoutes,
+	    component: SubRoutes, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/val/federacio/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Federació node',
-	    component: SubRoutes,
+	    component: SubRoutes, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/federacion/:slug*',
 	    props: {propDisable:'competicions'},
 	    name: 'Federación nodo',
-	    component: SubRoutes,
+	    component: SubRoutes, 
+	    meta: defaultHead
 	  },
 	  /*
 	  {
@@ -202,14 +273,22 @@ export default new Router({
 	  },
 	  */
 	  {
-	    path: '/forbidden',
-	    name: 'forbidden',
-	    component: Start
+	    path: '/test',
+	    name: 'test',
+	    component: Test, 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/trofeu',
+	    name: 'trofeu',
+	    component: Trofeu, 
+	    meta: defaultHead
 	  },
 	  {
 	    path: '/login',
 	    name: 'login',
-	    component: Login,
+	    component: Login, 
+	    meta: defaultHead
 	  },
 	    {
 	    path: '/admin/jugadors',
@@ -265,5 +344,20 @@ export default new Router({
 	    component: PageNotFound
 	  },
 	  { path: "*", redirect: '/404'}
-	]
+	];
+
+const router = new Router({
+	mode: 'history',	
+	base: __dirname,
+    routes
 });
+
+
+/*
+router.beforeEach( function(to, from, next) {
+	  console.log('router', to.meta)
+	  next()
+})
+*/
+
+export default router;

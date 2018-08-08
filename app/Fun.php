@@ -141,16 +141,16 @@ static public function generaPartides(Request $request, Response $response, $par
 	foreach($json as $jornada) {
 		foreach($jornada['enfrontaments'] as $partida)
 			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant)values(%d,%d,'%s',%d,%d);",
-				0,
-				0,
+				$request->getQueryParam('node'),
+				$request->getQueryParam('bloc'),
 				$jornada['data'],
 				$partida[0]['id'],	
 				$partida[1]['id']
 			);
 	}
-    echo $sql;
+    //echo $sql;
     $db= new db();
-	//$db->sql($sql);
+	$db->sql($sql);
 }
 
 //  //  //  //  //  //  //  //
@@ -245,10 +245,14 @@ static public function tables($elm, $for='select') {
 	        'partida'=>'partida',
 	        'partidas'=>'partida',
 	        'partides'=>'partida',
-	        'producte'=>'_producte_'.Fun::$idioma,
+	        'producte'=>'producte',
+	        'productes'=>'producte',
+	        'producto'=>'producte',
+	        'productos'=>'producte',
+	        /*'producte'=>'_producte_'.Fun::$idioma,
 	        'productes'=>'_producte_'.Fun::$idioma,
 	        'producto'=>'_producte_'.Fun::$idioma,
-	        'productos'=>'_producte_'.Fun::$idioma,
+	        'productos'=>'_producte_'.Fun::$idioma,*/
 	        'pertany'=>'(select e.id as equip,e.nom as nom, p.jugador as id from equip e,pertany p where p.equip=e.id) as data',
 	        'participa'=>'(select p.jugador as jugador, /*(select j.nom from jugador j where j.id=p.jugador) as nom,*/ p.equip as equip, p.partida as id from participa p) as data'
 	    ),

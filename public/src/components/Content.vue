@@ -26,7 +26,6 @@
 								<th>Visitant</th>
 								<th>Res. Visitant</th>
 								<th>Res. Local</th>
-								<th></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -37,10 +36,6 @@
 								<td>{{element.visitant.nom}}</td>
 								<td>{{element.resultatvisitant}}</td>
 								<td>{{element.resultatlocal}}</td>
-								<th>
-									<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>
-									<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>
-								</th>
 							</tr>
 						</tbody>
 					</table>
@@ -94,6 +89,9 @@
 					
 					<!-- Partida -->
 					<div class="partida" v-if="element.tipus == 'J'">
+						<div class="buttonContainer">
+							<ui-button color="red" icon="save" size="small" type="secondary" @click="generator=true">Generador Campionat/Copa</ui-button>
+						</div>
 						<table class="table results">
 							<thead>
 								<tr>
@@ -122,7 +120,7 @@
 								</tr>
 							</tbody>
 						</table>
-						<div class="form">
+						<div class="form" v-if="!generator">
 							 <h3>Nova Partida</h3>
 							 <label>Data
 							
@@ -185,7 +183,7 @@
 										</tr>
 									</thead>
 									<tbody>
-										<tr v-for="element in newGame.equipLocal">
+										<tr v-for="element in equipLocal">
 											<td>{{element.nom}} {{element.cognoms}}</td>
 											<td>{{element.poblacio}}</td>
 											<th>
@@ -204,7 +202,7 @@
 										</tr>
 									</thead>
 									<tbody>
-										<tr v-for="element in newGame.equipVisitant">
+										<tr v-for="element in equipVisitant">
 											<td>{{element.nom}} {{element.cognoms}}</td>
 											<td>{{element.poblacio}}</td>
 											<th>
@@ -225,7 +223,7 @@
 					                v-model="jugadorLocal"
 					                @query-change="onQueryChangePlayerLocal"
 					            ></ui-select>
-								<ui-fab color="primary" icon="add" size="small" @click="addLocal"></ui-fab>
+								<ui-fab color="primary" icon="add" size="small" @click="addPlayer(jugadorLocal, 'local')" v-if="jugadorLocal"></ui-fab>
 							</section>
 							<section>	
 								<ui-select
@@ -239,9 +237,20 @@
 					                v-model="jugadorVisitant"
 					                @query-change="onQueryChangePlayerVisitant"
 					            ></ui-select>
-					            <ui-fab color="primary" icon="add" size="small" @click="addVisitant"></ui-fab>
+					            <ui-fab color="primary" icon="add" size="small" @click="addPlayer(jugadorVisitant, 'visitant')" v-if="jugadorVisitant"></ui-fab>
 							</section>	
 				            </div>
+			
+							 <ui-textbox
+								v-if="newGame.selected"
+							    floating-label
+				                autocomplete="off"
+				                error="This field is required"
+				                label="Resultat local"
+								type="number"
+								:min="0"
+				                v-model="newGame.resultatlocal"
+				            ></ui-textbox>
 				            
 							 <ui-textbox
 								v-if="newGame.selected"
@@ -254,21 +263,14 @@
 				                v-model="newGame.resultatvisitant"
 				            ></ui-textbox>
 				            
-							 <ui-textbox
-								v-if="newGame.selected"
-							    floating-label
-				                autocomplete="off"
-				                error="This field is required"
-				                label="Resultat local"
-								type="number"
-								:min="0"
-				                v-model="newGame.resultatlocal"
-				            ></ui-textbox>
 							<div class="buttonContainer">
-								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Cancelar</ui-button>
 								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(newGame)">{{$i18n.t('node.save_game')}}</ui-button>
+								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Cancelar</ui-button>
 							</div>
 
+						</div>
+						<div class="form" v-if="generator">
+							<match-generator :nodeId="element.jerarquia" :blockId="element.id"></match-generator>
 						</div>
 					</div>
 					<!-- Partida -->
@@ -291,7 +293,7 @@
 					<!-- Arxiu -->
 					
 					
-					<!-- llistat -->
+					<!-- llistat -->jerarquia
 					<div class="buscador" v-if="listOn(element.tipus)">
 						<pre>{{element.tipus}}</pre>
 					</div>
@@ -320,10 +322,12 @@
         </ui-modal>
 
 <pre v-if="$store.getters.isAuthenticatedWithRole(0)">
-	
-	{{newGame}}
+newGame
+{{newGame}}
 		
-	{{nodeContent}}
+-------------------------------------
+nodeContent
+{{nodeContent}}
 	
 </pre>
 
@@ -339,12 +343,14 @@ import VuePellEditor from 'vue-pell-editor'
 import VuePellEditorConfig from '../config/pelleditor'
 import VueDatepickerLocal from 'vue-datepicker-local'
 import FileManager from './FileManager.vue'
+import MatchGenerator from './MatchGenerator.vue'
 
 export default {
-  	components: { draggable, VuePellEditor, VueDatepickerLocal, 'filemanager':FileManager },
+  	components: { draggable, VuePellEditor, VueDatepickerLocal, 'filemanager':FileManager, MatchGenerator },
   	props: ['nodeId', "disableBlock"],
 	data () {
 		return {
+			generator:false,
 			selected:{},
 			loading:false,
 			selectedCancel:'',
@@ -376,27 +382,74 @@ export default {
 			buscadorJugadorLocal:[],
 			buscadorJugadorVisitant:[],
 			jugadorLocal:'',
-			jugadorVisitant:''
+			jugadorVisitant:'',
+			equipLocal:[],
+			equipVisitant:[]
 			
 		}
 	},
 	methods: {
-		deletePlayer(element, source){
+		deletePlayer:function(player, source){
 			var vm = this;
+			var partida = vm.newGame;
+			
 			if(source=="local"){
-				vm.newGame.equipLocal.splice(vm.newGame.equipLocal.findIndex(function (obj) { return obj.id === element.id; }), 1)
+					vm.$http.delete('/participa/'+partida.id+'/'+player.id)
+			        .then(function (response) {
+			            vm.equipLocal = response.data.filter(function(obj){ return obj.equip === partida.local.id});
+			        })
+			        .catch(function (error) {
+			            console.log(error);
+			        });
 			}
 			if(source=="visitant"){
-				vm.newGame.equipVisitant.splice(vm.newGame.equipVisitant.findIndex(function (obj) { return obj.id === element.id; }), 1)
+					vm.$http.delete('/participa/'+partida.id+'/'+player.id)
+			        .then(function (response) {
+						vm.equipVisitant = response.data.filter(function(obj){ return obj.equip === partida.visitant.id});
+			        })
+			        .catch(function (error) {
+			            console.log(error);
+			        });
 			}
 		},
-		addVisitant: function() {
-			if(this.jugadorVisitant) this.newGame.equipVisitant.push(this.jugadorVisitant);
-			this.jugadorVisitant = '';
-		},
-		addLocal: function() {
-			if(this.jugadorLocal) this.newGame.equipLocal.push(this.jugadorLocal);
-			this.jugadorLocal = '';
+		addPlayer: function(player, destination){
+			var vm = this;
+			var partida = vm.newGame;
+			var jugador = {'equip':player.equip, 'nom':player.nom, 'cognoms':player.cognoms, 'id':player.id, 'poblacio':player.poblacio};
+			
+
+			if(destination=="local" && player){
+				
+				//vm.equipLocal.push(jugador);
+
+				player.equip = partida.local.id;
+				vm.$http.post('/participa/'+partida.id, player)
+		        .then(function (response) {
+		        	vm.equipLocal = response.data.filter(function(obj){ return obj.equip === partida.local.id});
+		        	vm.jugadorLocal = '';
+		        })
+		        .catch(function (error) {
+		            console.log(error);
+		        });
+
+			}
+			
+			if(destination=="visitant" && player){
+				
+				//vm.equipVisitant.push(player);
+
+				player.equip = partida.visitant.id;
+				vm.$http.post('/participa/'+partida.id, player)
+		        .then(function (response) {
+					vm.equipVisitant = response.data.filter(function(obj){ return obj.equip === partida.visitant.id});
+					vm.jugadorVisitant = '';
+		        })
+		        .catch(function (error) {
+		            console.log(error);
+		        });
+
+			}
+
 		},
 		onQueryChangePlayerLocal: function(query) {
             if (query.length < 3) {
@@ -484,22 +537,19 @@ export default {
 	        for(var i = 0; i < content.length; i++) {
 
 				if(content[i].tipus == 'J') {
-					vm.newGame = { data:new Date(), equipLocal:[], equipVisitant:[], lloc:'', local:'', visitant:'', resultatvisitant:'0', resultatlocal:'0', jerarquia:vm.nodeId, registreid: content[i].id};
+					vm.newGame = { 
+						data:new Date(),
+						lloc:'',
+						local:'',
+						visitant:'',
+						resultatvisitant:'0',
+						resultatlocal:'0',
+						jerarquia:vm.nodeId,
+						registreid: content[i].id};
 				}
 			}
 		},
-		delEmptyNodes:function(array) {
-		
-			var newArray = [];
-			for(var i = 0; i < array.length; i++) {
-				
-					if(array[i].tipus) {
-						newArray.push(array[i]);
-					}
-			}
-			
-			return newArray;
-		},
+
 		openModal:function(ref, object, cancel, tipo) {
 			this.$refs.upload.activate(tipo);
 			this.selectedCancel = cancel;
@@ -508,7 +558,7 @@ export default {
         },
         acceptModal:function(ref) {
         	console.log(this.selected.url);
-        	window.recoverFocus.focus(); //recuperem el focus definit al arxiu de config del pelleditor.
+        	if(window.recoverFocus) window.recoverFocus.focus(); //recuperem el focus definit al arxiu de config del pelleditor.
         	VuePellEditor.components.pell.exec('insertImage', this.selected.url);
         	this.selected={};
             this.$refs[ref].close();
@@ -536,59 +586,37 @@ export default {
 		editMatch: function(element) {
 			var vm=this;
 			
-			console.log(element);
-			
 			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
 			  element.selected=undefined;
 			});
 			
-			element.equipLocal=[];
-			element.equipVisitant=[];
+			vm.equipLocal=[];
+			vm.equipVisitant=[];
+			element.selected=true;
 			
-			/*
-			vm.$http.get('/node/'+vm.nodeId)
+			vm.$http.get('/participa/'+element.id, { cache: false })
 	        .then(function (response) {
 
-	            vm.nodeContent = vm.delEmptyNodes(response.data);
-	            vm.addNewGame(vm.nodeContent);
+
+	            vm.equipLocal = response.data.filter(function(obj){ return obj.equip === element.local.id});
+	            vm.equipVisitant = response.data.filter(function(obj){ return obj.equip === element.visitant.id});
 				
+				vm.newGame = element;
+				vm.newGame.data = vm.parseTime(element.data);
+			
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-	        */
-	        
-			element.selected=true;
-			vm.newGame = element;
-			vm.newGame.data = vm.parseTime(element.data);
-
-		},
-		deleteMatch: function(element) {
-			var vm = this;
-
-		//aço es tonteria fer-ho aci, pero mentres...
-		/*
-			for(var i = 0; i < vm.nodeContent.length; i++) {
-			    if(vm.nodeContent[i].id == element.blocId) {
-			    	for(var o = 0; o < vm.nodeContent[i].partides.length; o++) {
-			    		if(vm.nodeContent[i].partides[o].id == element.id) {
-					        vm.nodeContent[i].partides.splice(o, 1);
-					        break;
-			    		}
-			    	}
-			    }
-			}
-		*/
-		
 		},
 		getNode: function(){
 			
 	        var vm = this;
 	        
-	    	vm.$http.get('/node/'+vm.nodeId)
+	    	vm.$http.get('/node/'+vm.nodeId, { cache: false })
 	        .then(function (response) {
 
-	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	            vm.nodeContent = response.data;
 	            vm.addNewGame(vm.nodeContent);
 				
 	        })
@@ -622,7 +650,7 @@ export default {
 	        var vm = this;
 	        //var url = objSearch.valor ? listName+'/search/'+objSearch.camp+'/'+objSearch.valor : listName;
 	        
-	        vm.$http.get(listName)
+	        vm.$http.get(listName, { cache: false })
 	        .then(function (response) {
 	            vm.searchList = response.data;
 	        })
@@ -633,9 +661,13 @@ export default {
 		resetMatch: function() {
 			var vm = this;
 			
-			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
-			  element.selected=undefined;
-			});
+			var blockPartida = vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; });
+
+			if(blockPartida.partides!=null) {
+				blockPartida.partides.forEach(function(element) {
+				  element.selected=undefined;
+				});
+			}
 			
 			vm.addNewGame(vm.nodeContent);
 
@@ -653,7 +685,7 @@ export default {
 	        vm.$http.post('/node/'+vm.nodeId, block)
 	        .then(function (response) {
 	        	
-	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	            vm.nodeContent = response.data;
 	            vm.addNewGame(vm.nodeContent);
 	
 	        })
@@ -665,27 +697,49 @@ export default {
 		saveMatch: function(){
 			var vm = this;
 			
+			var blockPartida = vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; });
+			if(blockPartida.partides == null) blockPartida.partides = [];
+			
+
 			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
 				element.selected = undefined;
 			});
 			
+
 			vm.newGame.data = vm.newGame.data.toString('yyyyMMddHHmmss');
 			vm.newGame.selected = undefined;
-
 			
-	        for(var i = 0; i < vm.nodeContent.length; i++) {
-				if(vm.nodeContent[i].tipus == 'J') {
-			        vm.$http.post('/partida/'+ vm.newGame.id || '', vm.newGame)
-			        .then(function (response) {
-			            vm.nodeContent = response.data;
-						vm.addNewGame(vm.nodeContent);
-			        })
-			        .catch(function (error) {
-			            console.log(error);
-			        });
-				}
-			}
+			
+			vm.$http.post('/partida/'+ (vm.newGame.id ? vm.newGame.id :''), vm.newGame)
+	        .then(function (response) {
+
+	            vm.getNode();
+        		vm.setOrder(true);
+        		
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+			
+			
 			vm.resetMatch(vm.newGame);
+		},
+		deleteMatch: function(element) {
+
+			var vm=this;
+
+			vm.$http.delete('/partida/'+element.id)
+	        .then(function (response) {
+	            
+	            vm.getNode();
+        		vm.setOrder(true);
+	            
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+	        
 		},
 		removeContent: function(element) {
 
@@ -693,7 +747,7 @@ export default {
 
 			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
 	        .then(function (response) {
-	            vm.nodeContent = vm.delEmptyNodes(response.data);
+	            vm.nodeContent = response.data;
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -716,7 +770,7 @@ export default {
 				vm.$http.post('/node/'+vm.nodeId+'/ordre', vm.newOrder)
 		        .then(function (response) {
 		        	
-		            vm.nodeContent = vm.delEmptyNodes(response.data);
+		            vm.nodeContent = response.data;
 		
 		        })
 		        .catch(function (error) {
@@ -762,6 +816,14 @@ export default {
 
 			}
 			return false;
+	    },
+	    generatore: function(){
+	    	var vm = this;
+	    	vm.generator = !vm.generator;
+	    	
+	    	vm.getNode();
+        	vm.setOrder(true);
+        	
 	    }
 		
 	},
@@ -805,6 +867,12 @@ export default {
 			return false;
 	    }
 	    
+	},
+	created() {
+    	this.$eventHub.$on('generator-bool', this.generatore);
+	},
+	beforeDestroy() {
+	    this.$eventHub.$off('generator-bool');
 	}
 }
 </script>
@@ -813,56 +881,6 @@ export default {
 <style lang="less">
 
 @import "../assets/less/defines.less";
-
-.ui-button--type-primary.ui-button--color-fedpival {
-    background-color: @fedcolor;
-    color:white;
-}
-
-.ui-modal--size-largeSquare {
-	.ui-modal__container{
-    	width: 90%;
-        @media(max-width:@screenTablet) {
-    		height: 100%;
-    		width: 100%;
-		}
-	}
-}
-.ui-select__display {
-    border-bottom-color: rgb(204, 204, 204);
-    border-bottom-style: dashed;
-}
-
-.buttonContainer {
-	text-align: right;
-	display: block;
-    margin-left: auto;
-    margin-right: 0;
-    margin-top:10px;
-}
-.ui-button--color-blueButtonToRight {
-	color:#87212e;
-    margin-left: auto;
-    display: block;
-    margin-top: 10px;
-}
-
-.ui-button--color-customBlueRight{
-	background-color:#117edd;
-	color:white;
-	display: block;
-    margin-left: auto;
-    margin-right: 0;
-}
-
-.ui-select{margin-top:10px;}
-
-.is-invalid {
-	.ui-textbox__label-text {
-		color:#f44336!important;
-	}
-}
-
 
 .partida{
 	width:100%;

@@ -14,9 +14,9 @@
 			</div>
 			
 			
-		  <carousel :perPageCustom="[[0, 1],[480, 2],[768, 3],[992, 4], [1200, 5]]" :minSwipeDistance=30 :navigationEnabled="true" :paginationPadding=5 paginationActiveColor="#87212e" paginationColor="#e28b96" class="products">
+		  <swiper :options="swiperOption" class="products">
 	
-		  	<slide v-for="product,i in products">
+		  	<swiper-slide v-for="product,i in products">
 			    <div class="item" >
 			    	<div class="itemContainer">
 				    	<img :src="'//zupra.github.io/t-shirt_shop/img/test-2/'+product.id+'.png'"/>
@@ -39,8 +39,14 @@
 
 			    	</div>
 			    </div>
-		  	</slide>
-		  </carousel>
+		  	</swiper-slide>
+		  	
+	  	    <div class="swiper-pagination curt" slot="pagination"></div>
+	  		<ui-icon-button icon="chevron_left" type="primary" class="swiper-button-prev curt" slot="button-prev"></ui-icon-button>
+			<ui-icon-button icon="chevron_right" type="primary" class="swiper-button-next curt" slot="button-next"></ui-icon-button>
+
+		    
+		  </swiper>
 		</div>
 		
 		<div class="shop full" v-else="v-else">
@@ -83,20 +89,52 @@
 
 <script>
 
-import { Carousel, Slide } from 'vue-carousel';
+import 'swiper/dist/css/swiper.css'
+import { swiper, swiperSlide } from 'vue-awesome-swiper'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'Cart',
-  components: { 'carousel': Carousel, 'slide': Slide},
+  components: { swiper, swiperSlide },
   props: {
         type: {
             type: String,
             default: 'fullPage'
         }
   },
+  head : function() {
+	return this.$route.meta;
+  },
   data () {
     return {
+	    swiperOption: {
+	        slidesPerView: 4,
+	        slidesPerColumn: 1,
+	        spaceBetween: 0,
+	        navigation: {
+	          nextEl: '.swiper-button-next.curt',
+	          prevEl: '.swiper-button-prev.curt'
+	        },
+	        pagination: {
+	          el: '.swiper-pagination.curt',
+	          type: 'bullets',
+	          clickable: true
+	        },
+	        breakpoints: {
+	          768: {
+	            slidesPerView: 3,
+	            spaceBetween: 10
+	          },
+	          480: {
+	            slidesPerView: 2,
+	            spaceBetween: 10
+	          },
+	          320: {
+	            slidesPerView: 1,
+	            spaceBetween: 10
+	          }
+	        }
+	    },
 	    products: [{
 	      id: 1,
 	      name: "black",

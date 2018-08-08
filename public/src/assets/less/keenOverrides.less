@@ -55,7 +55,7 @@
 }
 
 .calendar-date:hover, .calendar-date-on {
-    background: rgba(135,33,45,.1);;
+    background: rgba(135,33,45,.1);
 }
 
 .ui-icon {
@@ -71,5 +71,93 @@
 }	
 
 .ui-fab--color-primary {
+    background-color: @fedcolor!important;
+}
+
+.swiper-pagination-fraction, .swiper-pagination-custom, .swiper-container-horizontal > .swiper-pagination-bullets {
+    bottom: 0px!important;
+}
+
+.swiper-pagination-bullet-active {
+    opacity: 1;
+    background: @fedcolor!important;
+}
+
+.swiper-button-next, .swiper-container-rtl .swiper-button-prev {
+	right: 15px!important;
+	background:initial!important;
+	background-color:rgba(238,238,238,0.42)!important;
+}
+
+.swiper-button-prev, .swiper-container-rtl .swiper-button-next{
+	left:15px!important;
+	background:initial!important;
+	background-color:rgba(238,238,238,0.42)!important;
+}
+
+.swiper-button-prev, .swiper-button-next {
+	width: 36px!important;
+	height: 36px!important;
+}
+
+.swiper-container {
+    padding-bottom: 15px!important;
+}
+
+.newsCarousel{
+	.swiper-button-prev, .swiper-button-next {
+		top: 35%!important;
+		@media(max-width:640px){
+			display:none!important;
+		}
+	}
+}
+
+.ui-button--type-primary.ui-button--color-fedpival {
     background-color: @fedcolor;
+    color:white;
+}
+
+.ui-modal--size-largeSquare {
+	.ui-modal__container{
+    	width: 90%;
+        @media(max-width:@screenTablet) {
+    		height: 100%;
+    		width: 100%;
+		}
+	}
+}
+.ui-select__display {
+    border-bottom-color: rgb(204, 204, 204);
+    border-bottom-style: dashed;
+}
+
+.buttonContainer {
+	text-align: right;
+	display: block;
+    margin-left: auto;
+    margin-right: 0;
+    margin-top:10px;
+}
+.ui-button--color-blueButtonToRight {
+	color:#87212e;
+    margin-left: auto;
+    display: block;
+    margin-top: 10px;
+}
+
+.ui-button--color-customBlueRight{
+	background-color:#117edd;
+	color:white;
+	display: block;
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.ui-select{margin-top:10px;}
+
+.is-invalid {
+	.ui-textbox__label-text {
+		color:#f44336!important;
+	}
 }

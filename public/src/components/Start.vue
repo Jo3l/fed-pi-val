@@ -42,6 +42,9 @@ export default {
 
     }
   },
+  head : function() {
+	return this.$route.meta;
+  },
   methods: {
   	stringDate: function(dateStr) {
   		return dateStr.substr(6,2)+'/'+dateStr.substr(4,2)+'/'+dateStr.substr(0,4);
@@ -54,7 +57,7 @@ export default {
 
   },
   mounted: function () {
-
+	
   },
   watch: {
 

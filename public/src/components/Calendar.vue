@@ -140,7 +140,7 @@ export default {
             default: 'fullPage'
         }
 	},
-	'data': function(){ 
+	data: function(){ 
 		return {
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
 			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
@@ -158,7 +158,10 @@ export default {
 
 		}
 	},
-	'computed': {
+	head : function() {
+		return this.$route.meta;
+	},
+	computed: {
 		dayLabelsFixed: function() {
 			if(this.mondayFirst) {
 				var b = this.dayLabels.shift();
@@ -177,7 +180,7 @@ export default {
 				destacada:"0",
 				categoria:"acte",
 				tags:"",
-				publicacio:Date.parse(this.selected.year+'/'+this.selected.month+'/'+this.selected.day).toString('yyyyMMddHHmmss'),
+				publicacio:Date.parse(this.selected.year+'/'+(this.selected.month+1)+'/'+this.selected.day).toString('yyyyMMddHHmmss'),
 				titol:"",
 				contingut:"",
 				
@@ -212,7 +215,13 @@ export default {
 	        .then(function (response) {
 	        	
 				//no cal fer res.
-	
+				vm.todayEvent= [];
+				vm.selected= {
+					day : false,
+					month : false,
+					year : false
+				}
+
 	        })
 	        .catch(function (error) {
 	            console.log(error);

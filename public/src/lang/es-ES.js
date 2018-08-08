@@ -15,7 +15,8 @@ export default {
 		addToBasket : 'Añadir al carrito',
 		basket : 'Carrito',
 		online_shop : 'Tienda Online',
-		added : 'Añadido'
+		added : 'Añadido',
+		itemNotAvailable: 'Modelo no disponible'
 	},
 	common : {
 		label: 'Español',
