@@ -43,10 +43,6 @@
                
 	                    <div class="swatch">
 	                      <div class="header">Color</div>
-	                      <!--
-	                      <div :class="'swatch-element color '+ soldout(selectProduct(product, sizeSelected, color.split('|')[0] ))" v-for="(color,index) in getColors(product)"
-	                      @click="toSlide(findIndexByImgtag(product.images, colorSelected))">
-	                      -->
 	                     <div class="swatch-element color" v-for="(color,index) in getColors(product)"
 	                      @click="toSlide(findIndexByImgtag(product.images, colorSelected))">
 	                        <div class="tooltip">{{color.split('|')[0]}}</div>
@@ -70,18 +66,10 @@
 			</div>
 
             <div class="productData">
-				<ui-tabs fullwidth class="infos">
+            	
+				<ui-tabs class="infos">
 	                <ui-tab title="Descripción del producto" v-html="product.content[$i18n.locale].description"></ui-tab>
-	
 	                <ui-tab title="Datos técnicos" v-html="product.content[$i18n.locale].details"></ui-tab>
-	
-	                <ui-tab title="Comentarios">
-	                    Sin comentarios
-	                </ui-tab>
-	
-	                <ui-tab title="Mas información">
-	                    ...
-	                </ui-tab>
 	            </ui-tabs>
 	            
 		        <em class="social">
@@ -106,9 +94,6 @@
 					></vue-goodshare-telegram>
 				</em>
 	        </div>   
-	        {{productSelected}}
-	        {{sizeSelected}} 
-	        {{colorSelected}}
 		</div>
 
     </transition>
@@ -161,46 +146,38 @@ export default {
           touchRatio: 0.2,
           loop: true,
           loopedSlides: 5, //looped slides should be the same
-          slideToClickedSlide: true,
+          slideToClickedSlide: true
         },
 	    product: {
 	    	'id':1,
+	    	'destacado':null,
 	    	'images': [
 	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/product_large.png'},
 	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko1_large.jpg'},
 	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko2_large.jpg'},
 	    		{'tag':'green', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko3_large.jpg'},
-	    		{'tag':'blue', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko4_large.jpg'},
+	    		{'tag':'blue', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko4_large.jpg'}
 	    	],
 	    	'imagesThumb': [
 	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/product_150x150.png'},
 	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko1_150x150.jpg'},
 	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko2_150x150.jpg'},
 	    		{'tag':'green', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko3_150x150.jpg'},
-	    		{'tag':'blue', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko4_150x150.jpg'},
+	    		{'tag':'blue', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko4_150x150.jpg'}
 	    	],
-	    	'description': {
-				'iban':'3452352345234',
-				'size':'20mm X 30m',
-				'model':'OAX32432',
-	    	},
 	    	'content': {
 	    		'es': {
 	    			'slug':'pelota',
-					'iban':'3452352345234',
-					'name':'descripcion del producto',
-					'size':'20mm X 30m',
-					'model':'OAX32432',
-					'autor':'perico palotes',
+					'name':'descripcion del producto de calidad',
 					'description':'<ul><li><span> Este Kit de herramientas sirve especialmente para los productos modernos de Nintendo y muchos otros dispositivos de juegos. Brocas duraderas y pr\u00E1cticas que hacen tu trabajo m\u00E1s eficientemente. Destornilladores Nintendo con puntas \"Y\" y PZ1 para puertos de 2,0 mm, apto para el sistema Nintendo Switch.<\/span><\/li><li><span> Destornillador triwing de 1,5mm: Nintendo Switch Console. Destornillador triwing de 2,0mm: Nintendo Switch Joy-Con, NS, Wii, NDS, NDSL, DS Lite, GBA, GameBoy Original. Acero mejorado, duradero, fuerte y con tratamiento t\u00E9rmico para una fuerza m\u00E1xima.<\/span><\/li><li><span> El destornillador 3,8mm abre los cartuchos de juegos de la Nintendo Original (NES), Super Nintendo (SNES), Nintendo 64 (N64), Virtual Boy, Game Boy Original, Game Boy Color y Sega Game Gear.<\/span><\/li><li><span> El destornillador 4,5mm abre los cartuchos de juego de la Master System de Sega, Genesis System de Sega, 32x System de Sega; sistema para Super Nintendo, Nintendo 64, Game Cube, Virtual Boy, Game Gear, TurboGrafx 16, TurboDuo.<\/span><\/li><li><span> Ventosa Adicional y Cepillo de Limpieza: Limpia y retira la tapa del cartucho f\u00E1cilmente y con m\u00E1s seguridad.<\/span><\/li><\/ul>',
 					'details':'<ul><li><b>Tapa blanda:<\/b> 200 p\u00E1ginas<\/li><li><b>Editor:<\/b> Ivrea (8 de marzo de 2018)<\/li><li><b>Idioma:<\/b> Espa\u00F1ol<\/li><li><b>ISBN-10:<\/b> 8417356177<\/li><li><b>ISBN-13:<\/b> 978-8417356170<\/li> <li><b>Valoraci\u00F3n media de los clientes:<\/b> <\/li><li id=\"SalesRank\"><b>Clasificaci\u00F3n en los m\u00E1s vendidos de Amazon:<\/b> n\u00BA21.422 en Libros (<a href=\"https:\/\/www.amazon.es\/gp\/bestsellers\/books\/ref=pd_dp_ts_books_1\">Ver el Top 100 en Libros<\/a>) <\/li> <\/ul>',
 					'deliveryOptions': [
 						"Envio en 2 semanas",
-						"Recogida en nuestra sede",
+						"Recogida en nuestra sede"
 						],
 					'typeComments': [
 						{
-						'id':1,
+						'id':0,
 						'description':'El color Azul mola en S'
 						},
 						{
@@ -231,16 +208,12 @@ export default {
 	    		},
 	    		'val': {
 	    			'slug':'pilota',
-					'iban':'3452352345234',
-					'name':'descripcion del producto',
-					'size':'20mm X 30m',
-					'model':'OAX32432',
-					'autor':'perico palotes',
+					'name':'descripció del producte de qualitat',
 					'description':'<ul><li><span> Este Kit de herramientas sirve especialmente para los productos modernos de Nintendo y muchos otros dispositivos de juegos. Brocas duraderas y pr\u00E1cticas que hacen tu trabajo m\u00E1s eficientemente. Destornilladores Nintendo con puntas \"Y\" y PZ1 para puertos de 2,0 mm, apto para el sistema Nintendo Switch.<\/span><\/li><li><span> Destornillador triwing de 1,5mm: Nintendo Switch Console. Destornillador triwing de 2,0mm: Nintendo Switch Joy-Con, NS, Wii, NDS, NDSL, DS Lite, GBA, GameBoy Original. Acero mejorado, duradero, fuerte y con tratamiento t\u00E9rmico para una fuerza m\u00E1xima.<\/span><\/li><li><span> El destornillador 3,8mm abre los cartuchos de juegos de la Nintendo Original (NES), Super Nintendo (SNES), Nintendo 64 (N64), Virtual Boy, Game Boy Original, Game Boy Color y Sega Game Gear.<\/span><\/li><li><span> El destornillador 4,5mm abre los cartuchos de juego de la Master System de Sega, Genesis System de Sega, 32x System de Sega; sistema para Super Nintendo, Nintendo 64, Game Cube, Virtual Boy, Game Gear, TurboGrafx 16, TurboDuo.<\/span><\/li><li><span> Ventosa Adicional y Cepillo de Limpieza: Limpia y retira la tapa del cartucho f\u00E1cilmente y con m\u00E1s seguridad.<\/span><\/li><\/ul>',
 					'details':'<ul><li><b>Tapa blanda:<\/b> 200 p\u00E1ginas<\/li><li><b>Editor:<\/b> Ivrea (8 de marzo de 2018)<\/li><li><b>Idioma:<\/b> Espa\u00F1ol<\/li><li><b>ISBN-10:<\/b> 8417356177<\/li><li><b>ISBN-13:<\/b> 978-8417356170<\/li> <li><b>Valoraci\u00F3n media de los clientes:<\/b> <\/li><li id=\"SalesRank\"><b>Clasificaci\u00F3n en los m\u00E1s vendidos de Amazon:<\/b> n\u00BA21.422 en Libros (<a href=\"https:\/\/www.amazon.es\/gp\/bestsellers\/books\/ref=pd_dp_ts_books_1\">Ver el Top 100 en Libros<\/a>) <\/li> <\/ul>',
 					'deliveryOptions': [
 						"Enviament en 2 setmanes",
-						"Recollida a la sede",
+						"Recollida a la seu"
 						],
 					'typeComments': [
 						{
@@ -276,14 +249,12 @@ export default {
 	    	},
 	        'shipping': {
 	            'pickupPossible' : true,
-	            'amount' : 1.99,
+	            'amount' : 1.99
 	        },
 	        'types':[
 					{
-						'id':1,
 						'typeId':0,
 						'imgTag':'blue',
-						'stock':10,
 						'color': '#0000ff',
 						'size':'S',
 						'price':{
@@ -292,10 +263,8 @@ export default {
 				    	}
 					},
 					{
-						'id':1,
 						'typeId':1,
 						'imgTag':'red',
-						'stock':10,
 						'color': '#ff0000',
 						'size':'XXL',
 						'price':{
@@ -304,10 +273,8 @@ export default {
 				    	}
 					},
 					{
-						'id':1,
 						'typeId':2,
 						'imgTag':'green',
-						'stock':0,
 						'color': '#00ff1e',
 						'size':'XXL',
 						'price':{
@@ -316,7 +283,6 @@ export default {
 				    	}
 					},
 					{
-						'id':1,
 						'typeId':3,
 						'imgTag':'red',
 						'stock':10,
@@ -328,7 +294,6 @@ export default {
 				    	}
 					},
 					{
-						'id':1,
 						'typeId':4,
 						'imgTag':'green',
 						'stock':1,
@@ -340,10 +305,8 @@ export default {
 				    	}
 					},
 					{
-						'id':1,
 						'typeId':5,
 						'imgTag':'red',
-						'stock':10,
 						'color': '#ff0000',
 						'size':'L',
 						'price':{
@@ -352,10 +315,8 @@ export default {
 				    	}
 					},
 					{
-						'id':1,
 						'typeId':6,
 						'imgTag':'green',
-						'stock':1,
 						'color': '#00ff1e',
 						'size':'L',
 						'price':{
@@ -436,16 +397,20 @@ export default {
   },
   watch: {
   	countCart: function(){
+  		
   		var vm=this;
-  		vm.cartCss = vm.cartAnimation('.swipe');
-  		setTimeout(function(){ 
-  			document.querySelector('.addProductAnimation').classList.add("animated");
-  			vm.cartCss = vm.cartAnimation('.amount');
+  		if(!document.querySelector('.shopping-cart')) {
+	  		vm.cartCss = vm.cartAnimation('.swipe');
 	  		setTimeout(function(){ 
-	  			document.querySelector('.addProductAnimation').classList.remove("animated");
-	  			vm.cartCss = vm.cartAnimation('.swipe');
-	  		}, 1000);
-  		}, 10);
+	  			document.querySelector('.addProductAnimation').classList.add("animated");
+	  			vm.cartCss = vm.cartAnimation('.amount');
+		  		setTimeout(function(){ 
+		  			document.querySelector('.addProductAnimation').classList.remove("animated");
+		  			vm.cartCss = vm.cartAnimation('.swipe');
+		  		}, 1000);
+	  		}, 10);
+  		}
+
   	},
   	colorSelected: function(){
   		var vm=this;
@@ -469,6 +434,8 @@ export default {
 		  }
 		});
 		
+		if(vm.product && vm.productSelected)vm.productSelected.fullProduct = JSON.parse( JSON.stringify( vm.product ) );
+		
 	  	if(desc){
 	  		vm.shortDescription = desc;
 	  	} else {
@@ -478,7 +445,8 @@ export default {
   },
 	computed: {
 		...mapGetters({
-			countCart: 'countCart'
+			countCart: 'countCart',
+			checkoutStatus: 'checkoutStatus',
 		}),
 	},
 	mounted: function() {

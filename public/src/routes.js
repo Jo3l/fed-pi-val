@@ -20,6 +20,11 @@ const Clubs = function(resolve) {require(['./components/admin/Clubs.vue'], resol
 const Club = function(resolve) {require(['./components/admin/Club.vue'], resolve)}
 const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resolve)}
 
+const Productes = function(resolve) {require(['./components/admin/Products.vue'], resolve)}
+
+
+//const Producte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
+
 //import Login from './components/admin/Login.vue'
 //import Start from './components/Start.vue'
 
@@ -40,7 +45,10 @@ const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resol
 //import Club from './components/admin/Club.vue'
 //import Equip from './components/admin/Equip.vue'
 
+
+
 import Test from './components/Test.vue'
+import productEditor from './components/admin/editor.vue'
 import Trofeu from './components/Tournament.vue'
 
 import defaultHead from './config/defaultHeader'
@@ -279,6 +287,12 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
+	    path: '/admin/editor',
+	    name: 'editor',
+	    component: productEditor, 
+	    role: 0	    
+	  },
+	  {
 	    path: '/trofeu',
 	    name: 'trofeu',
 	    component: Trofeu, 
@@ -336,6 +350,12 @@ const routes = [
 	    path: '/admin/clubs',
 	    name: 'Clubs',
 	    component: Clubs,
+	    role: 0
+	  },
+	    {
+	    path: '/admin/productes',
+	    name: 'Productes',
+	    component: Productes,
 	    role: 0
 	  },
 	  {

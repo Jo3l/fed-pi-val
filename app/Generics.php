@@ -123,13 +123,13 @@ static public function generic_query(Request $request, Response $response, $para
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
 	}
-	$options= array( 'limit'=>Fun::$itemsPerPage );
-	$options= array_merge(Generics::procesaparam($params['p1'],$options));
-	$options= array_merge(Generics::procesaparam($params['p2'],$options));
-	$options= array_merge(Generics::procesaparam($params['p3'],$options));
-	$options= array_merge(Generics::procesaparam($params['p4'],$options));
-    $db = new db();
     $tabla= Fun::tables($params['tabla'],'select');
+	$options= array( 'limit'=>Fun::$itemsPerPage );
+	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
+    $db = new db();
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
@@ -143,7 +143,12 @@ static public function generic_query(Request $request, Response $response, $para
 				if (empty($options['id']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
 			}
 		}
-	}    
+	}
+	if ($tabla=='producte') {
+		$a= $data[0]['json']; 
+		$a= json_decode($a,true); 
+		$data[0]['json']= $a;
+	}
     Fun::render($data);
 }
 
@@ -162,6 +167,12 @@ static public function generic_id(Request $request, Response $response, $params)
     $sql= "SELECT * FROM ".$tabla." where id=".$params['id'];
     $db->sql($sql);
     $data = $db->all();
+	if ($tabla=='producte') {
+		$a= $data[0]['json']; 
+		$a= json_decode($a,true); 
+		$data[0]['json']= $a;
+	}
+	header('Content-Type: application/json, charset=utf-8');
     echo json_encode($data);
     return $params;
 }
@@ -177,15 +188,21 @@ static public function generic_search(Request $request, Response $response, $par
 	$options= array();
 	if (isset($params['p'])) $options['limit']= ($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $options['order']= str_replace('-',' desc',$params['o']);
-    $db = new db();
+	if (isset($params['i'])) $options['idioma']= $params['i'];
     $tabla= Fun::tables($params['tabla'],'select');
-	$db->sql("SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$tabla."' and data_type='varchar';");
+	$options= array( );
+	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
+    $db = new db();
+	$db->sql("SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$tabla."' and data_type in ('varchar','text','mediumtext');");
 	$que= $db->all();
 	$ques= array();
 	foreach( $que as $elm ) { array_push( $ques, $elm['column_name']." like '%".$params['que']."%' " ); }
 	$sql= "select * from ".$tabla." where ".implode( $ques, ' OR ');
     if (isset($options['order'])) $sql.= " order by ".$options['order'];
     if (isset($options['limit'])) $sql.= " limit ".$options['limit'];
+    //echo $sql;exit;
 	$db->sql($sql);
 	$data= $db->all();
 	if ($params['tabla']=='jugador') {
@@ -294,7 +311,7 @@ static private function getFields($tabla) {
 }
 
 //  //  //  //  //  //  //  //
-static private function procesaparam($str,$options) {
+static private function procesaparam($str,$options,$tabla) {
 	$str= explode('/',$str);
 	if (!isset($options['wheres'])) $options['wheres']= array();
 	switch($str[1]) {
@@ -308,7 +325,10 @@ static private function procesaparam($str,$options) {
 			break;
 		case 't':
 			if (empty($options['wheres'])) $options['wheres']= array('1=1');
-		    array_push( $options['wheres'], "instr('".$str[2]."',tags)>=0" );
+			if ($tabla!='producte')
+		    	array_push( $options['wheres'], "instr('".$str[2]."',tags)>=0" );
+		    else
+		    	array_push ($options['wheres'], "(json_extract(json,'$.content.slug.es')='".$str[2]."' OR json_extract(json,'$.content.slug.val')='".$str[2]."') " );
 			break;
 		case 'i':
 		    Fun::$idioma= $str[2];
@@ -336,13 +356,13 @@ static private function procesaparam($str,$options) {
 
 //  //  //  //  //  //  //  //
 static public function date_query(Request $request, Response $response, $params) {
-	$options= array( 'limit'=>Fun::$itemsPerPage);
-	$options= array_merge(Generics::procesaparam($params['p1'],$options));
-	$options= array_merge(Generics::procesaparam($params['p2'],$options));
-	$options= array_merge(Generics::procesaparam($params['p3'],$options));
-	$options= array_merge(Generics::procesaparam($params['p4'],$options));
-    $db = new db();
     $tabla= Fun::tables('acte','select');
+	$options= array( 'limit'=>Fun::$itemsPerPage);
+	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
+	$options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
+    $db = new db();
     $sql= "SELECT * FROM ".$tabla;
 	array_push( $option['wheres'], "tipus='A'" );
 	$mes= $params['mes'];

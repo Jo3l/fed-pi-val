@@ -39,6 +39,7 @@
     "vue-pell-editor": "0.0.11",
     "vue-progressive-image": "^2.4.2",
     "vue-router": "^2.5.3",
+    "vue-upload-image": "^1.1.0",
     "vuedraggable": "^2.15.0",
     "vuejs-paginate": "^1.6.0",
     "vuex": "^3.0.1"

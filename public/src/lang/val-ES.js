@@ -12,11 +12,14 @@ export default {
         secondTip: 'Sel·lecciona segon',
 	},
 	cart : {
+		shop: 'tenda',
 		addToBasket : 'Afegir a la cistella',
-		basket : 'Cistella',
+		basket : 'cistella',
 		online_shop : 'Tenda Online',
 		added : 'Afegit',
-		itemNotAvailable: 'Model no disponible'
+		itemNotAvailable: 'Model no disponible',
+		quantity: 'quantitat',
+		emptyCart:'La cistella esta buida.'
 	},
 	common : {
 		label: 'Valencià',

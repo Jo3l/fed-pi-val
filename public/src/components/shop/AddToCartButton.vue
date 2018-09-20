@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
 					<div class="addToCart">
-						<ui-button icon="shopping_cart" color="fedpival" @click="addToCart" :disabled="!productSelected || productSelected.stock<=0">Afegir a la cistella</ui-button>
+						<ui-button icon="shopping_cart" color="fedpival" @click="$store.dispatch('addProductToCart', productSelected)" :disabled="!productSelected || productSelected.stock<=0">Afegir a la cistella</ui-button>
 					</div>
     </transition>
 </template>
@@ -19,20 +19,8 @@ export default {
 
     }
   },
-
-  computed: {
-    ...mapGetters({
-    	counto: 'countCart',
-    	carto: 'cart',
-    	checkoutStatus: 'checkoutStatus',
-    })
-  },
   methods: {
-	addToCart:function(){
-		var vm=this;
-		vm.$store.dispatch('addProductToCart', vm.productSelected);
-		console.log(this.counto);
-	}
+
   },
   watch: {
 

@@ -57,7 +57,7 @@
                 icon="shopping_cart"
                 size="large"
                 type="secondary"
-                @click="$router.push({ path: `/`+$i18n.locale+`/`+$i18n.t('cart.basket').toLowerCase() })"
+                @click="visibleCart=!visibleCart"
             >
             	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
             </ui-icon-button>
@@ -84,8 +84,10 @@
 	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen">
 	    		<router-link v-bind:to="menu.path">{{ menu.name }}</router-link>
 	    	</li>
+	    	<li v-if="$store.getters.isAuthenticatedWithRole(0)">|</li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/clubs' }">Clubs</router-link></li>
+			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/productes' }">Productes</router-link></li>
 	    </ul>
 	</div>
 
@@ -99,6 +101,9 @@
 		<button @click="register(user)">Register</button>
     </ui-modal>
 	
+	<div class="closeCart" v-if="visibleCart" @click="visibleCart=false"></div>
+	<cart-list v-if="visibleCart"></cart-list>
+	
 </div>
 </template>
 
@@ -106,14 +111,18 @@
 
 import { mapGetters, mapActions } from 'vuex'
 
+import CartList from './shop/CartList.vue'
+
 export default {
 	name: 'Toolbar',
+	components: { CartList },
 	data () {
 	return {
 		loadingBar: false,
 		menuOpen: false,
 		localesArray: [],
 		logged:false,
+		visibleCart:false,
 		userOptions: [{
 					label: 'logout',
 					action: 'logout',
@@ -130,7 +139,6 @@ export default {
 		},
 		toggleBar: function() {
 		this.loadingBar = !this.loadingBar;
-		console.log(this.loadingBar);
 		},
         openModal: function() {
         	this.$refs.login.open();
@@ -146,7 +154,6 @@ export default {
 	    },
 	    register: function (user) {
 	      var vm=this;
-	      console.log(vm.$auth);
 	      /*
 	      this.$auth.register(user).then(function () {
 	        console.log('autenticat: '+vm.$auth.isAuthenticated());
@@ -202,6 +209,16 @@ export default {
 
 #toolbarContainer {
 	width:100%;
+	.closeCart{
+		position: fixed;
+	    width: 100%;
+	    top: 0;
+	    left: 0;
+	    height: 100%;
+	    cursor:pointer;
+	    z-index:9;
+		background-color:rgba(255,255,255,0.2);
+	}
 	.menu {
 		a {
 			text-decoration: none;
@@ -229,7 +246,8 @@ export default {
 	    line-height: 16px;
 	    height: 15px;
 	    border-radius: 50px;
-	    background-color: rgba(255, 0, 0, 0.5);
+	    background-color: @fedcolor;
+	    opacity:.75;
 	}
 }
 

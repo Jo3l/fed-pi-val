@@ -229,7 +229,7 @@ $app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/
 * modificadors: /p/pagina /o/ordre
 * URL: /api/jugador/search/sanchez
 */
-$app->get('/api/{tabla:[A-Za-z]+}/search/{que:[^/]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Generics::generic_search'); // buscar
+$app->get('/api/{tabla:[A-Za-z]+}/search/{que:[^/]+}[{p1:/p/\d+|/o/[a-z-]+|/i/\w+}[{p2:/p/\d+|/o/[a-z-]+|/i/\w+}[{p3:/p/\d+|/o/[a-z-]+|/i/\w+}]]]', '\app\Generics::generic_search'); // buscar
 
 /*
 * @description

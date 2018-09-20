@@ -38,10 +38,13 @@ const getters = {
   cart: function(state) {
   	return state.added;
   },
-  cartTotalPrice: function(state, getters) {
-    return function() {
-      //return total + product.price * product.quantity
-    };
+  cartTotalPrice: function(state) {
+  		var total=0;
+		state.added.forEach(function(element) {
+			var item = element.fullProduct.types.find(function(item) {return item.id === element.id && item.typeId === element.typeId})
+			total+= (item.price.amount * element.quantity)
+		});
+		return total.toFixed(2);
   }
 }
 
@@ -49,48 +52,73 @@ const getters = {
 const actions = {
 	
   addProductToCart ({ state, commit }, product) {
-    commit('setCheckoutStatus', null)
-
-	console.log(product.stock);
-	
-    if (product.stock > 0) {
-    	
+	  commit('setCheckoutStatus', null)
       const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
       if (!cartItem) {
-        commit('pushProductToCart', { id: product.id, typeId: product.typeId });
+        commit('pushProductToCart', { id: product.id, typeId: product.typeId, fullProduct: product.fullProduct });
         saveState(state);
       } else {
         commit('incrementItemQuantity', cartItem);
         saveState(state);
       }
-      
-      
-      
-    }
-    
-    console.log(state);
+
+  },
+  increaseProductToCart ({ state, commit }, product) {
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+      commit('incrementItemQuantity', cartItem);
+      saveState(state);
+
+  },
+  removeProductToCart ({ state, commit }, product) {
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+      if (cartItem.quantity>1) {
+        commit('decrementItemQuantity', cartItem);
+        saveState(state);
+      } else {
+        commit('removeItem', cartItem);
+        saveState(state);
+      }
+  },
+  deleteProductToCart ({ state, commit }, product) {
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+        commit('removeItem', cartItem);
+        saveState(state);
+  },
+  setCheckStatus({ state, commit }, status) {
+  		commit('setCheckoutStatus', status);
   }
 }
 
 // mutations
 const mutations = {
-  pushProductToCart (state, { id, typeId }) {
+  pushProductToCart (state, { id, typeId, fullProduct }) {
     state.added.push({
       id,
       typeId,
+      fullProduct,
       quantity: 1
     })
   },
 
-  incrementItemQuantity (state, { id }) {
-    const cartItem = state.added.find(item => item.id === id)
+  incrementItemQuantity (state, { id, typeId }) {
+    const cartItem = state.added.find(item => item.id === id && item.typeId === typeId)
     cartItem.quantity++
   },
-
+  
+  decrementItemQuantity (state, { id, typeId }) {
+    const cartItem = state.added.find(item => item.id === id && item.typeId === typeId)
+    cartItem.quantity--
+  },
+  
+  removeItem (state, { id, typeId }) {
+    const cartItem = state.added.findIndex(item => item.id === id && item.typeId === typeId)
+    state.added.splice(cartItem, 1)
+  },
+  
   setCartItems (state, { items }) {
     state.added = items
   },
-
+  
   setCheckoutStatus (state, status) {
     state.checkoutStatus = status
   }

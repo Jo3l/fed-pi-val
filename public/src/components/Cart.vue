@@ -236,9 +236,7 @@ export default {
     }
   },
   mounted: function() {
-  	console.log(this.$store.dispatch('addProductToCart', this.products[0]));
-  	console.log(this.$store.dispatch('addProductToCart', this.products[1]));
-  	console.log(this.counto);
+
   }
 }
 </script>

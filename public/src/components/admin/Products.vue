@@ -2,10 +2,10 @@
     <transition name="fade">
 	    <div>
 
-			<h1>Clubs</h1>
+			<h1>Productes</h1>
 			
 			<span class="button-right">
-				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Club</ui-button>
+				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Producte</ui-button>
 			</span>
 			
 			<div class="vuetableContainer">
@@ -17,14 +17,21 @@
 	                :label="$t('common.search')"
 					type="text"
 	                v-model="filterText"
-                	@keydown-enter="getData('clubs')"
+                	@keydown-enter="getData('productes')"
 	            ></ui-textbox>
-	            <ui-icon-button color="default" icon="search" type="secondary" @click="getData('clubs')"></ui-icon-button>
+	            <ui-icon-button color="default" icon="search" type="secondary" @click="getData('productes')"></ui-icon-button>
 	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText=''"></ui-icon-button>
 				</div>
 
 				<tablerone :tableList="list" :tableColumns="columns">
 					<th slot="headActions"></th>
+					
+					<template slot="icon1" scope="props">
+						<td class="actiu">
+							<img :src="props.row.img">
+						</td>
+					</template>
+					
 					<template slot="actions" scope="props">
 						<td class="actions">
 							<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
@@ -32,6 +39,7 @@
 						</td>
 					</template>
 				</tablerone>
+			
 				<paginate
 				    :page-count="Math.ceil(list.total / list.per_page)"
 					:clickHandler="clickCallback"
@@ -45,6 +53,11 @@
   
   
 			</div>
+			
+			<pre>
+				<!-- { {templist} } -->
+			{{list}}
+			</pre>
 			
 	    </div>
     </transition>
@@ -63,31 +76,36 @@ export default {
 		    list:{},
 		    columns:[
 	            {
-	                label: 'Nom',
-	                field: 'nom',
+	                label: 'Imatge',
+	                field: 'actiu',
+	                html: false,
+	                icon: true
+	            },
+	            {
+	                label: 'Id',
+	                field: 'id',
 	                html: false,    
 	            },
 	            {
-	                label: 'Població',
-	                field: 'poblacio',
+	                label: 'Nom',
+	                field: 'name',
 	                html: false,    
 	            }
-	            
 	        ],
 		    filterText:'',
 		}
 	},
 	methods: {
 	  	edit:function(row) {
-	    	this.$router.push({ path: `/admin/club/`+row.id });
+	    	this.$router.push({ path: `/admin/producte/`+row.id });
 	    },
 	  	remove:function(row) {
 			var vm=this;
 
-			vm.$http.post('/club/', {'delete_id': row.id})
+			vm.$http.post('/producte/', {'delete_id': row.id})
 	        .then(function (response) {
 	        	
-	            vm.getData('club');
+	            vm.getData('producte');
 	
 	        })
 	        .catch(function (error) {
@@ -97,17 +115,26 @@ export default {
 	    clickCallback: function(pageNum) {
 	    	console.log(pageNum);
 	    	var vm=this;
-	    	vm.getData('club', pageNum);
+	    	vm.getData('producte', pageNum);
 	    },
 		getData: function(listName, page){
 	        var vm = this;
 	        
 	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
 	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
-	        
 	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
 	        .then(function (response) {
-	            vm.list = response.data;
+
+	            var tempList = response.data;
+console.log(tempList)
+
+	            tempList.forEach(function(element) {
+				  element.name = element.json.content[vm.$i18n.locale].name;
+				  element.img = element.json.imagesThumb[0].img;
+				});
+	            
+	            vm.list = tempList;
+	            
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -116,7 +143,7 @@ export default {
 	},
 	mounted: function () {
 		var vm=this;
-		vm.getData('club');
+		vm.getData('producte');
 	},
 	created: function() {
 	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
@@ -128,6 +155,10 @@ export default {
 
 <style lang="less">
 
-
+td img {
+	max-height:32px;
+	position: absolute;
+    margin-top: -5px;
+}
 
 </style>

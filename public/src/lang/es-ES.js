@@ -12,11 +12,14 @@ export default {
         secondTip: 'Selecciona segundo',
 	},
 	cart : {
+		shop: 'tienda',
 		addToBasket : 'Añadir al carrito',
-		basket : 'Carrito',
+		basket : 'carrito',
 		online_shop : 'Tienda Online',
 		added : 'Añadido',
-		itemNotAvailable: 'Modelo no disponible'
+		itemNotAvailable: 'Modelo no disponible',
+		quantity: 'cantidad',
+		emptyCart:'El carrito esta vacío.'
 	},
 	common : {
 		label: 'Español',
