@@ -18,25 +18,45 @@
 			
 			</progressive-background>
 
-	        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
-            
-			 <label>Data Publicació:
-			 <vue-datepicker-local v-model="publishedDate" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
-			 </label>
+			<div class="newsEditor">
+				
+		        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
+	            
+				<label>Data Publicació:</label><br>
+				<vue-datepicker-local v-model="publishedDate" :local="datePickerOptions" format="DD-MM-YYYY HH:mm:ss"></vue-datepicker-local>
+				<br>
+				<label>Titular:</label>
+				<ui-textbox
+				    floating-label
+	                autocomplete="off"
+	                error="This field is required"
+					type="text"
+	                v-model="news.titol"
+				></ui-textbox>
+				
+				
 
-			 
-			<label>Titular:</label>
-			<input v-model="news.titol">
-		    <VuePellEditor 
-		        :actions="editorOptions" 
-		        :content="news.contingut" 
-		        v-model="news.contingut"
-		        :styleWithCss="false"
-		        placeholder="..."
-		    />
+
 			
-			<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="SaveNews()">{{$i18n.t('common.save')}}</ui-button>
-			<ui-button v-if="news.id" color="blue" icon="delete" size="small" type="secondary" @click="deleteNews(news.id)">Borrar noticia ID:{{news.id}}</ui-button>
+			    <VuePellEditor 
+			        :actions="editorOptions" 
+			        :content="news.contingut" 
+			        v-model="news.contingut"
+			        :styleWithCss="false"
+			        placeholder="..."
+			    />
+			    
+			    
+			    <div class="filterButtons">
+			    	<p><strong>Sel·lecciona les paraules clau.</strong></p>
+		    		<ui-checkbox-group :options="tags" v-model="selectedTags"></ui-checkbox-group>
+				</div> 
+				
+				<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="SaveNews()">{{$i18n.t('common.save')}}</ui-button>
+				<ui-button v-if="news.id" color="blue" icon="delete" size="small" type="secondary" @click="deleteNews(news.id)">Borrar noticia ID:{{news.id}}</ui-button>
+			
+			</div>
+
 	
 		</aside>
 					
@@ -117,6 +137,9 @@ export default {
   	components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram, 'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager, VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
+			viewTags:false,
+		    tags:[],
+		    selectedTags:[],
 		    selected:{},
 		    destacada:false,
 		    news: '',
@@ -153,6 +176,18 @@ export default {
 		}    
 	},
 	methods: {
+		getTags: function() {
+	
+	        var vm = this;
+	        vm.$http.get('/tags/noticia')
+	        .then(function (response) {
+	        	vm.tags = response.data.tags;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	        
+	    },
 		isMobileDevice: function() {
 		    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 		},
@@ -196,7 +231,7 @@ export default {
 					tipus: "N",
 					destacada: vm.destacada?vm.destacada:false,
 					categoria: "noticies",
-					tags:null,
+					tags:vm.selectedTags.join('|'),
 					url: vm.news.url,
 					alta: vm.news.alta,
 					modificacio: new Date.today().toString('yyyyMMddHHmmss'),
@@ -222,9 +257,9 @@ export default {
 	        	var n = response.data.find(function(element) {  return element.idioma == vm.$i18n.locale });
 	            vm.news = n;
 	            vm.destacada = n.destacada=='1';
-	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio));
+	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio||n.alta));
 	            vm.publishedDateText = vm.fixDateForParse(n.publicacio||n.alta);
-	            
+	            vm.selectedTags = n.tags.split('|');
 	            vm.$emit('updateHead')
 	            
 	        })
@@ -273,6 +308,7 @@ export default {
 		}
 		this.scrollToTop(0);
 		
+		if( this.$store.getters.isAuthenticatedWithRole(0) ) this.getTags();
 		
 	},
 	watch: {
@@ -299,7 +335,54 @@ export default {
 	padding: 0 0 4vw 0;
 	
 	.nodeContentElement{
-		
+		position:relative;
+	}
+	.filterButtons{
+		padding-top:20px;
+		margin-left:10px;
+		margin-top:20px;
+		border-top:1px solid @fedcolor;
+		p{text-align:left;}
+		.ui-checkbox-group__checkboxes{
+			display:flex;
+			flex-wrap:wrap;
+			justify-content:center;
+			align-items:center;
+			
+			&>label{margin-bottom:10px;}
+		}
+
+		.ui-checkbox__label-text{
+			text-transform:capitalize;
+		}
+	}
+	.opener{
+		strong{text-transform:capitalize;}
+		display:block;
+		cursor:pointer;
+		.ui-icon{
+			vertical-align: middle;
+			&.collapse {
+				svg{transform:rotate(180deg);}
+			}
+		}
+	}
+	.ui-collapsible__header {display:none!important;}
+	.ui-collapsible__body {border:none;}
+	
+	.newsEditor {
+		padding:0 20px;
+		textarea, input {
+		    width: 100%;
+		    font-family: 'Rambla', cursive;
+		    display: block;
+		    font-size: 2em;
+		    border: none;
+		    border-bottom: 1px dashed #ccc;
+		    margin-bottom:0.5em;
+		    min-height: 42px;
+		    color: rgba(0,0,0,.87);
+		}
 	}
 	
 	#star {
@@ -322,7 +405,7 @@ export default {
 	}
 	
 	.datepicker {
-	    width: 210px;
+	    width: 320px;
 	}
 	.icon-right {
 	    position: absolute;
@@ -413,6 +496,7 @@ export default {
 	    padding: 0px 5vw;
 	    &.social{
 	    	display:block;
+	    	margin-top: 20px;
 	    }
 	}
 }

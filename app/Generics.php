@@ -125,6 +125,7 @@ static public function generic_query(Request $request, Response $response, $para
 	}
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= array( 'limit'=>Fun::$itemsPerPage );
+	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
 	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
@@ -134,20 +135,24 @@ static public function generic_query(Request $request, Response $response, $para
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
     if (!empty($options['limit'])) $sql.= " limit ".$options['limit'];
+//echo $sql;exit;
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
     if (in_array($tabla,array('noticia','_noticia_es','_noticia_val'))) {
 		foreach($data as $i=>$r) { // en cada registre...
 			foreach($r as $k=>$v) { // en cada parell de valors
-				if (empty($options['id']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth($v, 0, 100))."...";
+				if (empty($options['id']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth(strip_tags($v), 0, 100)."...");
 			}
 		}
 	}
 	if ($tabla=='producte') {
-		$a= $data[0]['json']; 
-		$a= json_decode($a,true); 
-		$data[0]['json']= $a;
+		foreach($data as $idx=>$elm) {
+			$a= $data[$idx]['json']; 
+			$a= json_decode($a,true); 
+			$data[$idx]['json']= $a;
+			//echo '<pre>',var_dump($data);exit;
+		}
 	}
     Fun::render($data);
 }
@@ -217,7 +222,10 @@ static public function generic_search(Request $request, Response $response, $par
 // actualització de contingut segons idioma
 private function update_idioma($params, $id, $json) {
 	$tipus= $params['tabla'];
-	if ($tipus=='noticia') $json['slug']= Fun::slugify($json['titol'],$id);
+	if ($tipus=='noticia') {
+		$json['slug']= Fun::slugify($json['titol'],$id);
+		$json['contingut']= preg_replace('/(<[^>]+) style=".*?"/i', '$1', $json['contingut']);
+	}
 	switch ($tipus) {
 		case 'noticia': $camps= array('titol','contingut','slug'); break;
 		case 'acte': $camps= array('titol','contingut'); break;
@@ -245,7 +253,10 @@ private function update_idioma($params, $id, $json) {
 // inserció de contingut segons idioma
 private function insert_idioma($params, $id, $json) {
 	$tipus= $params['tabla'];
-	if ($tipus=='noticia') $json['slug']= Fun::slugify($json['titol'],$id);
+	if ($tipus=='noticia') {
+		$json['slug']= Fun::slugify($json['titol'],$id);
+		$json['contingut']= preg_replace('/(<[^>]+) style=".*?"/i', '$1', $json['contingut']);
+	}	
 	switch ($tipus) {
 		case 'noticia': $camps= array('titol','contingut','slug'); break;
 		case 'acte': $camps= array('titol','contingut'); break;
@@ -326,9 +337,9 @@ static private function procesaparam($str,$options,$tabla) {
 		case 't':
 			if (empty($options['wheres'])) $options['wheres']= array('1=1');
 			if ($tabla!='producte')
-		    	array_push( $options['wheres'], "instr('".$str[2]."',tags)>=0" );
+		    	array_push( $options['wheres'], "instr(tags,'".$str[2]."')>=0" );
 		    else
-		    	array_push ($options['wheres'], "(json_extract(json,'$.content.slug.es')='".$str[2]."' OR json_extract(json,'$.content.slug.val')='".$str[2]."') " );
+		    	array_push ($options['wheres'], "categoria='".$str[2]."' " );
 			break;
 		case 'i':
 		    Fun::$idioma= $str[2];
@@ -337,6 +348,7 @@ static private function procesaparam($str,$options,$tabla) {
 			break;
 		case 'slug': break;
 		case 's': // search
+			if($tabla=='_noticia_val' || $tabla=='_noticia_es') array_push( $options['wheres'], "instr(contingut,'".$str[2]."') or instr(titol,'".$str[2]."')" );
 			break;
 		case 'o':
 			$options['order']= str_replace('-',' desc',$str[2]);
@@ -344,7 +356,7 @@ static private function procesaparam($str,$options,$tabla) {
 		case 'destacada':
 		    array_push( $options['wheres'], "destacada=1" );
 		    $options['limit'] = '10';
-		    $options['order'] = 'publicacio desc';
+		    //$options['order'] = 'publicacio desc';
 			break;
 		case 'j': //jerarquia
 			if (empty($options['wheres'])) $options['wheres']= array('1=1');
@@ -376,6 +388,8 @@ static public function date_query(Request $request, Response $response, $params)
     $data = $db->all();
     Fun::render($data);
 }
+
+
 
 
 }

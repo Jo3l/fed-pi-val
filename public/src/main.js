@@ -29,27 +29,5 @@ new Vue({
 	store,
 	components: { Toolbar, Cookie },
 	data: {
-	},
-	beforeCreate: function () {
-	  	
-	  	var language = this.$route.fullPath.split("/")[1]; //forzamos el idioma dependiendo de la url
-	  	
-	  	if(this.$route.fullPath=='/') {
-	  		//meter aqui deteccion idioma o cookie o localstorage
-	  	}
-	  	else if(this.$route.fullPath=='/404') {
-	  		
-	  	}
-	  	else if(typeof language !== 'undefined' && language in this.$i18n.messages) {
-	  		this.$i18n.locale = language;
-	  	} else {
-	  	//	window.location.href = "/404";
-	  	}
-	},
-	methods: {
-	},
-	mounted: function () {
-	},
-	created: function () {
 	}
 })

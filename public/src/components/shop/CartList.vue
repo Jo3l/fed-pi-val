@@ -1,6 +1,6 @@
 <template>
     <transition name="fade">
-					<div class="shopping-cart">
+					<div class="shopping-cart" >
 						
 					    <div class="shopping-cart-header">
 					      <ui-icon icon="shopping_cart"></ui-icon><span class="badge">{{countCart}}</span>
@@ -8,10 +8,10 @@
 					        <span class="lighter-text">Total:</span>
 					        <span class="main-color-text">{{cartTotalPrice}}€</span>
 					      </div>
-					    </div> <!--end shopping-cart-header -->
+					    </div>
 				    	<swiper class="shopping-cart-items" :options="swiperOptionThumbs">
 				    		<div v-if="cart.length==0" class="swiper-slide empty">{{$t('cart.emptyCart')}}</div>
-						    <swiper-slide v-for="item in cart" v-if="item.fullProduct">
+						    <swiper-slide v-for="item in cart" v-else>
 						      	<router-link :to="{ path: '/'+$i18n.locale+'/'+$t('cart.shop')+'/'+item.fullProduct.content[$i18n.locale].slug }">
 						        <picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductSize(item)}}</span></picture>
 						        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
@@ -24,16 +24,16 @@
 						        	<ui-icon-button color="fedpival" icon="clear" size="small" type="secondary" @click="$store.dispatch('deleteProductToCart', item)"></ui-icon-button>
 						        </div>
 						    </swiper-slide>
+						    
 					    	<ui-icon-button icon="expand_less" type="primary" class="swiper-button-prev cart" slot="button-prev" v-if="cart.length>0"></ui-icon-button>
 							<ui-icon-button icon="expand_more" type="primary" class="swiper-button-next cart" slot="button-next" v-if="cart.length>0"></ui-icon-button>
 						</swiper>
 
-						<ui-button icon="shopping_cart" :class="cart.length>0?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0" @click="openModal('buyModal')">Comprar</ui-button>
-					    <!--<button :class="cart.length>0?'checkout':'checkout disabled'" :disabled="cart.length>0"><span>Comprar</span></button>-->
-					    
-				        <ui-modal size="large" ref="buyModal" title="Datos del cliente">
-							<h3>Información:</h3>
-							<p>Rellene este formulario y recibirá por correo electrónico las instrucciones para el pago del contenido del carrito via transferencia. Para cualquier otra pregunta puede dirigirse a nosotros al teléfono 6969696969 o al correo electronico <a href="mailto:tenda@fedpival.es">tenda@fedpival.es</a></p>
+						<ui-button icon="shopping_cart" :class="cart.length>0?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}}</ui-button>
+						
+				        <ui-modal size="large" ref="buyModal" :title="$i18n.t('cart.customerData')">
+							<h3>{{$i18n.t('cart.info')}}:</h3>
+							<p>{{$i18n.t('cart.shippingInfo')}} <a href="mailto:tenda@fedpival.es">tenda@fedpival.es</a></p>
 							<div class="clientData">
 								<div class="form">
 						            <ui-textbox
@@ -71,7 +71,7 @@
 						            
 						            <ui-textbox
 						            	floating-label
-						                help="Rebrà per correu electrònic les instruccions per a fer el pagament, pel que cal assegurar-se que siga correcta"
+						                help=""
 						                icon-position="right"
 						                icon="mail"
 						                label="Email"
@@ -170,7 +170,7 @@ export default {
     },
   	getType:function(item){
   		for (var i = 0, len = item.fullProduct.types.length; i < len; i++) {
-		  if(item.fullProduct.types[i].typeId==item.typeId) {
+		  if(item.fullProduct.types[i].name==item.name) {
 		  	var type = item.fullProduct.types[i];
 		  	type.fullProduct = JSON.parse( JSON.stringify( item ) );
 		  	return type;
@@ -180,7 +180,7 @@ export default {
   	},
 	getProductImage:function(item){
   		for (var i = 0, len = item.fullProduct.types.length; i < len; i++) {
-		  if(item.fullProduct.types[i].typeId==item.typeId) {
+		  if(item.fullProduct.types[i].name==item.name) {
 		  	for (var j = 0, len = item.fullProduct.images.length; j < len; j++) {
 		  		if(item.fullProduct.images[j].tag == item.fullProduct.types[i].imgTag){
 		  			return item.fullProduct.images[j].img;
@@ -192,7 +192,7 @@ export default {
 	},
 	getProductPrice:function(item){
   		for (var i = 0, len = item.fullProduct.types.length; i < len; i++) {
-		  if(item.fullProduct.types[i].typeId==item.typeId) {
+		  if(item.fullProduct.types[i].name==item.name && item.fullProduct.types[i].price) {
 		  	
 		  	return item.fullProduct.types[i].price.amount;
 		  	
@@ -202,9 +202,9 @@ export default {
 	},
 	getProductSize:function(item){
   		for (var i = 0, len = item.fullProduct.types.length; i < len; i++) {
-		  if(item.fullProduct.types[i].typeId==item.typeId) {
+		  if(item.fullProduct.types[i].name==item.name) {
 		  	
-		  	return item.fullProduct.types[i].size;
+		  	return item.fullProduct.types[i].name;
 		  	
 		  }
 		}
@@ -215,7 +215,6 @@ export default {
 
   },
   mounted: function() {
-
 
   }
 }

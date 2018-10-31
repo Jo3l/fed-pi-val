@@ -21,7 +21,7 @@
     	
 		<Calendar type="slider"></Calendar>
 		
-		<cart type="slider"></cart>
+		<products type="slider"></products>
 		
     </div>
     </transition>
@@ -31,12 +31,12 @@
 
 import NewsCarousel from './NewsCarousel.vue';
 import Calendar from './Calendar.vue';
-import Cart from './Cart.vue';
+import Products from './shop/Products.vue';
 import Teaser from './Teaser.vue';
 
 export default {
   name: 'Start',
-  components: {'NewsCarousel' : NewsCarousel, 'Calendar': Calendar, 'cart': Cart, 'teaser' : Teaser },
+  components: {'NewsCarousel' : NewsCarousel, 'Calendar': Calendar, 'products': Products, 'teaser' : Teaser },
   data () {
     return {
 

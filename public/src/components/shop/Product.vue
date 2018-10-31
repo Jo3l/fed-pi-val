@@ -1,11 +1,11 @@
 <template>
     <transition name="fade">
-		<div class="shop full">
+		<div class="shop full" v-if="loaded">
 			<br>
 			<div class="product">
-				<aside class="images">	
+				<aside class="images" v-if="product">	
 				    <swiper :options="swiperOptionThumbs" class="gallery-thumbs" ref="swiperThumbs">
-				        <swiper-slide v-for="image in product.imagesThumb" :style="'background-image:url('+ image.img +');'"></swiper-slide>
+				        <swiper-slide v-for="image in product.images" :style="'background-image:url('+ image.thumb +');'"></swiper-slide>
 				    </swiper>
 					<swiper :options="swiperOptionTop" class="gallery-top" ref="swiperTop">
 						<swiper-slide class="swipe" v-for="image in product.images" :style="'background-image:url('+ image.img +');'"></swiper-slide>
@@ -20,44 +20,26 @@
 				<article class="content">
 					<h1>{{product.content[$i18n.locale].name}}</h1>
 					<div class="price-shipping">
-		                <div class="price">{{finalPrice}}€</div>
-		            	<div class="shipping">Envio {{product.shipping.amount}}€</div>
-		            	<ul>
-		            		<li v-for="option in product.content[$i18n.locale].deliveryOptions">{{option}}</li>
-		            	</ul>
+							{{$i18n.t('cart.price')}}: <div class="price">{{ finalPrice }} €</div>
+					    	<div class="oldPrice" v-if="oldPrice">{{$i18n.t('cart.before')}}: <span>{{ oldPrice }} €</span></div>
 		             </div>
+		            <br> 
+                  	<div class="shortDescription" v-if="product.content[$i18n.locale].shortDescription">
+                    	{{product.content[$i18n.locale].shortDescription}}
+                    </div>
 		             
-			        <div class="swatches">
-			        	
+			        <div class="swatches" v-bind:style="{ 'visibility': product.types.length>1?'':'hidden' }">
 	                    <div class="swatch">
-	                      <div class="header">Talla</div>
-	                      <!--<div :class="'swatch-element plain ' + soldout(selectProduct(product, size, colorSelected ))" v-for="(size,index) in getSizes(product)">-->
-	                      <div class="swatch-element plain" v-for="(size,index) in getSizes(product)">
-	                        <input type="radio" :id="'swatch-'+index+'-size'" name="size" :value="size" @click="function(){sizeSelected=size;productSelected = selectProduct( product, sizeSelected, colorSelected );}"/>
-	                        <label :for="'swatch-'+index+'-size'">
-	                        {{size}}
+	                      <div class="header">{{$i18n.t('cart.options')}}</div>
+	                      <div class="swatch-element plain" v-for="(variation,index) in getVariations(product)">
+	                        <input type="radio" :id="'swatch-'+index+'-variation'" name="variation" :value="variation" @click="function(){typeSelected=variation;productSelected = selectProduct( product, typeSelected);}"/>
+	                        <label :for="'swatch-'+index+'-variation'">
+	                        {{variation}}
 	                        <img class="crossed-out" src="/static/img/shop/soldout.png" />
-	                        </label>
-	                      </div>
-	                    </div>
-               
-	                    <div class="swatch">
-	                      <div class="header">Color</div>
-	                     <div class="swatch-element color" v-for="(color,index) in getColors(product)"
-	                      @click="toSlide(findIndexByImgtag(product.images, colorSelected))">
-	                        <div class="tooltip">{{color.split('|')[0]}}</div>
-	                        <input :id="'swatch-'+index+'-color'" type="radio" name="color" :value="color.split('|')[0]" @click="function(){ colorSelected=color.split('|')[0];productSelected = selectProduct( product, sizeSelected, colorSelected );}" :selected="colorSelected==color.split('|')[0]"/>
-	                        <label :for="'swatch-'+index+'-color'" :style="'background-color:'+color.split('|')[1]">
-	                        <img class="crossed-out" src="/static/img/shop/soldout.png" />
-	                        <span :style="'background-color:'+color.split('|')[1]"></span>
 	                        </label>
 	                      </div>
 	                    </div>
 	                  </div>
-
-                  	<div class="shortDescription" v-if="shortDescription">
-                    	{{shortDescription}}
-                    </div>
 					
 					<add-to-cart-button :productSelected="productSelected"></add-to-cart-button>
 					
@@ -124,16 +106,18 @@ export default {
   },
   data () {
     return {
+    	loaded: false,
     	cartCss:'',
     	finalPrice:'...',
+    	oldPrice:'',
+    	delivery:'',
     	productSelected:{},
-    	colorSelected:'',
-    	sizeSelected:'',
+    	typeSelected:'',
     	shortDescription:null,
 		swiperOptionTop: {
           spaceBetween: 5,
-          loop: true,
-          loopedSlides: 5, //looped slides should be the same
+          //loop: true,
+          //loopedSlides: 5, //looped slides should be the same
           navigation: {
             nextEl: '.swiper-button-next.prod',
             prevEl: '.swiper-button-prev.prod'
@@ -144,191 +128,34 @@ export default {
           spaceBetween: 5,
           slidesPerView: 4,
           touchRatio: 0.2,
-          loop: true,
-          loopedSlides: 5, //looped slides should be the same
+          //loop: true,
+          //loopedSlides: 5, //looped slides should be the same
           slideToClickedSlide: true
         },
-	    product: {
-	    	'id':1,
-	    	'destacado':null,
-	    	'images': [
-	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/product_large.png'},
-	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko1_large.jpg'},
-	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko2_large.jpg'},
-	    		{'tag':'green', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko3_large.jpg'},
-	    		{'tag':'blue', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko4_large.jpg'}
-	    	],
-	    	'imagesThumb': [
-	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/product_150x150.png'},
-	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko1_150x150.jpg'},
-	    		{'tag':'red', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko2_150x150.jpg'},
-	    		{'tag':'green', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko3_150x150.jpg'},
-	    		{'tag':'blue', 'img':'//cdn.shopify.com/s/files/1/1047/6452/products/tricko4_150x150.jpg'}
-	    	],
-	    	'content': {
-	    		'es': {
-	    			'slug':'pelota',
-					'name':'descripcion del producto de calidad',
-					'description':'<ul><li><span> Este Kit de herramientas sirve especialmente para los productos modernos de Nintendo y muchos otros dispositivos de juegos. Brocas duraderas y pr\u00E1cticas que hacen tu trabajo m\u00E1s eficientemente. Destornilladores Nintendo con puntas \"Y\" y PZ1 para puertos de 2,0 mm, apto para el sistema Nintendo Switch.<\/span><\/li><li><span> Destornillador triwing de 1,5mm: Nintendo Switch Console. Destornillador triwing de 2,0mm: Nintendo Switch Joy-Con, NS, Wii, NDS, NDSL, DS Lite, GBA, GameBoy Original. Acero mejorado, duradero, fuerte y con tratamiento t\u00E9rmico para una fuerza m\u00E1xima.<\/span><\/li><li><span> El destornillador 3,8mm abre los cartuchos de juegos de la Nintendo Original (NES), Super Nintendo (SNES), Nintendo 64 (N64), Virtual Boy, Game Boy Original, Game Boy Color y Sega Game Gear.<\/span><\/li><li><span> El destornillador 4,5mm abre los cartuchos de juego de la Master System de Sega, Genesis System de Sega, 32x System de Sega; sistema para Super Nintendo, Nintendo 64, Game Cube, Virtual Boy, Game Gear, TurboGrafx 16, TurboDuo.<\/span><\/li><li><span> Ventosa Adicional y Cepillo de Limpieza: Limpia y retira la tapa del cartucho f\u00E1cilmente y con m\u00E1s seguridad.<\/span><\/li><\/ul>',
-					'details':'<ul><li><b>Tapa blanda:<\/b> 200 p\u00E1ginas<\/li><li><b>Editor:<\/b> Ivrea (8 de marzo de 2018)<\/li><li><b>Idioma:<\/b> Espa\u00F1ol<\/li><li><b>ISBN-10:<\/b> 8417356177<\/li><li><b>ISBN-13:<\/b> 978-8417356170<\/li> <li><b>Valoraci\u00F3n media de los clientes:<\/b> <\/li><li id=\"SalesRank\"><b>Clasificaci\u00F3n en los m\u00E1s vendidos de Amazon:<\/b> n\u00BA21.422 en Libros (<a href=\"https:\/\/www.amazon.es\/gp\/bestsellers\/books\/ref=pd_dp_ts_books_1\">Ver el Top 100 en Libros<\/a>) <\/li> <\/ul>',
-					'deliveryOptions': [
-						"Envio en 2 semanas",
-						"Recogida en nuestra sede"
-						],
-					'typeComments': [
-						{
-						'id':0,
-						'description':'El color Azul mola en S'
-						},
-						{
-						'id':1,
-						'description':'El color Rojo mola en XXL'
-						},
-						{
-						'id':2,
-						'description':'El color verde mola en XXL'
-						},
-						{
-						'id':3,
-						'description':'El color rojo mola en XL'
-						},
-						{
-						'id':4,
-						'description':'El color verde mola en XL'
-						},
-						{
-						'id':5,
-						'description':'El color rojo mola en L'
-						},
-						{
-						'id':6,
-						'description':'El color verde mola en L'
-						}
-					]
-	    		},
-	    		'val': {
-	    			'slug':'pilota',
-					'name':'descripció del producte de qualitat',
-					'description':'<ul><li><span> Este Kit de herramientas sirve especialmente para los productos modernos de Nintendo y muchos otros dispositivos de juegos. Brocas duraderas y pr\u00E1cticas que hacen tu trabajo m\u00E1s eficientemente. Destornilladores Nintendo con puntas \"Y\" y PZ1 para puertos de 2,0 mm, apto para el sistema Nintendo Switch.<\/span><\/li><li><span> Destornillador triwing de 1,5mm: Nintendo Switch Console. Destornillador triwing de 2,0mm: Nintendo Switch Joy-Con, NS, Wii, NDS, NDSL, DS Lite, GBA, GameBoy Original. Acero mejorado, duradero, fuerte y con tratamiento t\u00E9rmico para una fuerza m\u00E1xima.<\/span><\/li><li><span> El destornillador 3,8mm abre los cartuchos de juegos de la Nintendo Original (NES), Super Nintendo (SNES), Nintendo 64 (N64), Virtual Boy, Game Boy Original, Game Boy Color y Sega Game Gear.<\/span><\/li><li><span> El destornillador 4,5mm abre los cartuchos de juego de la Master System de Sega, Genesis System de Sega, 32x System de Sega; sistema para Super Nintendo, Nintendo 64, Game Cube, Virtual Boy, Game Gear, TurboGrafx 16, TurboDuo.<\/span><\/li><li><span> Ventosa Adicional y Cepillo de Limpieza: Limpia y retira la tapa del cartucho f\u00E1cilmente y con m\u00E1s seguridad.<\/span><\/li><\/ul>',
-					'details':'<ul><li><b>Tapa blanda:<\/b> 200 p\u00E1ginas<\/li><li><b>Editor:<\/b> Ivrea (8 de marzo de 2018)<\/li><li><b>Idioma:<\/b> Espa\u00F1ol<\/li><li><b>ISBN-10:<\/b> 8417356177<\/li><li><b>ISBN-13:<\/b> 978-8417356170<\/li> <li><b>Valoraci\u00F3n media de los clientes:<\/b> <\/li><li id=\"SalesRank\"><b>Clasificaci\u00F3n en los m\u00E1s vendidos de Amazon:<\/b> n\u00BA21.422 en Libros (<a href=\"https:\/\/www.amazon.es\/gp\/bestsellers\/books\/ref=pd_dp_ts_books_1\">Ver el Top 100 en Libros<\/a>) <\/li> <\/ul>',
-					'deliveryOptions': [
-						"Enviament en 2 setmanes",
-						"Recollida a la seu"
-						],
-					'typeComments': [
-						{
-						'id':0,
-						'description':'El color Blau mola en S'
-						},
-						{
-						'id':1,
-						'description':'El color roig mola en XXL'
-						},
-						{
-						'id':2,
-						'description':'El color verd mola en XXL'
-						},
-						{
-						'id':3,
-						'description':'El color roig mola en XL'
-						},
-						{
-						'id':4,
-						'description':'El color verd mola en XL'
-						},
-						{
-						'id':5,
-						'description':'El color roig mola en L'
-						},
-						{
-						'id':6,
-						'description':'El color verd mola en L'
-						}
-					]
-	    		}
-	    	},
-	        'shipping': {
-	            'pickupPossible' : true,
-	            'amount' : 1.99
-	        },
-	        'types':[
-					{
-						'typeId':0,
-						'imgTag':'blue',
-						'color': '#0000ff',
-						'size':'S',
-						'price':{
-				    		'amount':100.99,
-				    		'oldPrice':101.00
-				    	}
-					},
-					{
-						'typeId':1,
-						'imgTag':'red',
-						'color': '#ff0000',
-						'size':'XXL',
-						'price':{
-				    		'amount':99.99,
-				    		'oldPrice':101.00
-				    	}
-					},
-					{
-						'typeId':2,
-						'imgTag':'green',
-						'color': '#00ff1e',
-						'size':'XXL',
-						'price':{
-				    		'amount':99.98,
-				    		'oldPrice':101.00
-				    	}
-					},
-					{
-						'typeId':3,
-						'imgTag':'red',
-						'stock':10,
-						'color': '#ff0000',
-						'size':'XL',
-						'price':{
-				    		'amount':99.97,
-				    		'oldPrice':101.00
-				    	}
-					},
-					{
-						'typeId':4,
-						'imgTag':'green',
-						'stock':1,
-						'color': '#00ff1e',
-						'size':'XL',
-						'price':{
-				    		'amount':99.96,
-				    		'oldPrice':101.00
-				    	}
-					},
-					{
-						'typeId':5,
-						'imgTag':'red',
-						'color': '#ff0000',
-						'size':'L',
-						'price':{
-				    		'amount':99.95,
-				    		'oldPrice':101.00
-				    	}
-					},
-					{
-						'typeId':6,
-						'imgTag':'green',
-						'color': '#00ff1e',
-						'size':'L',
-						'price':{
-				    		'amount':99.94,
-				    		'oldPrice':101.00
-				    	}
-					}
-	        ]
-	    }
+        product: ''
     }
   },
   methods: {
+  	getData: function(apiUrl) {
+
+        var vm = this;
+        this.$http.get(apiUrl)
+        .then(function (response) {
+        	vm.product = response.data[0].json;
+            console.log(vm.product);
+            vm.loaded=true;
+            vm.$emit('updateHead')
+	  		setTimeout(function(){ 
+	  			vm.simulateClick( document.querySelector('#swatch-0-variation') );
+	  		}, 100);
+            
+            
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        
+    },
   	getOffset: function( selector ) {
   		if(document.querySelector(selector)) var el = document.querySelector(selector);
   		else return { top: 0, left: 0, width:0, height: 0 };
@@ -351,29 +178,23 @@ export default {
 		});
 		var canceled = !elem.dispatchEvent(evt);
 	},
-  	selectProduct: function(product,size, color){
+  	selectProduct: function(product,variation){
   		var vm=this;
   		for (var i = 0, len = product.types.length; i < len; i++) {
-		  if(product.types[i].imgTag==color&&product.types[i].size==size) {
+		  if(product.types[i].name==variation) {
+		  	vm.finalPrice = product.types[i].price.amount;
+		  	if(product.types[i].price.oldPrice>product.types[i].price.amount) vm.oldPrice = product.types[i].price.oldPrice;
 		  	return product.types[i];
 		  }
 		}
 		return false;
   	},
-  	getSizes: function(product){
-  		var sizes = [];
+  	getVariations: function(product){
+  		var variation = [];
   		for (var i = 0, len = product.types.length; i < len; i++) {
-		  sizes.push(product.types[i].size);
+		  variation.push(product.types[i].name);
 		}
-  		return Array.from(new Set(sizes));
-  	},
-  	getColors: function(product){
-  		var colors = [];
-  		for (var i = 0, len = product.types.length; i < len; i++) {
-		  colors.push(product.types[i].imgTag+'|'+product.types[i].color);
-		}
-		
-  		return Array.from(new Set(colors));
+  		return Array.from(new Set(variation));
   	},
 	setPrice: function(price){
 		this.finalPrice = price;
@@ -384,15 +205,12 @@ export default {
   	soldout:function(item){
   		return item==false||item.stock==0 ? 'soldout' : '';
   	},
-  	findIndexByImgtag:function(array, name){
-  		return array.findIndex(function(obj) { return obj.tag === name;})	
-  	},
     toSlide:function(i) {
        this.$refs.swiperTop.swiper.slideToLoop(i, 500)
     },
     cartAnimation:function(selector){
     	var vm=this;
-    	return 'background-image: url('+vm.product.images[vm.findIndexByImgtag(vm.product.images, vm.colorSelected)].img+');left:'+vm.getOffset(selector).left+'px;top:'+vm.getOffset(selector).top+'px;width:'+vm.getOffset(selector).width+'px;height:'+vm.getOffset(selector).height+'px;';
+    	return 'background-image: url('+vm.product.images[0].img+');left:'+vm.getOffset(selector).left+'px;top:'+vm.getOffset(selector).top+'px;width:'+vm.getOffset(selector).width+'px;height:'+vm.getOffset(selector).height+'px;';
     }
   },
   watch: {
@@ -412,36 +230,18 @@ export default {
   		}
 
   	},
-  	colorSelected: function(){
+  	typeSelected: function(){
   		var vm=this;
-  		if(vm.selectProduct( vm.product, vm.sizeSelected , vm.colorSelected )) {
-	  		vm.setPrice( vm.selectProduct( vm.product, vm.sizeSelected , vm.colorSelected ).price.amount );
-  		}
-  	},
-  	sizeSelected: function(){
-  		var vm=this;
-  		if(vm.selectProduct( vm.product, vm.sizeSelected , vm.colorSelected )){
-	  		vm.setPrice( vm.selectProduct( vm.product, vm.sizeSelected , vm.colorSelected ).price.amount );
+  		if(vm.selectProduct( vm.product, vm.typeSelected)){
+	  		vm.setPrice( vm.selectProduct( vm.product, vm.typeSelected).price.amount );
   		}
   	},
   	productSelected: function(newValue, oldValue){
   		var vm=this;
-	  	var desc;
-	  	
-	  	vm.product.content[vm.$i18n.locale].typeComments.forEach(function(element) {
-		  if(element.id===newValue.typeId) {
-		  	desc=element.description;
-		  }
-		});
-		
 		if(vm.product && vm.productSelected)vm.productSelected.fullProduct = JSON.parse( JSON.stringify( vm.product ) );
 		
-	  	if(desc){
-	  		vm.shortDescription = desc;
-	  	} else {
-	  		vm.shortDescription = vm.$parent.$i18n.t('cart.itemNotAvailable');
-	  	}
-  	}
+  	}, 
+  	
   },
 	computed: {
 		...mapGetters({
@@ -452,16 +252,24 @@ export default {
 	mounted: function() {
 	  		var vm=this;
 	  		
-	  		vm.simulateClick( document.querySelector('#swatch-0-size') );
-			vm.simulateClick( document.querySelector('#swatch-0-color') );
-			
-			vm.$nextTick(() => {
+	  		//vm.simulateClick( document.querySelector('#swatch-0-variation') );
+
+			if(this.$route.params.slug) {
+				this.getData('producte/slug/'+this.$route.params.slug);
+			}
+
+			if(vm.product) vm.$nextTick(() => {
 		        const swiperTop = vm.$refs.swiperTop.swiper
 		        const swiperThumbs = vm.$refs.swiperThumbs.swiper
 		        swiperTop.controller.control = swiperThumbs
 		        swiperThumbs.controller.control = swiperTop
 		      })
+	},
+	beforeRouteUpdate (to, from, next) {
+    	this.getData('producte/slug/'+to.params.slug);
+    	next();
 	}
+	
 }
 </script>
 
@@ -508,8 +316,10 @@ export default {
 	
 	article.content{
 		padding: 0 15px;
+		width: 50%;
 		@media(max-width:@screenDesktop) {
 			padding: 15px;
+			width: 100%;
 		}
 		position:relative;
 		display:flex;
@@ -519,6 +329,20 @@ export default {
 			text-transform:initial;
 			&:after{
 				display:none;
+			}
+		}
+		.price {
+			display:inline;
+			font-size:1.4em;
+			font-weight:bolder;
+			color:@fedcolor;
+		}
+		.oldPrice {
+			display:inline;
+			font-size:1em;
+			margin-left:10px;
+			span{
+				text-decoration:line-through;
 			}
 		}
 	}
@@ -621,8 +445,7 @@ export default {
     margin-right: 0
 }
 .swatch .header {
-    font-family: "montserratbold", sans-serif;
-    text-transform: uppercase
+    font-weight:bolder;
 }
 .swatch input {
     display: none
@@ -673,17 +496,17 @@ export default {
     width: 100%
 }
 .swatch .plain label {
-    transition: all 0.3s ease-in-out;
-    border-radius: 50%;
+	transition: all 0.3s ease-in-out;
+    border-radius: 35px;
     font-family: "montserratbold", sans-serif;
-    border: 1px solid @fedcolor;
-    color: @fedcolor;
+    border: 1px solid #87212e;
+    color: #87212e;
     cursor: pointer;
     display: block;
     height: 42px;
     padding-top: 12px;
     text-align: center;
-    width: 42px
+    padding: 12px 15px;
 }
 .swatch .color input:checked+label span:after {
     opacity: 1

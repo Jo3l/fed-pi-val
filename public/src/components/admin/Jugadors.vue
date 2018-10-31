@@ -28,14 +28,14 @@
 					
 					<template slot="icon1" scope="props">
 						<td class="actiu">
-							<ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu"></ui-icon>
+							<ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu==1"></ui-icon> 
 							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon>
 						</td>
 					</template>
 					
 					<template slot="icon2" scope="props">
 						<td class="actiu">
-							<ui-icon icon="lens" class="fedcolor" v-if="props.row.segur"></ui-icon>
+							<ui-icon icon="lens" class="fedcolor" v-if="props.row.segur==1"></ui-icon>
 							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon>
 						</td>
 					</template>
@@ -52,8 +52,8 @@
 				    :page-count="Math.ceil(list.total / list.per_page)"
 					:clickHandler="clickCallback"
     				:margin-pages=0
-				    :prev-text="'Prev'"
-				    :next-text="'Next'"
+				    :prev-text="$i18n.t('common.prev')"
+				    :next-text="$i18n.t('common.next')"
 				    :container-class="'pagination'"
 				    :page-class="'page-item'">
 				</paginate>

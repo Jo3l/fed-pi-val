@@ -30,7 +30,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0">
-								<td>{{ element.data.toString('M/d/yyyy') }}</td>
+								<td>{{ element.data.toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
 								<td>{{element.visitant.nom}}</td>
@@ -106,7 +106,7 @@
 							</thead>
 							<tbody>
 								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" v-bind:class="{ 'selected':element.selected }">
-									<td>{{ parseTime(element.data).toString('M/d/yyyy') }}</td>
+									<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 									
 									<td>{{element.local.nom}}</td>
 									<td>{{element.resultatlocal}}</td>
@@ -321,15 +321,6 @@
             </div>
         </ui-modal>
 
-<pre v-if="$store.getters.isAuthenticatedWithRole(0)">
-newGame
-{{newGame}}
-		
--------------------------------------
-nodeContent
-{{nodeContent}}
-	
-</pre>
 
 
 	    </div>

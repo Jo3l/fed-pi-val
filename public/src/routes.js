@@ -9,7 +9,7 @@ const Start = function(resolve) {require(['./components/Start.vue'], resolve)}
 const News = function(resolve) {require(['./components/News.vue'], resolve)}
 const SingleNews = function(resolve) {require(['./components/SingleNews.vue'], resolve)}
 const Calendar = function(resolve) {require(['./components/Calendar.vue'], resolve)}
-const Cart = function(resolve) {require(['./components/Cart.vue'], resolve)}
+const Products = function(resolve) {require(['./components/shop/Products.vue'], resolve)}
 const Product = function(resolve) {require(['./components/shop/Product.vue'], resolve)}
 
 const SubRoutes = function(resolve) {require(['./components/SubRoutes.vue'], resolve)}
@@ -20,7 +20,7 @@ const Clubs = function(resolve) {require(['./components/admin/Clubs.vue'], resol
 const Club = function(resolve) {require(['./components/admin/Club.vue'], resolve)}
 const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resolve)}
 
-const Productes = function(resolve) {require(['./components/admin/Products.vue'], resolve)}
+const adminProductes = function(resolve) {require(['./components/admin/Products.vue'], resolve)}
 
 
 //const Producte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
@@ -171,21 +171,21 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/val/tenda',
-	    name: 'Tenda',
-	    component: Cart,
+	    path: '/val/botiga',
+	    name: 'Botiga',
+	    component: Products,
 	    lang:'val', 
 	    meta: defaultHead
 	  },
 	    {
 	    path: '/es/tienda',
 	    name: 'Tienda',
-	    component: Cart,
+	    component: Products,
 	    lang:'es', 
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/val/tenda/:slug*',
+	    path: '/val/botiga/:slug*',
 	    name: 'Producte',
 	    component: Product, 
 	    meta: defaultHead
@@ -194,18 +194,6 @@ const routes = [
 	    path: '/es/tienda/:slug*',
 	    name: 'Producto',
 	    component: Product, 
-	    meta: defaultHead
-	  },
-	  {
-	    path: '/val/cistella',
-	    name: 'Cistella',
-	    component: Cart,
-	    meta: defaultHead
-	  },
-	    {
-	    path: '/es/carrito',
-	    name: 'Carrito',
-	    component: Cart,
 	    meta: defaultHead
 	  },
 	  {
@@ -266,24 +254,6 @@ const routes = [
 	    props: {propDisable:'competicions'},
 	    name: 'Federación nodo',
 	    component: SubRoutes, 
-	    meta: defaultHead
-	  },
-	  /*
-	  {
-	    path: '/val/*',
-	    name: 'nodes',
-	    component: SubRoutes
-	  },
-	  {
-	    path: '/es/*',
-	    name: 'nodos',
-	    component: SubRoutes,
-	  },
-	  */
-	  {
-	    path: '/test',
-	    name: 'test',
-	    component: Test, 
 	    meta: defaultHead
 	  },
 	  {
@@ -355,7 +325,7 @@ const routes = [
 	    {
 	    path: '/admin/productes',
 	    name: 'Productes',
-	    component: Productes,
+	    component: adminProductes,
 	    role: 0
 	  },
 	  {

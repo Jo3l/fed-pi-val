@@ -70,7 +70,33 @@ static public function render($result,$doexit=false) {
 }
 
 public function test( Request $in, Response $out) {
-	testintools();
+	//testintools();
+	// vaig a provar a fer un extractor de tags
+	$tags= json_decode(file_get_contents("../data/tagsnoticia.json"),true);
+	$tags= $tags['tags'];
+	// obtinc una notícia
+    $db = new db();
+	$sql= "SELECT id,idioma,contingut FROM _noticia";
+	$db->sql($sql);
+	$all= $db->all();
+	$alltags= array();
+	foreach($all as $r) {
+		$alltags[$r['id']]= array();
+		//echo '<hr/>',$r['id'],',',$r['idioma'],'<br/>';
+		foreach($tags as $tag) {
+			if (strpos(strtolower($r['contingut']),strtolower($tag))>0) $alltags[$r['id']][]=$tag;
+		}
+	}
+	foreach( $alltags as $id=>$tags )
+		if (count($tags)) echo "update pagina set tags='",join(',',$tags),"' where id=",$id,';<br/>';
+	//$data= $db->all();
+
+	/*$noticia= json_decode(file_get_contents("http://fedpival.indiza.com/api/noticia/19070"),true);
+	$c= $noticia[0]['contingut'];
+	echo $c;
+	foreach($tags as $tag) {
+		if (strpos(strtolower($c),strtolower($tag))>0) echo $tag,"<hr/>";
+	}*/
 }
 
 
@@ -101,6 +127,11 @@ static public function getPost($tabla) {
 * Obtindre els equips d'un club (o siga, que pertanyen a un club)
 */
 static public function equipsdeclub(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	if ( $request->getMethod() == 'POST' ) {
+		echo 'POST';
+		exit;
+	}
     $db = new db();
 	$club= $params['club'];
 	$options= array();
@@ -236,7 +267,7 @@ static public function tables($elm, $for='select') {
 	        'noticies'=>'_noticia_'.Fun::$idioma,
 	        'noticias'=>'_noticia_'.Fun::$idioma,
 	        'equips'=>'_equip',
-	        'club'=>'_club',
+	        'club'=>'club',
 	        'clubs'=>'_club',
 	        'jugador'=>'jugador',
 	        'jugadors'=>'jugador',
@@ -282,9 +313,28 @@ static public function tables($elm, $for='select') {
 static public function noticia_query(Request $request, Response $response, $params) {
 	$slug= $params['slug'];
     $db = new db();
-    //$db->sql("select * from _noticia where slug='".$slug."';");
-    $db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
+    $db->sql("select * from _noticia where slug='".$slug."';");
+    //$db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
     $data = $db->all();
+	Fun::render($data);
+}
+
+
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obtindre un producte pel seu slug únic (identificador alfanumèric)
+*/
+static public function producte_query(Request $request, Response $response, $params) {
+	$slug= $params['slug'];
+    $db = new db();
+    $db->sql("select * from producte where slug='".$slug."';");
+    //$db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
+    $data = $db->all();
+	$a= $data[0]['json']; 
+	$a= json_decode($a,true); 
+	$data[0]['json']= $a;
 	Fun::render($data);
 }
 
@@ -298,6 +348,20 @@ static public function noticia_query(Request $request, Response $response, $para
 */
 static public function tags_query(Request $request, Response $response, $params) {
 	return file_get_contents('../data/tags'.$params['tipus'].'.json');
+}
+
+//  //  //  //  //  //  //  //
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Llistat de modalitats obtingudes de consulta a taula _jquery amb pare 187 = clubs
+*/
+static public function modalitats(Request $request, Response $response, $params) {
+	$sql= "select id, nom_val as nom from _jerarquia where pare=187";
+	$db = new db();
+	$db->sql($sql);
+	$data= $db->all();
+	Fun::render($data);
 }
 
 

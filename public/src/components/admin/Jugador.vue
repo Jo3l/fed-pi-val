@@ -281,59 +281,6 @@ export default {
 
 <style lang="less">
 
-@import "../../assets/less/defines.less";
-	
-.contentFlex {
-	display:flex;
-	flex-wrap: wrap;
-	padding: 1em 2em;
-	&.formulari {
-		input{
-			border-bottom: 1px dashed #ccc!important;
 
-		}
-		.datepicker {
-			input {
-				font-family:inherit!important;
-				font-size:1em!important;
-			}
-		}
-
-	}
-	&.intern {
-		padding: 1em 0 2em 0;
-	}
-	.left50 {
-		width:50%;
-		@media(max-width:@screenTablet) {
-			width:100%;
-		}
-		.jugador {
-		    width: 75%;
-		    margin-left: 15%;
-		    img {
-		    	top:0;
-		    	right:0;
-		    	bottom:0;
-		    	left:0;
-		    	margin:auto;
-		    	max-width:300px;
-		    	@media(max-width:@screenTablet) {
-		    		max-width:inherit;
-		    	}
-		    }
-		}
-		.uploader {
-	    	text-align: center;
-		    width: 75%;
-		    margin-left: 15%;
-		    color: #87212e;
-		    font-weight: bold;
-	    	input{cursor:pointer;}
-	    }
-	}
-
-	
-}
 
 </style>

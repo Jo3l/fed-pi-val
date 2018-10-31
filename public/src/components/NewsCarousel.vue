@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
     	
-	    <div v-if=" pagina==null ">
+	    <div v-if="pagina==null ">
 	    	
 			<swiper :options="swiperOption" class="newsCarousel">
 	
@@ -58,11 +58,7 @@ import { swiper, swiperSlide } from 'vue-awesome-swiper'
 export default {
   name: 'Noticias',
   components: { swiper, swiperSlide },
-  props: {
-        pagina: {
-            type: Number,
-        }
-  },
+  props: ['pagina','busca'],
   head : function() {
 	return this.$route.meta;
   },
@@ -102,6 +98,23 @@ export default {
     }
   },
   methods: {
+	  	slugify:function(str) {
+	    str = str.replace(/^\s+|\s+$/g, ''); // trim
+	    str = str.toLowerCase();
+	  
+	    // remove accents, swap ñ for n, etc
+	    var from = "àáäâèéëêìíïîòóöôùúüûñç·/_,:;";
+	    var to   = "aaaaeeeeiiiioooouuuunc------";
+	    for (var i=0, l=from.length ; i<l ; i++) {
+	        str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+	    }
+	
+	    str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
+	        .replace(/\s+/g, '+') // collapse whitespace and replace by -
+	        .replace(/-+/g, '+'); // collapse dashes
+	
+	    return str;
+	},
 	stripHtmlToText: function(html)	{
 	    var tmp = document.createElement("DIV");
 	    tmp.innerHTML = html;
@@ -116,11 +129,11 @@ export default {
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
 	},
-	getData: function(apiUrl) {
+	getData: function(apiUrl, ncache) {
 
         var vm = this;
         this.$http.get(apiUrl, {
-
+			cache: ncache,
 		    // use before callback
 		    before(request) {
 		
@@ -133,6 +146,7 @@ export default {
 		      this.previousRequest = request;
 		    }
 		}).then(function (response) {
+			console.log(response.data[0].titol);
             vm.newsCarousel = response.data;
         })
         .catch(function (error) {
@@ -142,18 +156,22 @@ export default {
     }
   },
     mounted: function () {
-    	
+    	/*
     	if(this.pagina==null) {
-    		this.getData('/noticia/i/'+this.$i18n.locale);
+    		this.getData('/noticia/i/'+this.$i18n.locale, true);
     	}else {
-    		this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale);
+    		this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale, true);
     	}
-	
+		*/
     },
 	watch: {
 	    pagina: function (newVal, oldVal) {
-	      this.getData('/noticia/p/'+newVal+'/i/'+this.$i18n.locale);
-	    }
+	      this.getData('/noticia/p/'+newVal+'/i/'+this.$i18n.locale+(this.busca!='all'&&this.busca!=''?'/s/'+this.slugify(this.busca):''), true);
+	    }, 
+	    busca: function (newVal, oldVal) {
+	    	console.log(newVal);
+	      this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale+(newVal!='all'&&newVal.busca!=''?'/s/'+this.slugify(newVal):''), false);
+	    }, 
 	},
 }
 </script>
@@ -196,6 +214,7 @@ export default {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;
     		transition: transform .2s ease;
+    		width:~"calc(100% + 1px)";
     		&:hover {
     			//transform: translateY(10%)
     		}
@@ -245,6 +264,7 @@ export default {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 10px;
     		transition: transform .2s ease;
+    		width:~"calc(100% + 1px)";
 		}
 		
 		small {text-shadow: 1px 1px 1px white;}

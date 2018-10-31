@@ -154,6 +154,22 @@ $app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\F
 
 /*
 * @description
+* Guardar els equips d'un club (o siga, que pertanyen a un club)
+* Exemple de paràmetre {"equips":[1,2,4,8]}
+* URL: POST /api/equipsdeclub/12
+*/
+$app->post('/api/equipsdeclub/{club:[0-9]+}', '\app\Fun::equipsdeclub');
+
+/*
+* @description
+* Obtindre els equips sense club (o siga, que poden assignar-se a un club)
+* URL: GET /api/equipssense
+*/
+$app->post('/api/equipssense', '\app\Fun::equipssense');
+
+
+/*
+* @description
 * Obtindre els jugadors d'un equip (o siga, que juguen amb un equip)
 * URL: /api/jugadorsdequip/12
 */
@@ -166,6 +182,14 @@ $app->get('/api/jugadorsdequip/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\ap
 * Exemple de paràmetre: [ {"data":"2018-07-21T15:45:40.480Z","enfrontaments":[[{"id":"1","nom":"TEST: equip-prova","club":"1"},{"id":"2","nom":"TEST: equip-prova 2","club":"2"}]]} , {"data":"2018-07-28T15:45:40.000Z","enfrontaments":[[{"id":"2","nom":"TEST: equip-prova 2","club":"2"},{"id":"1","nom":"TEST: equip-prova","club":"1"}]]} ]
 */
 $app->post('/api/equip/genera', '\app\Fun::generaPartides'); // buscar
+
+
+/*
+* @description
+* Llistat de modalitats (tretes del node 187 de _jerarquia = clubs )
+* URL: /api/modalitats
+*/
+$app->get('/api/modalitats', '\app\Fun::modalitats'); 
 
 /*
 * @description
@@ -217,11 +241,19 @@ $app->get('/api/noticia/slug/{slug:[A-Za-z0-9\-]+}', '\app\Fun::noticia_query');
 
 /*
 * @description
+* Obtindre un producte pel seu slug únic (identificador alfanumèric)
+* URL: /api/producte/slug/adhesiu-verd
+*/
+$app->get('/api/producte/slug/{slug:[A-Za-z0-9\-]+}', '\app\Fun::producte_query');
+
+/*
+* @description
 * consulta generica d'una taula amb possibles modificadors
 * modificadors: /p/pagina /t/tag /s/search /o/ordre /i/idioma /j/node
 * URL: /api/jugador/s/sanchez
 */
-$app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Generics::generic_query');
+//$app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Generics::generic_query');
+$app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/[A-Za-z0-9_\+\-]+|/s/\w+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p2:/p/\d+|/t/\w+|/s/[A-Za-z0-9_\+\-]+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p3:/p/\d+|/t/\w+|/s/[A-Za-z0-9_\+\-]+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}[{p4:/p/\d+|/t/\w+|/s/[A-Za-z0-9_\+\-]+|/o/[a-z-]+|/i/\w+|/j/\d+|/destacada}]]]]', '\app\Generics::generic_query');
 
 /*
 * @description
@@ -341,6 +373,15 @@ $app->get('/{path:val/competicions/.+|es/competiciones/.+}', '\app\Headers::head
 * URL: /val/federacio
 */
 $app->get('/{path:val/federacio/.+|es/federacion/.+}', '\app\Headers::headers_federacio');
+
+/*
+ok /api/pertany/[idjugador] GET per obtindre l’equip al que pertany actualment
+ok /api/pertany/[idjugador] POST amb {id:equipid} per a vincular-lo a un equip
+ok /api/jugadorsdequip/[id] GET per obtindre els jugadors d’un equip
+ok /api/participa/[idpartida] GET per a obtindre els jugadors d’una partida
+de moment no incloc l’opció de veure les partides d’un jugador
+ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_juga
+*/
 
 /*
 Resum de rutes implementades:

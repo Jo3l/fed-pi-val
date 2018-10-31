@@ -87,7 +87,15 @@
 					<h4>{{parseTime(event.publicacio)}}</h4>
 					<i class="remove" @click="removeContent(event, todayEvent)"></i>
 
-							<input v-model="event.titol">
+							<ui-textbox
+							    floating-label
+				                autocomplete="off"
+				                error="This field is required"
+				                label="Títol:"
+								type="text"
+				                v-model="event.titol"
+							></ui-textbox>
+							
 						    <VuePellEditor 
 						        :actions="editorOptions" 
 						        :content="event.contingut" 
@@ -294,6 +302,7 @@ export default {
 		    var refIndex = 1;
 	        this.$http.get('actes/'+current+'/i/'+this.$i18n.locale)
 	        .then(function (response) {
+	        	var res = response;
 		        while (squareIndex < lastDate) {
 					var week = [];
 					
@@ -303,9 +312,9 @@ export default {
 						} else {
 							
 							var eventsInDay=[];
-							for (event in response.data) {
-								if(response.data[event].publicacio && response.data[event].publicacio == year+''+("0" + (month + 1)).slice(-2)+''+("0" + (dateOfMonth)).slice(-2)) {
-									eventsInDay.push(response.data[event]);
+							for (var event in res.data) {
+								if(res.data[event].publicacio && res.data[event].publicacio == year+''+("0" + (month + 1)).slice(-2)+''+("0" + (dateOfMonth)).slice(-2)) {
+									eventsInDay.push(res.data[event]);
 	        					}
 							}
 							
@@ -447,6 +456,17 @@ export default {
 			}
 		}
     }
+    input {
+	    width: 100%;
+	    font-family: 'Rambla', cursive;
+	    display: block;
+	    font-size: 2em;
+	    border: none;
+	    border-bottom: 1px dashed #ccc;
+	    margin-bottom: 0.5em;
+	    min-height: 42px;
+	    color: rgba(0, 0, 0, 0.87);
+	}
 
 }
 	

@@ -40,8 +40,9 @@ const getters = {
   },
   cartTotalPrice: function(state) {
   		var total=0;
+
 		state.added.forEach(function(element) {
-			var item = element.fullProduct.types.find(function(item) {return item.id === element.id && item.typeId === element.typeId})
+			var item = element.fullProduct.types.find(function(item) {return item.id === element.id && item.name === element.name})
 			total+= (item.price.amount * element.quantity)
 		});
 		return total.toFixed(2);
@@ -53,9 +54,9 @@ const actions = {
 	
   addProductToCart ({ state, commit }, product) {
 	  commit('setCheckoutStatus', null)
-      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})
       if (!cartItem) {
-        commit('pushProductToCart', { id: product.id, typeId: product.typeId, fullProduct: product.fullProduct });
+        commit('pushProductToCart', { id: product.id, name: product.name, fullProduct: product.fullProduct });
         saveState(state);
       } else {
         commit('incrementItemQuantity', cartItem);
@@ -64,13 +65,13 @@ const actions = {
 
   },
   increaseProductToCart ({ state, commit }, product) {
-      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})
       commit('incrementItemQuantity', cartItem);
       saveState(state);
 
   },
   removeProductToCart ({ state, commit }, product) {
-      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})
       if (cartItem.quantity>1) {
         commit('decrementItemQuantity', cartItem);
         saveState(state);
@@ -80,7 +81,7 @@ const actions = {
       }
   },
   deleteProductToCart ({ state, commit }, product) {
-      const cartItem = state.added.find(function(item) {return item.id === product.id && item.typeId === product.typeId})
+      const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})
         commit('removeItem', cartItem);
         saveState(state);
   },
@@ -91,27 +92,27 @@ const actions = {
 
 // mutations
 const mutations = {
-  pushProductToCart (state, { id, typeId, fullProduct }) {
+  pushProductToCart (state, { id, name, fullProduct }) {
     state.added.push({
       id,
-      typeId,
+      name,
       fullProduct,
       quantity: 1
     })
   },
 
-  incrementItemQuantity (state, { id, typeId }) {
-    const cartItem = state.added.find(item => item.id === id && item.typeId === typeId)
+  incrementItemQuantity (state, { id, name }) {
+    const cartItem = state.added.find(item => item.id === id && item.name === name)
     cartItem.quantity++
   },
   
-  decrementItemQuantity (state, { id, typeId }) {
-    const cartItem = state.added.find(item => item.id === id && item.typeId === typeId)
+  decrementItemQuantity (state, { id, name }) {
+    const cartItem = state.added.find(item => item.id === id && item.name === name)
     cartItem.quantity--
   },
   
-  removeItem (state, { id, typeId }) {
-    const cartItem = state.added.findIndex(item => item.id === id && item.typeId === typeId)
+  removeItem (state, { id, name }) {
+    const cartItem = state.added.findIndex(item => item.id === id && item.name === name)
     state.added.splice(cartItem, 1)
   },
   

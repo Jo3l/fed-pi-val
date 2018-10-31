@@ -37,8 +37,8 @@
 					:clickHandler="clickCallback"
 					:page-range="2"
     				:margin-pages="0"
-				    :prev-text="'Prev'"
-				    :next-text="'Next'"
+				    :prev-text="$i18n.t('common.prev')"
+				    :next-text="$i18n.t('common.next')"
 				    :container-class="'pagination'"
 				    :page-class="'page-item'">
 				</paginate>

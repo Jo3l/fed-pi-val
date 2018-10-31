@@ -89,9 +89,8 @@
 				                :options="poblacions"
 				                @query-change="onQueryChange"
 				                v-model="club.cp"
-				                
 				            ></ui-select>
-					        
+            
 							<ui-textbox
 							    floating-label
 							    disabled
@@ -102,8 +101,8 @@
 					            v-model="club.poblacio"
 					        ></ui-textbox>
 					        
-							<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
-							<progressive-img v-else  :src="mapa" fallback="/static/img/mapsPlaceholder.jpg" />
+							<!--<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
+							<progressive-img v-else  :src="mapa" fallback="/static/img/mapsPlaceholder.jpg" />-->
 					        
 					        </div>
 					        <div class="left50">
@@ -134,12 +133,18 @@
                 </ui-tab>
 
                 <ui-tab title="Equips">
+                	<span class="button-right">
+						<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Equip</ui-button>
+					</span>
+					<br>
 					<div class="vuetableContainer">
 						<tablerone :tableList="list" :tableColumns="columns">
-							<th slot="headActions"></th></th>
+							<th slot="headActions"></th>
 							<template slot="actions" scope="props">
-								<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
-								<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
+								<td class="actions">
+									<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
+									<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
+								</td>
 							</template>
 						</tablerone>
 						<paginate
@@ -147,8 +152,8 @@
 							:clickHandler="clickCallback"
 							:page-range="2"
 		    				:margin-pages="0"
-						    :prev-text="'Prev'"
-						    :next-text="'Next'"
+						    :prev-text="$i18n.t('common.prev')"
+						    :next-text="$i18n.t('common.next')"
 						    :container-class="'pagination'"
 						    :page-class="'page-item'">
 						</paginate>
@@ -180,13 +185,7 @@ export default {
 	                label: 'Nom',
 	                field: 'nom',
 	                html: false,    
-	            },
-	            {
-	                label: 'Club',
-	                field: 'club',
-	                html: false,    
 	            }
-	            
 	        ],
 			loading:false,
 		    noResults:false,
@@ -269,7 +268,7 @@ export default {
 		var mapType="roadmap"
 		vm.mapa= "https://maps.googleapis.com/maps/api/staticmap?maptype="+mapType+"&size="+sizeWidth+"x"+sizeHeight+"&zoom="+zoom+"&key="+apiKey+"&style=feature:all|saturation:-100|gamma:0.5&markers=label:O%7C'"+encodeURI(vm.club.dir+', '+vm.club.cp+', '+vm.club.poblacio);
 		
-		
+		//https://maps.googleapis.com/maps/api/staticmap?center=ball%20de%20la%20carxofa%20algemesi%20valencia&zoom=15&size=800x400&maptype=roadmap&format=png&key=&scale=1&language=val
 		},
 		setPoblacio:function(){
 			var vm = this;
@@ -322,7 +321,7 @@ export default {
 		},
 		parseTime: function(time) {
 			
-			var str = time;
+			var str = time||'';
 			var year = str.substring(0, 4);
 			
 			return new Date(year, 1, 1, 1, 1, 1);	
@@ -351,7 +350,7 @@ export default {
 	        vm.$http.get('/club/'+vm.$route.params.clubId, { cache: false })
 	        .then(function (response) {
 	            vm.club = response.data[0];
-	            vm.club.fundacio = vm.parseTime(vm.club.fundacio);
+	            vm.club.fundacio = vm.parseTime(response.data[0].fundacio);
 	            vm.getEquips('equipsdeclub');
 	        })
 	        .catch(function (error) {
@@ -360,7 +359,6 @@ export default {
 		},
 		getEquips: function(listName, page){
 	        var vm = this;
-	        
 	        var searchFilter = escape('/'+vm.club.id);
 	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
 	        
@@ -391,21 +389,6 @@ export default {
 
 <style lang="less">
 
-@import "../../assets/less/defines.less";
-	
-.doubleColumn {
-	column-count:2;
-	column-gap: 40px;
-	margin-top:10px;
-	margin-left: 10px;
-	width: 100%;
-	@media(max-width:768px) {
-		column-count:1;
-		width: ~"calc(100vw - 85px)";
-	}
-	@media(max-width:480px){
-		font-size: 80%;
-	}
-}
+
 
 </style>
