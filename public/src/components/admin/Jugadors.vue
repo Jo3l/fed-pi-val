@@ -28,15 +28,17 @@
 					
 					<template slot="icon1" scope="props">
 						<td class="actiu">
-							<ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu==1"></ui-icon> 
-							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon>
+							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu==1"></ui-icon> 
+							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
+							<ui-checkbox v-model="props.row.actiu" @change="saveChanges(props.row)">actiu</ui-checkbox>
 						</td>
 					</template>
 					
 					<template slot="icon2" scope="props">
 						<td class="actiu">
-							<ui-icon icon="lens" class="fedcolor" v-if="props.row.segur==1"></ui-icon>
-							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon>
+							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.segur==1"></ui-icon>
+							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
+							<ui-checkbox v-model="props.row.segur" @change="saveChanges(props.row)">actiu</ui-checkbox>
 						</td>
 					</template>
 					
@@ -147,6 +149,17 @@ export default {
 	            console.log(error);
 	        });
 		},
+		saveChanges: function(row) {
+			var vm= this;
+	        vm.$http.post('/jugador/'+ row.id , row)
+	        .then(function (response) {
+	        	console.log(response)
+				vm.getData('jugador');
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+		}
 	},
 	mounted: function () {
 		var vm=this;
