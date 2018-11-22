@@ -8,6 +8,18 @@
         type="clear"
         :raised="false"
     >
+        <ui-icon-button
+    		v-if="isMobileDevice()"
+        	class="cartBasket mobile"
+            color="black"
+            icon="shopping_cart"
+            size="large"
+            type="secondary"
+            @click="visibleCart=!visibleCart"
+        >
+        	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
+        </ui-icon-button>
+		            	
 		<div slot="icon">
 			<img src="/static/logo.png">
 		</div>
@@ -62,7 +74,7 @@
             	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
             </ui-icon-button>
                         	
-            
+            <!--
             <ui-icon-button
                 color="black"
                 icon="search"
@@ -70,6 +82,7 @@
                 type="secondary"
                 @click="toggleBar()"
             ></ui-icon-button>
+            -->
                         
 	    </div>
 	    
@@ -91,15 +104,6 @@
 	    </ul>
 	</div>
 
-
-	
-	<ui-modal ref="login" size="normal" title="Login">
-        <div slot="header">
-			login
-        </div>
-	    <button @click="login(user)">Login</button>
-		<button @click="register(user)">Register</button>
-    </ui-modal>
 	
 	<div class="closeCart" v-if="visibleCart" @click="visibleCart=false"></div>
 	<cart-list v-if="visibleCart"></cart-list>
@@ -131,6 +135,9 @@ export default {
 	}
 	},
 	methods: {
+		isMobileDevice: function() {
+		    return document.body.clientWidth<480;
+		},
 		selectUserOptions:function(selected){
 			if(selected.action=='logout') this.logout();
 		},
@@ -140,16 +147,10 @@ export default {
 		toggleBar: function() {
 		this.loadingBar = !this.loadingBar;
 		},
-        openModal: function() {
-        	this.$refs.login.open();
-        },
-        closeModal: function() {
-            this.$refs.login.close();
-        },
 		logout: function (user) {
 		  var vm=this;
 		  this.$store.dispatch('logout').then(function(){
-				vm.closeModal();
+				//vm.closeModal();
 		  });
 	    },
 	    register: function (user) {
@@ -234,6 +235,14 @@ export default {
 			}
 		}
 	}
+	
+	.cartBasket.mobile {
+		display:none;
+		@media(max-width:@screenMobile) {
+			display:block;
+		}
+	}
+	
 	.amount{
 	    position: absolute;
 	    left: 57%;

@@ -17,12 +17,34 @@
 		</svg>
 	</div>    	
     	
-    	<newsCarousel></newsCarousel>
+    	<NewsCarousel :pagina="-1"></NewsCarousel>
     	
 		<Calendar type="slider"></Calendar>
 		
 		<products type="slider"></products>
 		
+		<div class="social">
+				<vue-goodshare-facebook 
+					title_social="Facebook"
+				    has_counter
+				    has_icon 
+				></vue-goodshare-facebook>
+				<vue-goodshare-twitter 
+					title_social="Twitter"
+				    has_icon 
+				></vue-goodshare-twitter>
+				<vue-goodshare-whatsapp 
+					v-if="isMobileDevice()"
+					title_social="WhatsApp"
+				    has_icon 
+				></vue-goodshare-whatsapp>
+				<vue-goodshare-telegram 
+					v-if="isMobileDevice()"
+					title_social="Telegram"
+				    has_icon 
+				></vue-goodshare-telegram>
+		</div>
+			
     </div>
     </transition>
 </template>
@@ -33,10 +55,14 @@ import NewsCarousel from './NewsCarousel.vue';
 import Calendar from './Calendar.vue';
 import Products from './shop/Products.vue';
 import Teaser from './Teaser.vue';
+import VueGoodshareFacebook from 'vue-goodshare/src/providers/Facebook.vue'
+import VueGoodshareTwitter from 'vue-goodshare/src/providers/Twitter.vue'
+import VueGoodshareWhatsapp from 'vue-goodshare/src/providers/WhatsApp.vue'
+import VueGoodshareTelegram from 'vue-goodshare/src/providers/Telegram.vue'
 
 export default {
   name: 'Start',
-  components: {'NewsCarousel' : NewsCarousel, 'Calendar': Calendar, 'products': Products, 'teaser' : Teaser },
+  components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram,'NewsCarousel' : NewsCarousel, 'Calendar': Calendar, 'products': Products, 'teaser' : Teaser },
   data () {
     return {
 
@@ -46,6 +72,9 @@ export default {
 	return this.$route.meta;
   },
   methods: {
+  	isMobileDevice: function() {
+	    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+	},
   	stringDate: function(dateStr) {
   		return dateStr.substr(6,2)+'/'+dateStr.substr(4,2)+'/'+dateStr.substr(0,4);
   	},
@@ -65,7 +94,14 @@ export default {
 }
 </script>
 
-<style>
+<style lang="less">
+
+#start{
+	.social{
+		margin-left:20px;
+	}
+}
+
 /*
 .teaser {
 	width: 100%;

@@ -68,9 +68,30 @@ $app->get('/api/authtest', '\app\Auth::authtest');
 
 /*
 * @description
+* Test de email existent. Si existeix el email de club i encara no té creada contrasenya, canvia el botó login al vol per un "registrar-se"
+*/
+$app->get('/api/emailclub/{email:.+}', '\app\Auth::emailclub');
+
+/*
+* @description
+* Envia nova clau per email a usuari (comprove primer si és usuari de club i després de taula usuari)
+* Exemple de paràmetre : {"email":897}
+* URL: /api/pwd
+*/
+$app->post('/api/pwd/', '\app\Auth::emailpwd');
+
+/*
+* @description
 * Test de prova a cridar una funció en un arxiu extern
 */
 $app->get('/api/test', '\app\Fun::test'); // obtindre un cami
+
+/*
+* @description
+* Petició de comanda de compra.
+* En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
+*/
+$app->post('/api/comprar', '\app\Fun::comprar');
 
 /*
 * @description
@@ -182,6 +203,13 @@ $app->get('/api/jugadorsdequip/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\ap
 * Exemple de paràmetre: [ {"data":"2018-07-21T15:45:40.480Z","enfrontaments":[[{"id":"1","nom":"TEST: equip-prova","club":"1"},{"id":"2","nom":"TEST: equip-prova 2","club":"2"}]]} , {"data":"2018-07-28T15:45:40.000Z","enfrontaments":[[{"id":"2","nom":"TEST: equip-prova 2","club":"2"},{"id":"1","nom":"TEST: equip-prova","club":"1"}]]} ]
 */
 $app->post('/api/equip/genera', '\app\Fun::generaPartides'); // buscar
+
+/*
+* @description
+* Obtindre els 10 últims resultats (ids i noms d'equips, resultat, lloc, i data)
+* URL: GET /api/ultimsresultats
+*/
+$app->get('/api/ultimsresultats', '\app\Fun::ultimsResultats');
 
 
 /*

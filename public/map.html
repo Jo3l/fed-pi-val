@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Mapa d'ubicació</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+<div id='map'></div>
+<script>
+var loc= location.search.substr(1);
+var admin= false;
+
+if(loc.indexOf('&admin')>=0) {
+	loc= loc.replace(/&admin/,'');
+	admin= true;
+}
+
+function get(url) {
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+	  if (this.readyState == 4 && this.status == 200) {
+	    var json= JSON.parse(this.responseText);
+	    var coords= [json.features[0].center[1],json.features[0].center[0]];
+	    pos(coords);
+	  }
+	};
+	xmlhttp.open('GET', url);
+	xmlhttp.send();	
+}
+
+L.mapbox.accessToken = 'pk.eyJ1IjoiYWxzYW5hbiIsImEiOiJjaW50dzlibTAwMGt0dnZseTJ1d2NkZWI3In0.FI0VWKvVV3oU4DblKsussw';
+var map = L.mapbox.map('map', 'mapbox.streets')
+    .setView([39.4775018,-0.4018033], 16);
+var marker= null;
+
+// 39.454124, -0.388633
+if ( /-?[0-9]{1,3}[.][0-9]+\,\s*-?[0-9]{1,3}[.][0-9]+/.test( loc ) ) {
+	loc= loc.split(',');
+	pos([loc[0],loc[1]])
+	// ja son coordinades gps
+} else get("https://api.mapbox.com/geocoding/v5/mapbox.places/"+loc+".json?types=address&access_token=pk.eyJ1IjoiYWxzYW5hbiIsImEiOiJjaW50dzlibTAwMGt0dnZseTJ1d2NkZWI3In0.FI0VWKvVV3oU4DblKsussw");
+
+
+map.on('click', function (e) {
+	if (!admin) return;
+	pos(e.latlng)
+	k= JSON.parse(JSON.stringify({'event': 'sendMapData', 'data':e.latlng }));
+	parent.postMessage(k, '*');
+});
+
+function pos(coords) {
+    map.setView(coords);
+    if (marker) marker.remove();
+	marker = L.marker(coords, {
+	  icon: L.mapbox.marker.icon({
+	    'marker-color': '#f86767'
+	  })
+	}).addTo(map);	  
+}
+
+</script>
+</body>
+</html>

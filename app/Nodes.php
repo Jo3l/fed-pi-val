@@ -76,6 +76,7 @@ static public function delete_element(Request $request, Response $response, $par
 	//api/node/{pare:[0-9]+}/element/{id:[0-9]+}
     $id= $params['id'];
     $pare= $params['pare'];
+    if ( $id==32715 ) return Fun::render(Nodes::contingutnode($pare), true); // bloc d'avisos no es pot esborrar
     $db= new db();
     $db->sql(" START TRANSACTION;");
     $db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$id);
@@ -180,12 +181,12 @@ static private function editaelement($id) {
         $sql= "START TRANSACTION;";
         $db->sql( $sql );
         if (isset($json['titol'])) {
-            $sql= " UPDATE idioma SET text= '".$json['titol']."' WHERE registreid=".$json['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='titol';";
+            $sql= " UPDATE idioma SET text= ".$db->escapeString($json['titol'])." WHERE registreid=".$json['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='titol';";
             $db->sql( $sql );
             unset($json['titol']);
         }
         if (isset($json['contingut'])) {
-            $sql= " UPDATE idioma SET text= '".$json['contingut']."' WHERE registreid=".$json['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='contingut';";
+            $sql= " UPDATE idioma SET text= ".$db->escapeString($json['contingut'])." WHERE registreid=".$json['id']." AND idioma='".Fun::$idioma."' AND tipus='element' AND camp='contingut';";
             $db->sql( $sql );
             unset($json['contingut']);
         }
@@ -203,15 +204,15 @@ static private function editaelement($id) {
         $sql= "SET @last_id = LAST_INSERT_ID(); ";
         $db->sql( $sql );
         if ($json['tipus']=='H') { // contingut en es i val
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','contingut','".$json['contingut']."'); ";
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','contingut',".$db->escapeString($json['contingut'])."); ";
             $db->sql( $sql );
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','contingut','".$json['contingut']."'); ";
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','contingut',".$db->escapeString($json['contingut'])."); ";
             $db->sql( $sql );
         }
         if (in_array($json['tipus'],array('H','F'))) { // titol en es i val
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','titol','".$json['titol']."'); ";
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'es','element','titol',".$db->escapeString($json['titol'])."); ";
             $db->sql( $sql );
-            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','titol','".$json['titol']."'); ";
+            $sql= " INSERT INTO idioma(registreid,idioma,tipus,camp,text) VALUES (@last_id,'val','element','titol',".$db->escapeString($json['titol'])."); ";
             $db->sql( $sql );
         }
         $sql= "COMMIT;";

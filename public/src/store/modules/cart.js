@@ -51,7 +51,10 @@ const getters = {
 
 // actions
 const actions = {
-	
+  deleteCart ({ state, commit }) {
+  	state.added=[];
+  	saveState(state);
+  },
   addProductToCart ({ state, commit }, product) {
 	  commit('setCheckoutStatus', null)
       const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})
@@ -62,7 +65,6 @@ const actions = {
         commit('incrementItemQuantity', cartItem);
         saveState(state);
       }
-
   },
   increaseProductToCart ({ state, commit }, product) {
       const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})

@@ -41,7 +41,9 @@
 	                    </div>
 	                  </div>
 					
-					<add-to-cart-button :productSelected="productSelected"></add-to-cart-button>
+					<add-to-cart-button :productSelected="productSelected"></add-to-cart-button> 
+					
+					<br style="clear:both;">
 					
 				</article>
 
@@ -320,6 +322,7 @@ export default {
 		@media(max-width:@screenDesktop) {
 			padding: 15px;
 			width: 100%;
+			order:1;
 		}
 		position:relative;
 		display:flex;
@@ -350,6 +353,7 @@ export default {
 		width:50%;
 		@media(max-width:@screenDesktop) {
 			width:100%;
+			order:2;
 		}
 		height:450px;
 		display:flex;

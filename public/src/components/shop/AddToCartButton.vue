@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
 					<div class="addToCart">
-						<ui-button icon="shopping_cart" color="fedpival" @click="$store.dispatch('addProductToCart', productSelected)" :disabled="!productSelected || productSelected.stock<=0">Afegir a la cistella</ui-button>
+						<ui-button icon="shopping_cart" color="fedpival" @click="$store.dispatch('addProductToCart', productSelected)" :disabled="!productSelected || productSelected.stock<=0">{{$i18n.t('cart.addToBasket')}}</ui-button>
 					</div>
     </transition>
 </template>

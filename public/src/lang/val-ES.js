@@ -12,6 +12,7 @@ export default {
         secondTip: 'Sel·lecciona segon',
 	},
 	cart : {
+		viewAllProducts:'Punxa ací per vore tots els productes.',
 		highlight: 'Destacat',
 		before:'Abans',
 		price: 'Preu',
@@ -29,9 +30,19 @@ export default {
 		technicalData:'Dades tècniques',
 		info:'Informació',
 		customerData:'Dades del client',
-		shippingInfo: 'Plene el formulari i rebrà per correu electrònic les instruccions per al pagament del contigut de la cistella via transferència. Per a qualsevol pregunta cal posar-se en contacte amb nosaltres al telèfon 6969696969 o al correu electrònico',
+		shippingInfo: 'Plene el formulari i rebrà per correu electrònic les instruccions per al pagament del contigut de la cistella via transferència. Per a qualsevol pregunta cal posar-se en contacte amb nosaltres al telèfon 6969696969 o al correu electrònico botiga@fedpival.es',
+		success: 'S\'ha realitzat l\'encomanda. A continuació recibrà un correu electrònic amb les opcions de  pagament.',
+		fail: 'L\'encomanda ha fallat, per a encomandes per telèfon cal cridar al 54645654645645 o enviar un correu electrònic a botiga@fedpival.es',
 	},
 	common : {
+		thisLocation:'Usar localització actual',
+		name:'Nom',
+		president:'President',
+		secretary:'Secretari',
+		clubData:'Dades del club',
+		teams:'Equips',
+		funDate:'Any de fundació',
+		place:'Població',
 		filterWith:'Filtrades noticies relacionades amb',
 		clickFilter:'Fes click per a canviar filtre',
 		clickCloud:'Fes click per sel·leccionar la paraula a filtrar',
@@ -57,7 +68,9 @@ export default {
 		wrong: 'Valor incorrecte',
 		cookieLegal: 'Aquesta pàgina web utilitza cookies per a millorar l´experiencia navegant. Pots consultar ací la nostra ',
 		next: 'Següent',
-		prev:'Anterior'
+		prev: 'Anterior',
+		lastResults:'Últims resultats',
+		sendPwd:'Enviar password'
 	},
 	node : {
 		insert_node : 'Insertar nou node',

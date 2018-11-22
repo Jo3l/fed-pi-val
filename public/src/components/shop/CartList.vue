@@ -13,7 +13,7 @@
 				    		<div v-if="cart.length==0" class="swiper-slide empty">{{$t('cart.emptyCart')}}</div>
 						    <swiper-slide v-for="item in cart" v-else>
 						      	<router-link :to="{ path: '/'+$i18n.locale+'/'+$t('cart.shop')+'/'+item.fullProduct.content[$i18n.locale].slug }">
-						        <picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductSize(item)}}</span></picture>
+						        <picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductType(item)}}</span></picture>
 						        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
 						        <span class="item-price">{{getProductPrice(item)}}€</span>
 						        <span class="item-quantity">{{$t('cart.quantity')}}: {{item.quantity}}</span>
@@ -32,6 +32,12 @@
 						<ui-button icon="shopping_cart" :class="cart.length>0?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}}</ui-button>
 						
 				        <ui-modal size="large" ref="buyModal" :title="$i18n.t('cart.customerData')">
+				        	
+				        	<div class="done" v-if="resultDone">
+				        		<p>{{resultDone}}</p>
+				        		<ui-button @click="eraseCart()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
+				        	</div>
+				        	
 							<h3>{{$i18n.t('cart.info')}}:</h3>
 							<p>{{$i18n.t('cart.shippingInfo')}} <a href="mailto:tenda@fedpival.es">tenda@fedpival.es</a></p>
 							<div class="clientData">
@@ -48,7 +54,6 @@
 						                label="Adreça"
 						                placeholder="Pose l'adreça on es va a enviar"
 						                v-model="order.address"
-						                multiLine
 						            ></ui-textbox>
 		
 						            <ui-textbox
@@ -78,13 +83,14 @@
 						                placeholder="Pose la seua adreça de correu electrònic"
 						                type="email"
 						                v-model="order.email"
+						                :invalid="$store.getters.validate({string:order.email,type:'email'})"
 						            ></ui-textbox>
 								</div>
 								<div class="list">
 									
 							    	<div class="shopping-cart-items final">
 									    <div v-for="item in cart" class="swiper-slide">
-									        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
+									        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}} [{{getProductType(item)}}]</span>
 									        <span class="item-price">{{getProductPrice(item)}}€</span>
 									        <span class="item-quantity">{{$t('cart.quantity')}}: {{item.quantity}}</span>
 									    </div>
@@ -93,8 +99,10 @@
 									<span class="finalPrice">Total {{cartTotalPrice}}€</span>
 								</div>
 				            </div>
-							<div slot="footer">
-				                <ui-button @click="" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
+				            
+				            
+							<div slot="footer" v-if="!resultDone">
+				                <ui-button @click="buy()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
 				                <ui-button @click="closeModal('buyModal')">{{$i18n.t('modal.cancel')}}</ui-button>
 				            </div>
 				        </ui-modal>
@@ -114,6 +122,7 @@ export default {
   components: { swiper, swiperSlide },
   data () {
     return {
+    	resultDone:'',
     	order:{
     		name:'',
     		address:'',
@@ -140,6 +149,7 @@ export default {
     	cart: 'cart',
     	checkoutStatus: 'checkoutStatus',
     	cartTotalPrice :'cartTotalPrice',
+    	validate:'validate'
     })
   },
   methods: {
@@ -150,20 +160,35 @@ export default {
     },
     closeModal: function(ref) {
     	var vm = this;
-    	vm.order={name:'', address:'', cp:'', tel:'', email:''};
         vm.$refs[ref].close();
     },
+    eraseCart: function(ref) {
+    	var vm = this;
+    	vm.resultDone = '';
+    	vm.order={name:'', address:'', cp:'', tel:'', email:''};
+		vm.$store.dispatch('deleteCart');
+        vm.closeModal('buyModal');
+    },
     buy: function(cart){
+
+		if(document.querySelectorAll('.is-invalid:not(.is-disabled)').length>0) {
+			document.querySelector('.is-invalid:not(.is-disabled) input').focus()
+			this.resultDone = '';
+			return false;
+		}
 
 		var vm = this;
 		vm.order.cart = vm.cart;
 
-		vm.$http.post('/comprar/', vm.order)
+		vm.$http.post('/comprar', vm.order)
 		.then(function (response) {
-				alert(response.data);
+				setTimeout(function(){
+					vm.resultDone = vm.$i18n.t('cart.success');
+				}, 500);
         })
         .catch(function (error) {
-            console.log(error);
+        		vm.resultDone = vm.$i18n.t('cart.fail');
+            	console.log(error);
         });
 	        
 
@@ -200,10 +225,10 @@ export default {
 		}
 		return false;
 	},
-	getProductSize:function(item){
+	getProductType:function(item){
   		for (var i = 0, len = item.fullProduct.types.length; i < len; i++) {
 		  if(item.fullProduct.types[i].name==item.name) {
-		  	
+		  
 		  	return item.fullProduct.types[i].name;
 		  	
 		  }
@@ -224,6 +249,17 @@ export default {
 
 @import "../../assets/less/defines.less";
 
+.done {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,1);
+    left: 0;
+    top: 0;
+    z-index: 99;
+    padding: 23%;
+}
+
 .clientData{
 	display:flex;
 	.form{width:50%;}
@@ -242,11 +278,20 @@ export default {
     width: 320px;
     border-radius: 3px;
     padding: 20px 0 0 0;
-    z-index: 10;
+    z-index: 99;
     box-shadow: 0 10px 45px rgba(0, 0, 0, 0.2);
     right: 22px;
     top: 66px;
     max-height: 400px;
+    @media(max-width:@screenMobile) {
+	    margin: 0px;
+	    position: absolute;
+	    width: 100%;
+	    box-shadow: 0 10px 45px rgba(0, 0, 0, 0.2);
+	    top: 90px;
+	    left: 0px;
+	    max-height: 400px;
+	}
 
 	.checkout{
 	    width: 100%;
@@ -326,6 +371,8 @@ export default {
 				    position:absolute;
 				    bottom:0;
 				    right:3px;
+				    word-break: break-all;
+				    overflow:hidden;
 			    }
 	    	}
 	    }

@@ -16,6 +16,10 @@
 
 					<a v-if="element.tipus == 'F'" :href="element.url"><ui-icon icon="attach_file"></ui-icon><strong>{{element.titol}}</strong></a>
 					
+					<div v-if="element.tipus == 'M'" class="mapa">
+						<iframe :src="'/map.html?'+ element.json"></iframe>
+					</div>
+					
 					<div class="partida" v-if="element.tipus == 'J'">
 					<table class="table results">
 						<thead>
@@ -70,6 +74,18 @@
 					</div>
 					<!-- imatge -->
 					
+					<!-- mapa -->
+					
+					<div v-if="element.tipus == 'M'" class="mapa">
+						<ui-button color="blueButtonToRight" icon="map" size="small" type="secondary" @click="nodeContent[key].json = dataMap">{{$i18n.t('common.thisLocation')}}</ui-button>
+						<input v-model="nodeContent[key].json">
+						<iframe :src="'/map.html?'+ nodeContent[key].json + '&admin'"></iframe>
+					</div>
+					<div class="buttonContainer" v-if="element.tipus == 'M'">
+						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
+					</div>
+					<!-- mapa -->
+					
 					<!-- Html -->
 					<article v-if="element.tipus == 'H'">
 						<input v-model="nodeContent[key].titol">
@@ -120,8 +136,9 @@
 								</tr>
 							</tbody>
 						</table>
+						
 						<div class="form" v-if="!generator">
-							 <h3>Nova Partida</h3>
+        				<ui-modal ref="matchedit" size="large"  title="Editar partida">
 							 <label>Data
 							
 							 <vue-datepicker-local v-model="newGame.data" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
@@ -268,6 +285,8 @@
 								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Cancelar</ui-button>
 							</div>
 
+    					</ui-modal>
+
 						</div>
 						<div class="form" v-if="generator">
 							<match-generator :nodeId="element.jerarquia" :blockId="element.id"></match-generator>
@@ -288,12 +307,12 @@
 					<span v-if="element.tipus == 'F'">{{element.url}}</span>
 					<div class="buttonContainer" v-if="element.tipus == 'F'">
 						<ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', element, element.url, 'pdf')">{{$i18n.t('common.uploadPdf')}}</ui-button>
-						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">Desar</ui-button>
+						<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(element)">{{$i18n.t('common.save')}}</ui-button>
 					</div>
 					<!-- Arxiu -->
 					
 					
-					<!-- llistat -->jerarquia
+					<!-- llistat -->
 					<div class="buscador" v-if="listOn(element.tipus)">
 						<pre>{{element.tipus}}</pre>
 					</div>
@@ -310,6 +329,7 @@
                 <ui-icon-button @click="addContentHtml" tooltip="Insertar Contenido" size="small" icon="font_download" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentFile" tooltip="Insertar archivo" size="small" icon="file_upload" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
+                <ui-icon-button @click="addContentMap" tooltip="Insertar Mapa" size="small" icon="map" type="secondary"></ui-icon-button>
                 <ui-icon-button v-if="disable && !gameOn" @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>
         </div>
         
@@ -324,7 +344,7 @@
 
 
 	    </div>
-
+    
 </template>
 
 <script>
@@ -336,11 +356,13 @@ import VueDatepickerLocal from 'vue-datepicker-local'
 import FileManager from './FileManager.vue'
 import MatchGenerator from './MatchGenerator.vue'
 
+
 export default {
   	components: { draggable, VuePellEditor, VueDatepickerLocal, 'filemanager':FileManager, MatchGenerator },
   	props: ['nodeId', "disableBlock"],
 	data () {
 		return {
+			dataMap:'',
 			generator:false,
 			selected:{},
 			loading:false,
@@ -353,6 +375,25 @@ export default {
 			textbox_visitant: false,
 			textbox_resultatvisitant: false,
 			textbox_resultatlocal: false,
+			mapbox:{
+				style: 'mapbox://styles/mapbox/light-v9',
+				center: [-96, 37.8],
+				zoom: 3,
+				accessToken:'sk.eyJ1IjoiYWxzYW5hbiIsImEiOiJjam9pd2FqeG8wY2c1M3BwZmVodGZpN3ExIn0.Zq0TtD1l9B5Vl3GV6BFLKg',
+				geolocateControl:{
+				  show: true,
+				  position: 'top-left'
+				},
+				scaleControl:{
+				  show: true,
+				  position: 'top-left'
+				},
+				fullscreenControl:{
+				  show: true,
+				  position: 'top-left'
+				}
+			},
+			
 			datePickerOptions: {
 				yearSuffix: '',
 				monthsHead: this.$parent.$i18n.t('calendar.months'),
@@ -574,6 +615,13 @@ export default {
 			
 			
 		},
+        openModalMatch(ref) {
+        	console.log(this,this.$refs)
+            this.$refs[ref][0].open();
+        },
+        closeModalMatch(ref) {
+            this.$refs[ref][0].close();
+        },		
 		editMatch: function(element) {
 			var vm=this;
 			
@@ -588,7 +636,7 @@ export default {
 			vm.$http.get('/participa/'+element.id, { cache: false })
 	        .then(function (response) {
 
-
+				vm.openModalMatch('matchedit');
 	            vm.equipLocal = response.data.filter(function(obj){ return obj.equip === element.local.id});
 	            vm.equipVisitant = response.data.filter(function(obj){ return obj.equip === element.visitant.id});
 				
@@ -603,8 +651,9 @@ export default {
 		getNode: function(){
 			
 	        var vm = this;
-	        
-	    	vm.$http.get('/node/'+vm.nodeId, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+
+	    	vm.$http.get('/node/'+vm.nodeId, { cache: auth })
 	        .then(function (response) {
 
 	            vm.nodeContent = response.data;
@@ -640,8 +689,9 @@ export default {
 		getList: function(listName) {
 	        var vm = this;
 	        //var url = objSearch.valor ? listName+'/search/'+objSearch.camp+'/'+objSearch.valor : listName;
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
 	        
-	        vm.$http.get(listName, { cache: false })
+	        vm.$http.get(listName, { cache: auth })
 	        .then(function (response) {
 	            vm.searchList = response.data;
 	        })
@@ -667,6 +717,8 @@ export default {
 			vm.textbox_visitant=false;
 			vm.textbox_resultatvisitant=false;
 			vm.textbox_resultatlocal=false;
+			
+			vm.closeModalMatch('matchedit');
 			
 		},
 		saveBlock: function(block){
@@ -706,6 +758,7 @@ export default {
 
 	            vm.getNode();
         		vm.setOrder(true);
+        		vm.closeModalMatch('matchedit');
         		
 	        })
 	        .catch(function (error) {
@@ -776,6 +829,9 @@ export default {
 		addContentImage: function() {
 			this.saveBlock({ tipus:'I', url:'' });
 		},
+		addContentMap: function() {
+			this.saveBlock({ tipus:'M', json:'' });
+		},
 		addContentHtml: function() {
 			this.saveBlock({ tipus:'H', titol:'', contingut:'' });
 		},
@@ -815,6 +871,10 @@ export default {
 	    	vm.getNode();
         	vm.setOrder(true);
         	
+	    },
+	    setMap:function(map){
+	    	var vm=this;
+	    	vm.dataMap = map.lat+','+map.lng;
 	    }
 		
 	},
@@ -823,6 +883,9 @@ export default {
 			this.getTeams();
 			this.getPlaces();
     	}
+    	
+    	var vm=this;
+    	vm.$eventHub.$on('setMapData', vm.setMap);
     	
 	},
 	watch: { 
@@ -996,6 +1059,14 @@ export default {
 		}
 		
 		a { text-decoration:underline; }
+		
+		.mapa {
+			iframe {
+				width:100%;
+				height:400px;
+				border: 1px solid @fedcolor;
+			}
+		}
 		
 		.teaserImg, &>img {
 		    max-width: 100%;

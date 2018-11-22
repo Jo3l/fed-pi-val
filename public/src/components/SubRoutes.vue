@@ -187,7 +187,8 @@ export default {
     getData: function(apiUrl) {
 
         var vm = this;
-        vm.$http.get(apiUrl)
+        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+        vm.$http.get(apiUrl, { cache: auth })
         .then(function (response) {
             vm.tree = [response.data];
             vm.updateBreadcrumb();

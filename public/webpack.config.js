@@ -91,3 +91,8 @@ if (process.env.NODE_ENV === 'production') {
 
 
 
+plugins: [
+  new webpack.ProvidePlugin({
+    mapboxgl: 'mapbox-gl'
+  })
+]

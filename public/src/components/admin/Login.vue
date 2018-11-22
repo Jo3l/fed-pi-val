@@ -11,16 +11,18 @@
 						<ui-textbox
 						    floating-label
 				            autocomplete="off"
-				            error="This field is required"
-				            label="Correu Usuari"
+				            error="Camp obligatori"
+				            label="Correu usuari"
 							type="text"
 				            v-model="user.email"
+				            @blur="checkExistingClubEmail(user)"
 				        ></ui-textbox>
 
 						<ui-textbox
+							v-if="!existingClubEmail"
 						    floating-label
 				            autocomplete="off"
-				            error="This field is required"
+				            error="Camp obligatori"
 				            label="Password"
 							type="password"
 				            v-model="user.clau"
@@ -28,7 +30,10 @@
 				        ></ui-textbox>
 				        
 				        
-				    	<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="login(user)">Accedir</ui-button>
+				    	<ui-button v-if="!existingClubEmail" color="saveForm" icon="save" size="small" type="secondary" @click="login(user)">Accedir</ui-button>
+
+
+				    	<ui-button v-if="existingClubEmail" color="saveForm" icon="add_circle" size="small" type="secondary" @click="newClub(user)">Registrar-se com a club...</ui-button>
 
 				</div>
 			
@@ -45,7 +50,8 @@ export default {
 			user: {
 				email:'',
 				clau:'',
-			}
+			},
+			existingClubEmail:false
 		}
 	},
 	methods: {
@@ -55,6 +61,18 @@ export default {
 				vm.$router.push({ path: `/` });
 			});
 	    },
+	    newClub: function (user) { console.log(user); },
+	    checkExistingClubEmail: function(user) { 
+	    	//user.email
+	    	var vm= this;
+	        vm.$http.get('emailclub/'+user.email, { cache: false })
+	        .then( (response) => { 
+	        	console.log(vm.existingClubEmail= response.data);
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	    }
 	},
 	mounted: function () {
 		var vm=this;

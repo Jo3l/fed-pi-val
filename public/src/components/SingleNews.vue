@@ -99,7 +99,7 @@
 
 	</div>
 
-	<NewsCarousel v-if="!$store.getters.isAuthenticatedWithRole(1)"></NewsCarousel>
+	<NewsCarousel :pagina="-1" v-if="!$store.getters.isAuthenticatedWithRole(1)"></NewsCarousel>
 
     <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
 		<filemanager ref="upload" v-bind:pselected="selected"></filemanager>

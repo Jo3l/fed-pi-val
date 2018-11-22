@@ -19,52 +19,59 @@
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Nom"
 						type="text"
 			            v-model="jugador.nom"
+			            required
 			        ></ui-textbox>
 
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Cognoms"
 						type="text"
 			            v-model="jugador.cognoms"
+			            required
 			        ></ui-textbox>
 			        
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Dni"
 						type="text"
 			            v-model="jugador.dni"
+			            :invalid="$store.getters.validate({string:jugador.dni,type:'dni'})"
 			        ></ui-textbox>
 			       
 			        <ui-radio-group
 		                name="sexe"
+		                error="Sel·lecció necesària"
 		                :options="[{label: 'Home', value: 'h'},{label: 'Dona', value: 'd'}]"
 		                v-model="jugador.sexe"
+		                :invalid="$store.getters.validate({string:jugador.sexe,type:'not-null'})"
 		            >Sexe</ui-radio-group><br>
 			       
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Num. Llicència"
 						type="number"
 			            v-model="jugador.numsoci"
+			            required
 			        ></ui-textbox>
 		        	
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Correu Electrònic"
 						type="email"
 			            v-model="jugador.email"
+			            :invalid="$store.getters.validate({string:jugador.email,type:'email'})"
 			        ></ui-textbox>
 		        	
 		        	<label>Data Naixement
@@ -74,7 +81,7 @@
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Telèfon"
 						type="number"
 			            v-model="jugador.telefon"
@@ -83,7 +90,7 @@
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Adreça"
 						type="text"
 			            v-model="jugador.dir"
@@ -108,13 +115,13 @@
 					    floating-label
 					    disabled
 			            autocomplete="off"
-			            error="This field is required"
+			            error="Camp de text no correcte"
 			            label="Població"
 						type="text"
 			            v-model="jugador.poblacio"
 			        ></ui-textbox>
 			        
-			    	<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">Desar</ui-button>
+			    	<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 
 				</div>
 				<div class="left50">
@@ -146,6 +153,7 @@
 
 import VueCoreImageUpload from 'vue-core-image-upload'
 import VueDatepickerLocal from 'vue-datepicker-local'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   	components: { VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
@@ -212,6 +220,12 @@ export default {
             
         },
 		saveForm: function() {
+			
+			if(document.querySelectorAll('.is-invalid:not(.is-disabled)').length>0) {
+				document.querySelector('.is-invalid:not(.is-disabled) input').focus()
+				return false;
+			}
+		
 			var vm=this;
 			vm.jugador.naixement = vm.jugador.naixement.toString('yyyyMMddHHmmss');
 	        vm.$http.post('/jugador/'+ (vm.$route.params.jugadorId?vm.$route.params.jugadorId :'') , vm.jugador)
@@ -275,6 +289,11 @@ export default {
 	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
 	      this.$router.push({ path: `/` });
 	    }
+	},
+	computed: {
+	    ...mapGetters({
+	    	validate:'validate'
+	    })
 	}
 }
 </script>

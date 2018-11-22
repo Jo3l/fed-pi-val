@@ -8,17 +8,13 @@
 	
 		  	<swiper-slide v-for="product,i in products">
 			    <div class="item" >
-			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop')+'/'+product.json.content[$i18n.locale].slug }">
-				    	<div class="itemContainer">
-				    		<em v-if="product.destacada">{{$i18n.t('cart.highlight')}}</em>
-					    	<div class="img" :style="'background:url('+product.json.images[0].img+') no-repeat center / cover;'"></div>
-					    	<div class="productText">
-							    <div class="name">{{ product.json.content[$i18n.locale].name }}</div>
-						    	{{$i18n.t('cart.price')}}: <div class="price">{{ product.json.types[0].price.amount }} €</div>
-						    	<div class="oldPrice" v-if="product.json.types[0].price.amount<product.json.types[0].price.oldPrice">{{$i18n.t('cart.before')}}: <span>{{ product.json.types[0].price.oldPrice }} €</span></div>
-					    	</div>
-				    	</div>
-			    	</router-link>
+			    	
+		    	<item-container :product="product">
+		    		<template slot="categoria">
+		    			<p>{{product.json.content[$i18n.locale].category}}</p>
+		    		</template>
+		    	</item-container>
+			    	
 			    </div>
 		  	</swiper-slide>
 		  	
@@ -31,22 +27,21 @@
 		</div>
 		
 		<div class="shop full" v-else="v-else">
-		  <div class="products">
-		    <div v-for="product in products" class="item" >
-			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop')+'/'+product.json.content[$i18n.locale].slug }">
-				    	<div class="itemContainer">
-				    		<em v-if="product.destacada">{{$i18n.t('cart.highlight')}}</em>
-					    	<div class="img" :style="'background:url('+product.json.images[0].img+') no-repeat center / cover;'"></div>
-					    	<div class="productText">
-							    <div class="name">{{ product.json.content[$i18n.locale].name }}</div>
-						    	{{$i18n.t('cart.price')}}: <div class="price">{{ product.json.types[0].price.amount }} €</div>
-						    	<div class="oldPrice" v-if="product.json.types[0].price.amount<product.json.types[0].price.oldPrice">{{$i18n.t('cart.before')}}: <span>{{ product.json.types[0].price.oldPrice }} €</span></div>
-					    	</div>
-				    	</div>
-			    	</router-link>
-		    </div>
-		  </div>
-		  
+			<h3 v-if="categoria" @click="setCategoria('all')">{{$i18n.t('cart.viewAllProducts')}}</h3>
+			<div class="products">
+				<div v-for="product in products" class="item" >
+					
+					<item-container :product="product">
+						<template slot="categoria">
+							
+							<p @click="setCategoria(product.json.content[$i18n.locale].category)">{{product.json.content[$i18n.locale].category}}</p>
+							
+						</template>
+					</item-container>
+					
+				</div>
+			</div>
+		  	<h3 v-if="categoria" @click="setCategoria('all')">{{$i18n.t('cart.viewAllProducts')}}</h3>
 		</div>
 
     </transition>
@@ -58,9 +53,11 @@ import 'swiper/dist/css/swiper.css'
 import { swiper, swiperSlide } from 'vue-awesome-swiper'
 import { mapGetters, mapActions } from 'vuex'
 
+import itemContainer from './ItemContainer.vue';
+
 export default {
   name: 'ProductSlider',
-  components: { swiper, swiperSlide },
+  components: { swiper, swiperSlide, itemContainer },
   props: {
         type: {
             type: String,
@@ -72,6 +69,8 @@ export default {
   },
   data () {
     return {
+    	categoria:'',
+    	allProducts:[],
 	    swiperOption: {
 	        slidesPerView: 4,
 	        slidesPerColumn: 1,
@@ -112,7 +111,22 @@ export default {
     })
   },
   methods: {
-  	
+  	setCategoria:function(categoria){
+  		var vm=this;
+  		
+  		if(categoria=='all') {
+  			vm.products = vm.allProducts;
+  			vm.categoria = '';
+  			
+  		} else {
+	  		vm.categoria = categoria;
+	  		vm.products = vm.products.json.content[$i18n.locale].filter(function (el) {
+			  return el.category == categoria
+			});
+  		}
+  		
+
+  	},
   	getData: function(apiUrl) {
         var vm = this;
         this.$http.get(apiUrl, {
@@ -128,6 +142,7 @@ export default {
 		}).then(function (response) {
 			
             vm.products = response.data;
+            vm.allProducts = response.data;
             
         })
         .catch(function (error) {
@@ -151,57 +166,14 @@ export default {
 @import "../../assets/less/defines.less";
 	
 .shop {
+	h3{
+		margin:10px;
+		cursor:pointer;
+		color:@fedcolor;
+	}
 	.products {
 		.item {
 		  text-align: left;
-		  //padding:10px 0;
-		
-			.itemContainer {
-				margin:10px;
-				padding:5px 0;
-				border-radius: .25rem;
-	    		border: 1px solid rgba(0,0,0,.125);
-		    	.img {
-				  	padding-bottom:85%;
-				  	border-radius: .25rem;
-				  	margin: 1vw 1vw 0 1vw;
-				}
-				em {
-				    background-color: red;
-				    color: white;
-				    padding: 4px 12px;
-				    font-size: 0.7em;
-				    position: absolute;
-				    margin: 7px;
-				    border-radius: 3px 41px 0 36px;
-				}
-				.productText{
-					margin-left:15px;
-					.name{
-						font-weight:bolder;
-						text-transform:capitalize;
-						font-size:1.2em;
-						margin-top:5px;
-					}
-					
-					.price {
-						display:inline;
-						font-size:1.4em;
-						font-weight:bolder;
-						color:@fedcolor;
-					}
-					.oldPrice {
-						display:inline;
-						font-size:1em;
-						margin-left:10px;
-						span{
-							text-decoration:line-through;
-						}
-					}	
-				}
-
-			}	
-
 		}
 
 	}

@@ -5,12 +5,12 @@
 			<h1>Productes</h1>
 			
 			<span class="button-right">
-				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Producte</ui-button>
+				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="newProduct">Afegir Producte</ui-button>
 			</span>
 			
 			<div class="vuetableContainer">
 				
-				<div class="searchFilter">
+				<div class="searchFilter" style="visibility:hidden;">
 				 <ui-textbox
 				    floating-label
 	                autocomplete="off"
@@ -23,14 +23,8 @@
 	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText=''"></ui-icon-button>
 				</div>
 
-				<tablerone :tableList="list" :tableColumns="columns">
+				<tablerone :tableList="products" :tableColumns="columns">
 					<th slot="headActions"></th>
-					
-					<template slot="icon1" scope="props">
-						<td class="actiu">
-							<img :src="props.row.img">
-						</td>
-					</template>
 					
 					<template slot="actions" scope="props">
 						<td class="actions">
@@ -39,25 +33,9 @@
 						</td>
 					</template>
 				</tablerone>
-			
-				<paginate
-				    :page-count="Math.ceil(list.total / list.per_page)"
-					:clickHandler="clickCallback"
-					:page-range="2"
-    				:margin-pages="0"
-				    :prev-text="$i18n.t('common.prev')"
-				    :next-text="$i18n.t('common.next')"
-				    :container-class="'pagination'"
-				    :page-class="'page-item'">
-				</paginate>
   
   
 			</div>
-			
-			<pre>
-				<!-- { {templist} } -->
-			{{list}}
-			</pre>
 			
 	    </div>
     </transition>
@@ -73,14 +51,8 @@ export default {
   	components: {'tablerone':Table, 'paginate': Paginate},
 	data () {
 		return {
-		    list:{},
+		    products:{},
 		    columns:[
-	            {
-	                label: 'Imatge',
-	                field: 'actiu',
-	                html: false,
-	                icon: true
-	            },
 	            {
 	                label: 'Id',
 	                field: 'id',
@@ -88,7 +60,7 @@ export default {
 	            },
 	            {
 	                label: 'Nom',
-	                field: 'name',
+	                field: 'nom',
 	                html: false,    
 	            }
 	        ],
@@ -96,8 +68,11 @@ export default {
 		}
 	},
 	methods: {
+		newProduct:function(row) {
+	    	this.$router.push({ path: `/admin/producte/` });
+	    },
 	  	edit:function(row) {
-	    	this.$router.push({ path: `/admin/producte/`+row.id });
+	    	this.$router.push({ path: `/admin/producte/`+row.slug });
 	    },
 	  	remove:function(row) {
 			var vm=this;
@@ -105,51 +80,45 @@ export default {
 			vm.$http.post('/producte/', {'delete_id': row.id})
 	        .then(function (response) {
 	        	
-	            vm.getData('producte');
+	            vm.getData('/productes');
 	
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
 	    },
-	    clickCallback: function(pageNum) {
-	    	console.log(pageNum);
-	    	var vm=this;
-	    	vm.getData('producte', pageNum);
-	    },
-		getData: function(listName, page){
+	  	getData: function(apiUrl) {
 	        var vm = this;
-	        
-	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
-	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
-	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
-	        .then(function (response) {
-
-	            var tempList = response.data;
-console.log(tempList)
-
-	            tempList.forEach(function(element) {
-				  element.name = element.json.content[vm.$i18n.locale].name;
-				  element.img = element.json.imagesThumb[0].img;
-				});
-	            
-	            vm.list = tempList;
+	        this.$http.get(apiUrl, {
+			    // use before callback
+			    before(request) {
+			      // abort previous request, if exists
+			      if (this.previousRequest) {
+			        this.previousRequest.abort();
+			      }
+			      // set previous request on Vue instance
+			      this.previousRequest = request;
+			    }
+			}).then(function (response) {
+				
+	            vm.products = response.data;
+	            vm.allProducts = response.data;
 	            
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-		},
-	},
-	mounted: function () {
-		var vm=this;
-		vm.getData('producte');
-	},
-	created: function() {
-	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
-	      this.$router.push({ path: `/` });
+	        
 	    }
-	}
+	  },
+	  mounted: function() {
+			this.getData('/productes');
+	  },
+	  created: function() {
+		    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
+		      this.$router.push({ path: `/` });
+		    }
+	  }
 }
 </script>
 

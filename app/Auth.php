@@ -109,6 +109,11 @@ static public function login($json) /*use($app)*/ {
 		$db= new db();
         $res= $db->sql($sql);
         $result = $db->getResult();
+        
+        if(count($result)==0) {
+        	$res= $db->sql("select id,concat('club:',nom) as nom,pwd,email, 10 as rol FROM club where email='".$email."' limit 1;");
+        	$result= $db->getResult();
+        }
 
 		if(count($result) > 0){
         	$result= $result[0];
@@ -168,6 +173,54 @@ static public function token($data, $tokenId=null) {
     return $data;
 }
 
+
+/*
+* @description
+// funció bàsica d'autenticació amb les credencials introduides
+*/
+static public function emailclub(Request $request, Response $response, $params) /*use($app)*/ {
+    // query the database
+    // sanitize email
+    //if (strpos('.',$email))
+    $sql = "SELECT count(*) as existeix from club where email='".$params['email']."' and pwd is null;";
+    // Get DB Object
+	$db= new db();
+    $res= $db->sql($sql);
+    $result = $db->all();
+    if ($result[0]['existeix']=='1') echo 'true'; else echo 'false';
+    return;
+}
+
+/*
+* @description
+* Envia nova clau per email a usuari (comprove primer si és usuari de club i després de taula usuari)
+* Exemple de paràmetre : {"usuari":12}
+* Exemple de paràmetre : {"club":123}
+* Exemple de paràmetre : {"jugador":1234}
+* URL: /api/pwd
+*/
+static public function emailpwd(Request $request, Response $response, $params) /*use($app)*/ {
+
+	function randomPassword() {
+	    $alphabet = "abcdefghijklmnopqrstuwxyz0123456789";
+	    $pass='';
+	    for ($i = 0; $i < 8; $i++) {
+	        $n = rand(0, strlen($alphabet)-1);
+	        $pass.= $alphabet[$n];
+	    }
+	    return $pass;
+	}
+	$pwd=randomPassword();
+	$hashpwd= hash('sha256',$pwd);
+	$json= json_decode(file_get_contents("php://input"),true);
+	foreach($json as $nom=>$val) list($tabla,$id)=array($nom,intval($val));
+    $sql = "UPDATE ".$tabla." set pwd='".$hashpwd."', json='{\"pwd\":\"".$pwd."\"}' where id=".$id;
+	$db= new db();
+    $res= $db->sql($sql);
+    $text= "S'ha generat una nova contrasenya per al teu compte de la Federació de Pilota en http://fedpival.indiza.com/login :\n\n".$pwd."\n".$res;
+	Fun::email("mailgun.com.alsanan@neverbox.com","Nova contrasenya generada per a fedpival.es",$text);
+	echo '{"result":"ok"}';
+}
 
 /*
 //  //  //  //  //  //  //  //

@@ -11,40 +11,20 @@ const SingleNews = function(resolve) {require(['./components/SingleNews.vue'], r
 const Calendar = function(resolve) {require(['./components/Calendar.vue'], resolve)}
 const Products = function(resolve) {require(['./components/shop/Products.vue'], resolve)}
 const Product = function(resolve) {require(['./components/shop/Product.vue'], resolve)}
+const clubsPublic = function(resolve) {require(['./components/ClubsPublic.vue'], resolve)}
+const clubPublic = function(resolve) {require(['./components/ClubPublic.vue'], resolve)}
 
+//cms
 const SubRoutes = function(resolve) {require(['./components/SubRoutes.vue'], resolve)}
 
+//admin
 const Jugadors = function(resolve) {require(['./components/admin/Jugadors.vue'], resolve)}
 const Jugador = function(resolve) {require(['./components/admin/Jugador.vue'], resolve)}
 const Clubs = function(resolve) {require(['./components/admin/Clubs.vue'], resolve)}
 const Club = function(resolve) {require(['./components/admin/Club.vue'], resolve)}
 const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resolve)}
-
 const adminProductes = function(resolve) {require(['./components/admin/Products.vue'], resolve)}
-
-
-//const Producte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
-
-//import Login from './components/admin/Login.vue'
-//import Start from './components/Start.vue'
-
-//import News from './components/News.vue'
-//import SingleNews from './components/SingleNews.vue'
-//import Calendar from './components/Calendar.vue'
-
-//import Cart from './components/Cart.vue'
-//import Product from './components/Product.vue'
-
-//import SubRoutes from './components/SubRoutes.vue'
-
-//import PageNotFound from './components/PageNotFound.vue'
-
-//import Jugadors from './components/admin/Jugadors.vue'
-//import Jugador from './components/admin/Jugador.vue'
-//import Clubs from './components/admin/Clubs.vue'
-//import Club from './components/admin/Club.vue'
-//import Equip from './components/admin/Equip.vue'
-
+const adminProducte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
 
 
 import Test from './components/Test.vue'
@@ -213,6 +193,26 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
+	    path: '/val/federacio/clubs-de-pilota-valenciana',
+	    component: clubsPublic,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/es/federacion/clubs-de-pilota-valenciana',
+	    component: clubsPublic,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/val/federacio/clubs-de-pilota-valenciana/:clubId',
+	    component: clubPublic,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/es/federacion/clubs-de-pilota-valenciana/:clubId',
+	    component: clubPublic,
+	    meta: defaultHead
+	  },
+	  {
 	    path: '/val/federacio',
 	    props: {propDisable:'competicions'},
 	    name: 'Federació',
@@ -329,6 +329,18 @@ const routes = [
 	    role: 0
 	  },
 	  {
+	    path: '/admin/producte/',
+	    name: 'Nou Producte',
+	    component: adminProducte,
+	    role: 0
+	  },
+	  {
+	    path: '/admin/producte/:slug*',
+	    name: 'Editar Producte',
+	    component: adminProducte,
+	    role: 0
+	  },
+	  {
 	    path: '/404',
 	    name: '404',
 	    component: PageNotFound
@@ -337,7 +349,8 @@ const routes = [
 	];
 
 const router = new Router({
-	mode: 'history',	
+	mode: 'history',
+	pathToRegexOptions: { strict: true },
 	base: __dirname,
     routes
 });

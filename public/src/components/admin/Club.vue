@@ -43,7 +43,7 @@
 					            label="Cif"
 								type="text"
 					            v-model="club.cif"
-					            :invalid="formTest(club.cif, 'cif')"
+					            :invalid="$store.getters.validate({string:club.cif,type:'cif'})"
 					        ></ui-textbox>
 				        	
 							<ui-textbox
@@ -126,7 +126,9 @@
 							
 						</div>
 						
-						<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">Desar</ui-button>
+						<ui-button color="saveForm" icon="security" size="small" type="secondary" title="Només es pot enviar amb un email correcte especificat" :class="emailValid(club.email)?'':'is-disabled'" @click="sendPwd()">{{$i18n.t('common.sendPwd')}}</ui-button>
+
+						<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 		
 					</div>
                     
@@ -167,7 +169,7 @@
 </template>
 
 <script>
-
+import { mapGetters, mapActions } from 'vuex'
 import VueCoreImageUpload from 'vue-core-image-upload'
 import VueDatepickerLocal from 'vue-datepicker-local'
 import VuePellEditor from 'vue-pell-editor'
@@ -240,25 +242,6 @@ export default {
 	            console.log(error);
 	        });
 	    },
-		formTest:function(string, tipo) {
-		
-		  var DNI_REGEX = /^(\d{8})([A-Z])$/;
-		  var CIF_REGEX = /^([ABCDEFGHJKLMNPQRSUVW])(\d{7})([0-9A-J])$/;
-		  var NIE_REGEX = /^[XYZ]\d{7,8}[A-Z]$/;
-			
-			if(string==null||string=='') return true;
-			
-			if(tipo=='cif') {
-				return CIF_REGEX.test(string.toUpperCase())==false;
-			}
-			else if(tipo=='nom') {
-				
-			}
-			else {
-				return true;
-			}
-			
-		},
 		getGeo:function(){
 		var vm=this;
 		var apiKey="AIzaSyAjtbR2DWMqbb7xHU-fUJQjPZexdEc9hYE";
@@ -318,6 +301,15 @@ export default {
 	        .catch(function (error) {
 	            console.log(error);
 	        });
+		},
+		emailValid: function(email) {
+			return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+		},
+		sendPwd: function() {
+			var vm= this;
+			vm.$http.post('/pwd/',{"club":vm.club.id})
+			.then( (response)=> { if(response.data.result=='ok') alert("correu enviat"); else alert("error enviant nova clau"); } )
+			.catch( (error) => { console.log(error); } );
 		},
 		parseTime: function(time) {
 			
@@ -383,7 +375,12 @@ export default {
 	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
 	      this.$router.push({ path: `/` });
 	    }
-	}
+	},
+	computed: {
+	    ...mapGetters({
+	    	validate:'validate'
+	    })
+	},
 }
 </script>
 

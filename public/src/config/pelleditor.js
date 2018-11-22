@@ -88,19 +88,6 @@ export default function(openModal) {
               	name: '',
               	icon: '',
               },
-/*
-              {
-                name: 'custom',
-                icon: '<b><u><i>C</i></u></b>',
-                title: 'Custom Action',
-                //result: () => console.log(this)
-                result: function() { 
-                	VuePellEditor.viewcode=true;
-                	console.log(VuePellEditor);
-                	return VuePellEditor.components.pell.exec('formatBlock', '<PRE>');
-                	}
-              },
-*/
               {
                 name: 'image',
                 icon: '<i class="material-icons">insert_photo</i>',
@@ -116,8 +103,8 @@ export default function(openModal) {
                 icon: '<i class="material-icons">link</i>',
               	title:'Insertar Link',
                 result: () => {
-                  const url = window.prompt('Enter the link URL')
-                  if (url) VuePellEditor.components.pell.exec('createLink', ensureHTTP(url))
+                  const url = window.prompt('URL:');
+                  if (url) VuePellEditor.components.pell.exec('createLink', url)
                 }
               },
               {
@@ -129,7 +116,12 @@ export default function(openModal) {
               	name:'clear',
               	icon: '<i class="material-icons">format_clear</i>',
               	title:'Borrar format',
-              	result: () => VuePellEditor.components.pell.exec('removeFormat')
+              	result: () => {
+              		//var String = Sample.replace(/(<([^>]+)>)/ig,"");
+              		console.log(VuePellEditor.components.pell);
+              		VuePellEditor.components.pell.exec('removeFormat');
+              	}
               }
+
             ];
 }

@@ -125,11 +125,12 @@ static public function generic_query(Request $request, Response $response, $para
 	}
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= array( 'limit'=>Fun::$itemsPerPage );
-	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
 	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
+    $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
+	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
     $db = new db();
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
@@ -200,6 +201,7 @@ static public function generic_search(Request $request, Response $response, $par
 	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
     $db = new db();
+    $tabla= Fun::tables($params['tabla'],'select'); // pot canviar la taula de busqueda depenent de l'idioma
 	$db->sql("SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$tabla."' and data_type in ('varchar','text','mediumtext');");
 	$que= $db->all();
 	$ques= array();
@@ -375,6 +377,7 @@ static public function date_query(Request $request, Response $response, $params)
 	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
 	$options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $db = new db();
+    $tabla= Fun::tables('acte','select'); // segona vegada per si canvia l'idioma la taula on buscar
     $sql= "SELECT * FROM ".$tabla;
 	array_push( $option['wheres'], "tipus='A'" );
 	$mes= $params['mes'];

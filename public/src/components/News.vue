@@ -84,7 +84,6 @@ export default {
 		  }
 		},
 		buscaStr:function(busca){
-			console.log(busca);
 			var vm=this;
 			vm.busca = busca;
 			vm.viewTags = false;
@@ -113,13 +112,12 @@ export default {
 			this.$router.push({ path: `/${cami[1]}/${cami[2]}/${this.pagina}` });
 		},
 	},
-	mounted: function () {
+	beforeMount: function () {
 		if(this.$route.params.page>0) this.pagina = this.$route.params.page;
 		this.getTags();
 		this.busca=this.loadState().busca;
 	},
 	beforeRouteUpdate (to, from, next) {
-		console.log(from);
 		next();
 	}
 }

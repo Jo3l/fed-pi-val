@@ -22,6 +22,8 @@ use \app\Auth;		// funcions d'autenticació i gestió de sessió
 use \app\Generics;	// funcions genèriques de gestió de taules (update,insert,query,delete)
 use \app\Nodes;		// funcions per gestionar la jerarquia de nodes
 use \app\Content;	// funcions per gestionar els blocs de contingut d'un node
+use Mailgun\Mailgun; // funcion d'enviament de correu
+use config;
 
 include "Tools.php";
 
@@ -183,6 +185,75 @@ static public function generaPartides(Request $request, Response $response, $par
     $db= new db();
 	$db->sql($sql);
 }
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obtindre els 10 últims resultats (ids i noms d'equips, resultat, lloc, i data)
+* URL: GET /api/ultimsresultats
+*/
+static public function ultimsResultats(Request $request, Response $response) {
+    $db= new db();
+	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
+	$result= $db->getResult();
+	$resultids= array();
+	foreach($result as $r) {
+		$resultids[$r['id']]= array_merge( $r, array( 
+			'slug_es' => Fun::slugify($r['nom_es'],false) , 
+			'slug_val' => Fun::slugify($r['nom_val'],false) , 
+			'name_es' => $r['nom_es'], 
+			'name_val' => $r['nom_val'], 
+			'fullSlug'=>'' 
+		) );
+	}
+	unset($result);
+	//echo '<pre>',print_r($resultids);exit;
+	$sql= "select id,jerarquia,local, (select nom from equip where equip.id=local) as nomlocal,(select nom from equip where equip.id=visitant) as nomvisitant,visitant,resultatlocal,resultatvisitant,(select trinquet.nom from trinquet where trinquet.id=lloc) as lloc,(select trinquet.dir from trinquet where trinquet.id=lloc) as dir,(select trinquet.gps from trinquet where trinquet.id=lloc) as gps,modificacio from partida where data<NOW()+1000000 and (resultatlocal>0 or resultatvisitant>0) order by modificacio limit 10";
+	$sql= "select jerarquia from partida where data<NOW()+1000000 and (resultatlocal>0 or resultatvisitant>0) group by jerarquia limit 10";
+	$db->sql($sql);
+	$data= $db->all();
+	// puc obtindre cami de la partida de dos maneres. Una, seguir cada node cap a dalt fins arribar a competicions i catxejar. O bé obtindre tots els possibles camins i obtindre el més adient. Millor la primera opció perquè quan porten uns mesos, obtindre tots els camins no serà ràpid...
+	// per tant, en aquest punt, he de recorrer $data mirant el camp jerarquia i afegint la ruta sencera (i catxejant per estalviar consultes)
+	$cache= array();
+	foreach($data as $cod => $partida) {
+		$jerarquia= $partida['jerarquia'];
+		if (isset($cache[$jerarquia])) {
+			//$data[$cod]['path']= $cache[$jerarquia]['path'];
+			//$data[$cod]['nomnode']= $cache[$jerarquia]['node'];
+			$data[$cod]= $cache[$jerarquia];
+			continue;
+		}
+		$max= 10; // maxima profunditat permesa
+		$pathes= $pathval= '';
+		$actual= $jerarquia;
+		// bucle per reconstruir el camí fins a un node determinat a partir del node on resideix la partida
+		while ($max--) {
+			//$db->sql("select jerarquia.id as id,pare,text from jerarquia, idioma where registreid=jerarquia.id and tipus='jerarquia' /*and idioma='".(Fun::$idioma)."'*/ and jerarquia.id=".$actual);
+			$db->sql("select jerarquia.id as id,pare,(select text from idioma where registreid=jerarquia.id and tipus='jerarquia' and idioma='es') as es, (select text from idioma where registreid=jerarquia.id and tipus='jerarquia' and idioma='val') as val  from jerarquia where jerarquia.id=".$actual);
+			$f= $db->all()[0];
+			if (empty($data[$cod]['es'])) $data[$cod]['es']= array('nom'=>$f['es']);
+			if (empty($data[$cod]['val'])) $data[$cod]['val']= array('nom'=>$f['val']);
+			//$db->sql("select pare,text from jerarquia, idioma where registreid=jerarquia.id and tipus='jerarquia' and idioma='".(Fun::$idioma)."' and jerarquia.id=".$actual.";");
+			//$f= $db->all();
+			// pare == 1 == (Competicions/nes)
+			$pathes= $resultids[$f['id']]['slug_es'].'/'.$pathes;
+			$pathval= $resultids[$f['id']]['slug_val'].'/'.$pathval;
+			$actual= $f['pare'];
+			if ($actual==0) {
+				$pathes= '/es/'.$pathes;
+				$pathval= '/val/'.$pathval;
+				$max=0; // end
+				continue;
+			}
+		}
+		$data[$cod]['es']['path']= $pathes;
+		$data[$cod]['val']['path']= $pathval;
+		//$cache[$jerarquia]= array('path'=>$path, 'node'=>$data[$cod]['nomnode']);
+		$cache[$jerarquia]= $data[$cod];
+	}
+    echo json_encode($data);
+}
+
 
 //  //  //  //  //  //  //  //
 /*
@@ -409,7 +480,58 @@ static public function slugify($string, $id=null) {
 	if ($id!=false) $clean= Fun::slugunic($clean,$id);
 	return $clean;
 }
-    
+
+
+//  //  //  //  //  //  //  //
+/*
+* @descriptionPetició de comanda de compra.
+* En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
+*/
+static public function comprar(Request $request, Response $response, $params) {
+	//$json = Fun::getPost($tabla);
+	$json= json_decode(file_get_contents("php://input"),true);
+	//file_put_contents('../data/compra_'.date('YmdHis').'.json',json_encode($json));
+	$preu=0;
+	$carro= array();
+	$name= $json['name'];
+	$address= $json['address'].' '.$json['cp'];
+	$tel= $json['tel'];
+	$email= $json['email'];
+	foreach($json['cart'] as $elm) {
+		$prod= $elm['name'];
+		foreach($elm['fullProduct']['types'] as $tipo) { 
+			if ($tipo['name']==$prod) {
+				$preuprod= $tipo['price']['amount'];
+				$preu+= $preuprod;
+			}
+		}
+		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
+	}
+	$str= sprintf("Nom: %s - Adreça: %s - \n Tel: %s - Email comprador: %s \n Total: %s euros \n %s",
+		$nom, $address, $tel, $email,
+		$preu,
+		str_replace('[',"\n[",json_encode($carro))
+	);
+	return Fun::email('mailgun.com.alsanan@neverbox.com','Nova compra '.date('YmdHis'),$str);
+}
+
+static public function email($to,$sub,$text){
+	# Instantiate the client.
+	$mgClient = new Mailgun(mailgun['key']);
+	$domain = mailgun['domain'];
+	# Make the call to the client.
+	$result = $mgClient->sendMessage("$domain",
+	          array('from'    => mailgun['from'],
+	                'to'      => $to,
+	                'subject' => $sub,
+	                'text'    => $text
+	          )
+	);
+	# You can see a record of this email in your logs: https://app.mailgun.com/app/logs
+	# You can send up to 300 emails/day from this sandbox server.
+	# Next, you should add your own domain so you can send 10,000 emails/month for free.
+	return '{"result":'.json_encode($result).'}';
+}
 //  //  //  //  //  //  //  //
 /*
 * @description

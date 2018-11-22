@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
     	
-	    <div v-if="pagina==null ">
+	    <div v-if="pagina==-1 ">
 	    	
 			<swiper :options="swiperOption" class="newsCarousel">
 	
@@ -99,6 +99,7 @@ export default {
   },
   methods: {
 	  	slugify:function(str) {
+	  	if(str==undefined) return false;
 	    str = str.replace(/^\s+|\s+$/g, ''); // trim
 	    str = str.toLowerCase();
 	  
@@ -146,7 +147,6 @@ export default {
 		      this.previousRequest = request;
 		    }
 		}).then(function (response) {
-			console.log(response.data[0].titol);
             vm.newsCarousel = response.data;
         })
         .catch(function (error) {
@@ -156,13 +156,13 @@ export default {
     }
   },
     mounted: function () {
-    	/*
-    	if(this.pagina==null) {
+    	
+    	//usem -1 quan el carousel es carrega desde la plana principal, per tant no hi ha paginat.
+    	if(this.pagina==-1) {
     		this.getData('/noticia/i/'+this.$i18n.locale, true);
-    	}else {
-    		this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale, true);
+    	} else {
+    		this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale+(this.busca!='all'&&this.busca!=''?'/s/'+this.slugify(this.busca):''), true);
     	}
-		*/
     },
 	watch: {
 	    pagina: function (newVal, oldVal) {

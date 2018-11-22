@@ -19,20 +19,20 @@
 			<div class="three-quarters-loader"> </div>
 			
 			<div v-bind:class="{ competicions:true, active: newsTeasers!='' }">
-				<h3>COMPETICIONS ACTIVES</h3>
-				<ul>
-					<li><a href="#">Escala i Corda - Lliga Juvenil Tecnif.</a></li>
-					<li><a href="#">Escala i Corda - Auton. AON EiC</a></li>
-					<li><a href="#">Raspall - Individual Autonomic</a></li>
-					<li><a href="#">Raspall - Circuit Sub-18 Femení</a></li>
-					<li><a href="#">Raspall - Circuit Sub-23 Femení</a></li>
-					<li><a href="#">Frontó - XXXVI JECV Parelles 2017-18</a></li>
-					<li><a href="#">Llargues i Palma - Trofeu Hivern Llargues</a></li>
-					<li><a href="#">Raspall - XXXVI JECV 2017-2018</a></li>
-					<li><a href="#">Galotxa - XXXV JECV galotxa 17 - 18</a></li>
-					<li><a href="#">Fundació per a la Pilota Valenciana - Convocatòria Projectes Fundació</a></li>
-					<li><a href="#">Copa Generalitat - Copa Generalitat 2018 - Frontó</a></li>
-				</ul>
+				
+				<div class="editable">
+					<h3>{{notice.titol}}</h3>
+					<div v-html="notice.contingut"></div>
+				</div>
+				<br>
+				<div class="results">
+					<h3>{{$i18n.t('common.lastResults')}}</h3>
+					<ul>
+						<li v-for="result in lastResults"><router-link :to="{ path: result[$i18n.locale].path }">{{result[$i18n.locale].nom}}</router-link></li>
+					</ul>
+				</div>
+
+				
 			</div>
 			
 	    </div>
@@ -50,6 +50,8 @@ export default {
 	data () {
 		return {
 			newsTeasers:'',
+			notice:{},
+			lastResults:[],
 			swiperOption: {
 		        slidesPerView: 1,
 		        slidesPerColumn: 1,
@@ -62,21 +64,48 @@ export default {
 		}
 	},
 	methods: {
-		getData: function(apiUrl) {
-	
-	        var vm = this;
-	        this.$http.get(apiUrl, { useCache: true })
+	    getTeasers: function(apiUrl) {
+	    	var vm=this;
+	        var auth = !vm.$store.getters.isAuthenticatedWithRole(0);
+	        
+	        vm.$http.get(apiUrl, { cache: auth })
 	        .then(function (response) {
 	            vm.newsTeasers = response.data;
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-	        
+	    },
+	    getResults: function(apiUrl) {
+	    	var vm=this;
+	        var auth = !vm.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get(apiUrl, { cache: auth })
+	        .then(function (response) {
+	            vm.lastResults = response.data;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	    },
+	    getNotice: function(apiUrl) {
+	    	var vm=this;
+	        var auth = !vm.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get(apiUrl, { cache: auth })
+	        .then(function (response) {
+	            vm.notice = response.data[0];
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
 	    }
 	},
 	mounted: function () {
-		this.getData('/noticia/destacada/i/'+this.$i18n.locale, { useCache: true });
+		var vm=this;
+		var auth = !vm.$store.getters.isAuthenticatedWithRole(0);
+		vm.getTeasers('/noticia/destacada/i/'+vm.$i18n.locale);
+		vm.getNotice('/node/253');
+		vm.getResults('/ultimsresultats');
+
 	}
 }
 </script>
@@ -91,6 +120,10 @@ export default {
 	min-height:200px;
 	background-color:white;
 	position:relative;
+	
+	h3{
+		margin:0;
+	}
 
 	.teaserPicture {
 		width:75%;
