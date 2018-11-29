@@ -1,6 +1,6 @@
 <template>
     <transition name="fade">
-		<div class="shop full" v-if="loaded">
+		<div class="shop" v-if="loaded">
 			<br>
 			<div class="product">
 				<aside :class="product.images.length>1?'images':'images single'" v-if="product.images.length>0">	
@@ -78,6 +78,9 @@
 					></vue-goodshare-telegram>
 				</em>
 	        </div>   
+	        
+	        <products type="slider"></products>
+	        
 		</div>
 
     </transition>
@@ -97,9 +100,11 @@ import VueGoodshareTwitter from 'vue-goodshare/src/providers/Twitter.vue'
 import VueGoodshareWhatsapp from 'vue-goodshare/src/providers/WhatsApp.vue'
 import VueGoodshareTelegram from 'vue-goodshare/src/providers/Telegram.vue'
 
+import Products from './Products.vue';
+
 export default {
   name: 'Product',
-  components: { VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram,swiper, swiperSlide, AddToCartButton },
+  components: { VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram,swiper, swiperSlide, AddToCartButton, 'products': Products },
   props: {
         type: {
             type: String,

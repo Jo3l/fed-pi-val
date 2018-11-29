@@ -2,7 +2,7 @@
     <transition name="fade">
     	
 		<div class="shop" v-if=" type=='slider' ">
-			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.online_shop') }}</h1>
+			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.highlightProducts') }}</h1>
 			
 		  <swiper :options="swiperOption" class="products">
 	
@@ -153,7 +153,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
 	
@@ -165,6 +165,7 @@ export default {
 	}
 	.products {
 		.item {
+		  width:initial;
 		  text-align: left;
 		}
 

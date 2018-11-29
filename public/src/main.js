@@ -18,12 +18,12 @@ Vue.use(VueProgressiveImage)
 
 Vue.prototype.$http = axios;
 
-import Toolbar from './components/Toolbar.vue' //este se carga aqui ya que esta fuera de las rutas
-import Cookie from './components/custom/Cookie.vue' //este se carga aqui ya que esta fuera de las rutas
+import Toolbar from './components/Toolbar.vue'
+import Cookie from './components/custom/Cookie.vue'
 
 Vue.prototype.$eventHub = new Vue(); // Global event bus
 
-// Event listener for warranty transaction success
+// Global event listener
 window.addEventListener('message', function (e) {
     if (e.data.event === 'sendMapData') {
         Vue.prototype.$eventHub.$emit('setMapData', e.data.data);

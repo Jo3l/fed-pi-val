@@ -14,6 +14,7 @@ export default {
 	cart : {
 		viewAllProducts:'Haz click aquí para ver todos los productos.',
 		highlight: 'Destacado',
+		highlightProducts: 'Productos destacados',
 		before:'Antes',
 		price: 'Precio',
 		buy:'Comprar',

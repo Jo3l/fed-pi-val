@@ -7,7 +7,7 @@
 				</svg>
 			</div>
 			<swiper :options="swiperOption" class="teaserPicture">
-				<swiper-slide v-for="noticia in newsTeasers" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true">
+				<swiper-slide v-for="(noticia, index) in newsTeasers" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true&&index<=5">
 					<aside>
 							<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }"><h2>{{ noticia.titol }}</h2></router-link>
 					</aside>
@@ -126,7 +126,7 @@ export default {
 	}
 
 	.teaserPicture {
-		width:75%;
+		width: 74.8%;
 		box-shadow: 3px 15px 12px rgba(0, 0, 0, 0.2);
 		@media(max-width:768px){
 			width:100%;

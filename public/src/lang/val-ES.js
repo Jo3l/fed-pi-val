@@ -14,6 +14,7 @@ export default {
 	cart : {
 		viewAllProducts:'Punxa ací per vore tots els productes.',
 		highlight: 'Destacat',
+		highlightProducts: 'Productes destacats',
 		before:'Abans',
 		price: 'Preu',
 		buy:'Comprar',
@@ -66,7 +67,7 @@ export default {
 		newsNew: 'Nova noticia',
 		eventNew: 'Nou event',
 		wrong: 'Valor incorrecte',
-		cookieLegal: 'Aquesta pàgina web utilitza cookies per a millorar l´experiencia navegant. Pots consultar ací la nostra ',
+		cookieLegal: 'Aquesta pàgina web utilitza cookies per a millorar l\'experiencia navegant. Pots consultar ací la nostra ',
 		next: 'Següent',
 		prev: 'Anterior',
 		lastResults:'Últims resultats',

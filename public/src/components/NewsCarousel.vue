@@ -91,8 +91,8 @@ export default {
 	            slidesPerView: 2,
 	            spaceBetween: 10
 	          },
-	          480: {
-	            slidesPerView: 2,
+	          640: {
+	            slidesPerView: 1,
 	            spaceBetween: 10
 	          },
 	          320: {
@@ -210,22 +210,20 @@ export default {
 		&>div{padding-bottom:initial!important;}
 	    min-height: 370px;
 	    overflow: hidden;
-	    background-size: 130%;
-	    background-position: top;
-	    display: flex;
-	    flex-direction: column;
-	    justify-content: flex-end;
-	    background-repeat: no-repeat;
+	    //background-size: 130%;
+	    //background-position: top;
+	    //display: flex;
+	    //flex-direction: column;
+	    //justify-content: flex-end;
+	    //background-repeat: no-repeat;
 	    //border-right: 2px solid white;
     	//border-left: 2px solid white;
 		cursor:e-resize;
 		& > img{
-		    position: absolute;
+			position: absolute;
 		    object-fit: contain;
 		    display: block;
 		    z-index: -1;
-		    height: 87%;
-		    width: auto;
 		    top: 0;
 		    left: -25%;
 		}
@@ -234,6 +232,8 @@ export default {
     		padding: 40px 20px 20px 20px;
     		transition: transform .2s ease;
     		width:~"calc(100% + 1px)";
+    		bottom:0;
+    		position:absolute;
     		&:hover {
     			//transform: translateY(10%)
     		}

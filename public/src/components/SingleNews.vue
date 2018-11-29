@@ -33,11 +33,8 @@
 					type="text"
 	                v-model="news.titol"
 				></ui-textbox>
-				
-				
 
 
-			
 			    <VuePellEditor 
 			        :actions="editorOptions" 
 			        :content="news.contingut" 
@@ -191,6 +188,9 @@ export default {
 		isMobileDevice: function() {
 		    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 		},
+		isIe:function(){
+			return !!window.MSInputMethodContext && !!document.documentMode;
+		},
 		openModal:function(ref, object, cancel, tipo) {
 			this.$refs.upload.activate(tipo);
 			this.selectedCancel = cancel;
@@ -306,7 +306,7 @@ export default {
 		} else {
 			this.$router.push({ path: `/` });
 		}
-		this.scrollToTop(0);
+		if(!this.isIe) this.scrollToTop(0);
 		
 		if( this.$store.getters.isAuthenticatedWithRole(0) ) this.getTags();
 		
@@ -320,7 +320,7 @@ export default {
 		//el puto router no actualitza el component ja que soles cambies de slug, pel que esta el before route update que ens permet cridar i actualitzar el objecte news al cambiar de slug
     	this.getData('noticia/slug/'+to.params.slug);
     	next();//aço actualitza la url
-		this.scrollToTop(600);
+		if(!this.isIe) this.scrollToTop(600);
 	}
 }
 </script>
