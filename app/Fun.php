@@ -25,8 +25,6 @@ use \app\Content;	// funcions per gestionar els blocs de contingut d'un node
 use Mailgun\Mailgun; // funcion d'enviament de correu
 use config;
 
-include "Tools.php";
-
 class Fun
 {
 
@@ -517,11 +515,16 @@ static public function comprar(Request $request, Response $response, $params) {
 
 static public function email($to,$sub,$text){
 	# Instantiate the client.
-	$mgClient = new Mailgun(mailgun['key']);
-	$domain = mailgun['domain'];
-	# Make the call to the client.
+	$mgClient = new Mailgun(config::mailgundata['secretkey']);
+	$domain = config::mailgundata['domain'];
+	# Issue the call to the client.
+/*	$result = $mgClient->get("address/validate", array('address' => $to));
+	# is_valid is 0 or 1
+	$isValid = $result->http_response_body->is_valid;
+	if (!$isValid) die('Dir no valida');
+*/	# Make the call to the client.
 	$result = $mgClient->sendMessage("$domain",
-	          array('from'    => mailgun['from'],
+	          array('from'    => config::mailgundata['from'],
 	                'to'      => $to,
 	                'subject' => $sub,
 	                'text'    => $text

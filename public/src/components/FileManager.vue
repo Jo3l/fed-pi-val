@@ -179,7 +179,8 @@ export default {
 	        var vm = this;
 	        vm.files={};
 	        vm.selected={};
-	        vm.$http.get('static/'+relativePath, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get('static/'+relativePath, { cache: auth })
 	        .then(function (response) {
 				vm.files=response.data;
 				if(relativePath!=null&&relativePath!='') vm.showBack = true;

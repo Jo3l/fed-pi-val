@@ -95,6 +95,7 @@ class Filem
 		$path= $file= Filem::prepare( $params['path'] );
 		// si no estan creats els subdirectoris del mes actual en uploads|jugadors|pdf, els crea
 		if (!is_dir(Filem::$absolutePath.'/upload/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/upload/'.date('Y/m'));
+		if (!is_dir(Filem::$absolutePath.'/productes/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/upload/'.date('Y/m'));
 		if (!is_dir(Filem::$absolutePath.'/jugadors/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/jugadors/'.date('Y/m'));
 		if (!is_dir(Filem::$absolutePath.'/pdf/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/pdf/'.date('Y/m'));
 		//echo is_dir($path)?1:0;
@@ -153,7 +154,6 @@ class Filem
 	static public function upload(Request $req, Response $res, $params, $what='upload') {
 		if (Filem::$allow_upload != true) Filem::err(404,'Sense permis per enviar info');
 		$file= Filem::prepare( );
-		
 		$_FILES['files']['name']= str_replace(' ','_',$_FILES['files']['name']);
 		
 		foreach(Filem::$disallowed_extensions as $ext) 
@@ -167,20 +167,22 @@ class Filem
 		!file_exists( $file . $month_folder) && mkdir( $file . $month_folder, 0777);
 
 		$fileDestination = $month_folder;
-
+		
 		if(file_exists($fileDestination.'/'.$_FILES['files']['name'])) {
 			$tmpRand = rand(00,99);
 			move_uploaded_file($_FILES['files']['tmp_name'], $file.$fileDestination.'/'.$tmpRand."_".$_FILES['files']['name']);
-			echo json_encode(['success' => true, 'file' =>  $fileDestination.'/'.$tmpRand."_".$_FILES['files']['name'] ]);
+			echo json_encode(['what'=>$what,'success' => true, 'file' =>  $fileDestination.'/'.$tmpRand."_".$_FILES['files']['name'] ]);
 		} else {
 			move_uploaded_file($_FILES['files']['tmp_name'], $file.$fileDestination.'/'.$_FILES['files']['name']);
-			echo json_encode(['success' => true, 'file' => $fileDestination.'/'.$_FILES['files']['name'] ]);
+			echo json_encode(['what'=>$what,'success' => true, 'file' => $fileDestination.'/'.$_FILES['files']['name'] ]);
 		}
 
 		exit;
 	}
 	
 	static public function uploadimgjugador(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'jugadors'); }
+	
+	static public function uploadimgproducte(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'productes'); }
 	
 	static public function uploadimg(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'upload'); }
 

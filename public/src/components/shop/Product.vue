@@ -3,8 +3,8 @@
 		<div class="shop full" v-if="loaded">
 			<br>
 			<div class="product">
-				<aside class="images" v-if="product">	
-				    <swiper :options="swiperOptionThumbs" class="gallery-thumbs" ref="swiperThumbs">
+				<aside :class="product.images.length>1?'images':'images single'" v-if="product.images.length>0">	
+				    <swiper :options="swiperOptionThumbs" class="gallery-thumbs" ref="swiperThumbs" v-if="product.images.length>1">
 				        <swiper-slide v-for="image in product.images" :style="'background-image:url('+ image.thumb +');'"></swiper-slide>
 				    </swiper>
 					<swiper :options="swiperOptionTop" class="gallery-top" ref="swiperTop">
@@ -51,7 +51,7 @@
 
             <div class="productData">
             	
-				<ui-tabs class="infos">
+				<ui-tabs class="infos" v-if="false">
 	                <ui-tab title="Descripción del producto" v-html="product.content[$i18n.locale].description"></ui-tab>
 	                <ui-tab title="Datos técnicos" v-html="product.content[$i18n.locale].details"></ui-tab>
 	            </ui-tabs>
@@ -114,12 +114,14 @@ export default {
     	oldPrice:'',
     	delivery:'',
     	productSelected:{},
+    	productTitle:'',
     	typeSelected:'',
     	shortDescription:null,
 		swiperOptionTop: {
           spaceBetween: 5,
           //loop: true,
           //loopedSlides: 5, //looped slides should be the same
+          slideToClickedSlide: true,
           navigation: {
             nextEl: '.swiper-button-next.prod',
             prevEl: '.swiper-button-prev.prod'
@@ -137,20 +139,39 @@ export default {
         product: ''
     }
   },
+  head : function() {
+  		var vm=this;
+		return {...vm.$route.meta,
+	    	...{
+		    	title: {
+				  inner: vm.productTitle
+				},
+		    }
+		}    
+  },
   methods: {
   	getData: function(apiUrl) {
 
         var vm = this;
-        this.$http.get(apiUrl)
+        
+        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	    	
+        this.$http.get(apiUrl, { cache: auth })
         .then(function (response) {
         	vm.product = response.data[0].json;
             console.log(vm.product);
             vm.loaded=true;
+            vm.productTitle=vm.product.content[vm.$i18n.locale].name
             vm.$emit('updateHead')
-	  		setTimeout(function(){ 
-	  			vm.simulateClick( document.querySelector('#swatch-0-variation') );
-	  		}, 100);
-            
+
+			if(vm.product.images.length>1) {
+				vm.$nextTick(() => {
+		        const swiperTop = vm.$refs.swiperTop.swiper
+		        const swiperThumbs = vm.$refs.swiperThumbs.swiper
+		        swiperTop.controller.control = swiperThumbs
+		        swiperThumbs.controller.control = swiperTop
+		      })
+			}
             
         })
         .catch(function (error) {
@@ -251,21 +272,16 @@ export default {
 			checkoutStatus: 'checkoutStatus',
 		}),
 	},
+	beforeMount() {
+			if(this.$route.params.slug) {
+				this.getData('producte/slug/'+this.$route.params.slug);
+			}
+	},
 	mounted: function() {
 	  		var vm=this;
 	  		
 	  		//vm.simulateClick( document.querySelector('#swatch-0-variation') );
 
-			if(this.$route.params.slug) {
-				this.getData('producte/slug/'+this.$route.params.slug);
-			}
-
-			if(vm.product) vm.$nextTick(() => {
-		        const swiperTop = vm.$refs.swiperTop.swiper
-		        const swiperThumbs = vm.$refs.swiperThumbs.swiper
-		        swiperTop.controller.control = swiperThumbs
-		        swiperThumbs.controller.control = swiperTop
-		      })
 	},
 	beforeRouteUpdate (to, from, next) {
     	this.getData('producte/slug/'+to.params.slug);
@@ -275,7 +291,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
 
@@ -352,12 +368,15 @@ export default {
 	aside.images{
 		width:50%;
 		@media(max-width:@screenDesktop) {
-			width:100%;
+			width:100%!important;
 			order:2;
 		}
 		height:450px;
 		display:flex;
 		padding: 0;
+		&.single{
+			width:40%;
+		}
 	    margin: 0;
 	    position: relative;
 	    

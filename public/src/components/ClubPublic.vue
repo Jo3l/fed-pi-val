@@ -111,8 +111,8 @@ export default {
 		},
 		getData: function(){
 	        var vm = this;
-	        
-	        vm.$http.get('/club/'+vm.$route.params.clubId, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get('/club/'+vm.$route.params.clubId, { cache: auth })
 	        .then(function (response) {
 	            vm.club = response.data[0];
 	            vm.club.fundacio = response.data[0].fundacio;
@@ -126,8 +126,8 @@ export default {
 	        var vm = this;
 	        var searchFilter = escape('/'+vm.club.id);
 	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
-	        
-	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get(listName+searchFilter+searchPage, { cache: auth })
 	        .then(function (response) {
 	            vm.list = response.data;
 	        })

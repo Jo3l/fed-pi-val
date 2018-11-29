@@ -1,12 +1,16 @@
 <template>
     <transition name="fade">
     	
-	    <div v-if="pagina==-1 ">
+	    <div v-if="pagina==-1">
 	    	
 			<swiper :options="swiperOption" class="newsCarousel">
 	
-			  <swiper-slide v-for="noticia in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
-			    <progressive-background class="articleP" :src="noticia.url">
+			  <swiper-slide v-for="(noticia, index) in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
+			    <div class="articleP">
+			    	
+			    	<img v-if="index>5" :data-src="noticia.url" class="swiper-lazy"/>
+			    	<img v-else :src="noticia.url" class="swiper-lazy"/>
+			    	
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
 					    	<small>{{ fixDate(noticia.alta) }}</small>
@@ -16,7 +20,7 @@
 					    	</section>
 				    	</div>
 			    	</router-link>
-			    </progressive-background>
+			    </div>
 			    
 			  </swiper-slide>
 			  
@@ -26,6 +30,7 @@
 			  
 			</swiper>
 		</div>
+		
 		<div class="flex" v-else="v-else">
 
 			  <div class="multipleNews" v-for="(noticia, index) in newsCarousel" v-if="noticia.idioma==$i18n.locale">
@@ -71,6 +76,7 @@ export default {
 	        slidesPerView: 4,
 	        slidesPerColumn: 1,
 	        spaceBetween: 10,
+	        lazy: true,
 	        navigation: {
 	          nextEl: '.swiper-button-next.nuws',
 	          prevEl: '.swiper-button-prev.nuws'
@@ -197,6 +203,9 @@ export default {
 .newsCarousel {
 	min-height:374px;
 	a {text-decoration:none;color:black;}
+	.swiper-slide {
+		overflow:hidden;
+	}
 	.articleP {
 		&>div{padding-bottom:initial!important;}
 	    min-height: 370px;
@@ -210,6 +219,16 @@ export default {
 	    //border-right: 2px solid white;
     	//border-left: 2px solid white;
 		cursor:e-resize;
+		& > img{
+		    position: absolute;
+		    object-fit: contain;
+		    display: block;
+		    z-index: -1;
+		    height: 87%;
+		    width: auto;
+		    top: 0;
+		    left: -25%;
+		}
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);
     		padding: 40px 20px 20px 20px;

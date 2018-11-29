@@ -129,17 +129,9 @@ export default {
   	},
   	getData: function(apiUrl) {
         var vm = this;
-        this.$http.get(apiUrl, {
-		    // use before callback
-		    before(request) {
-		      // abort previous request, if exists
-		      if (this.previousRequest) {
-		        this.previousRequest.abort();
-		      }
-		      // set previous request on Vue instance
-		      this.previousRequest = request;
-		    }
-		}).then(function (response) {
+        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+        this.$http.get(apiUrl, { cache: auth })
+        .then(function (response) {
 			
             vm.products = response.data;
             vm.allProducts = response.data;

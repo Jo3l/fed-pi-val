@@ -17,6 +17,19 @@ error_reporting(E_ALL);
 
 //$app->etag(md5($_SERVER['REQUEST_URI']));
 
+// tractament d'errors
+
+$c = $app->getContainer();
+$c['errorHandler'] = function ($c) {
+    return function ($request, $response, $exception) use ($c) {
+        return $response->withStatus(500)
+            ->withHeader('Content-Type', 'text/html')
+            ->write('error!'.var_dump($response));
+    };
+};
+
+// fi tractament d'errors 
+
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
@@ -344,6 +357,13 @@ $app->get('/api/static{path:/.+}', '\app\Filem::list'); // obtindre un cami
 * URL: /api/static/uploadimgjugador
 */
 $app->post('/api/static/uploadimgjugador', '\app\Filem::uploadimgjugador'); // guardar imatge jugador
+
+/*
+* @description
+* Pujar/guardar/upload d'una imatge d'un producte'
+* URL: /api/static/uploadimgproducte
+*/
+$app->post('/api/static/uploadimgproducte', '\app\Filem::uploadimgproducte'); // guardar imatge jugador
 
 /*
 * @description

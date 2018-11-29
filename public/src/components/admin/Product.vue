@@ -124,25 +124,38 @@
 		        	<template v-for="(type, key) in product.images">
 		        	<div class="flexed">
 			        	<ui-icon-button @click="deleteItem(product.images, key)" icon="delete" size="small"></ui-icon-button>
-						<ui-textbox
+				        
+				        <ui-textbox
 						    floating-label
 				            autocomplete="off"
 				            error="This field is required"
-				            label="Url imatge gran"
+				            label="Url imatge"
 							type="text"
 				            v-model="product.images[key].img"
 				        ></ui-textbox>
-						<ui-textbox
-						    floating-label
-				            autocomplete="off"
-				            error="This field is required"
-				            label="Url imatge miniatura"
-							type="text"
-				            v-model="product.images[key].thumb"
-				        ></ui-textbox>
+				        
+						<picture><img v-if="product.images[key].img && product.images[key].img.length>5" :src="product.images[key].img"></picture>
+
+					    <vue-core-image-upload
+						    :text="$i18n.t('image.uploadAndCut')"
+						    class="uploader"
+							crop="local"
+							cropRatio="1:1"
+							compress=50
+							:key=key
+							:maxWidth=600
+							:maxHeight=600
+						    url="/api/static/uploadimgproducte"
+							@imageuploaded="getPhoto"
+						    :data="{do:'uploadimgproducte','key':key}"
+						    extensions="jpg,jpeg"
+						    inputAccept	="image/jpg,image/jpeg"
+						>
+						</vue-core-image-upload>
+					
 			        </div>
 			        </template>
-			        <div class="flexed" @click="push(product.images, '' )"><ui-icon-button icon="add" size="small"></ui-icon-button><span>Afegir Imatge</span></div>
+			        <div class="flexed" @click="push(product.images, {img:'',thumb:''} )"><ui-icon-button icon="add" size="small"></ui-icon-button><span>Afegir Imatge</span></div>
 		        </fieldset>
 		        
 		    	<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm(product)">Desar</ui-button>
@@ -157,11 +170,11 @@
 </template>
 
 <script>
-
+import VueCoreImageUpload from 'vue-core-image-upload'
 
 export default {
   name: 'Product',
-  components: {  },
+  components: { 'vue-core-image-upload': VueCoreImageUpload },
   data () {
     return {
     	loaded: false,
@@ -218,6 +231,12 @@ export default {
     }
   },
   methods: {
+  	getPhoto:function(res, data) {
+  		var vm=this;
+		var key = parseInt(data.key); //filed.split('-')[1];
+		vm.product.images[key].img = '/static'+res.file;
+		vm.product.images[key].thumb = '/static'+res.file;
+	},
   	saveForm:function(json){
   		var vm=this;
   		var form={};
@@ -245,7 +264,7 @@ export default {
   	},
   	getData: function(apiUrl) {
         var vm = this;
-        this.$http.get(apiUrl)
+        this.$http.get(apiUrl,{cache:false})
         .then(function (response) {
         	vm.id = response.data[0].id;
         	vm.destacada = (response.data[0].destacada == 'true'||response.data[0].destacada == 1);
@@ -291,6 +310,8 @@ export default {
 
 @import "../../assets/less/defines.less";
 
+
+
 .product{
 	padding: 1em 2em;
 	fieldset {
@@ -299,6 +320,11 @@ export default {
 	    border: 1px solid @fedcolor;
 	    .flexed{
 	    	display:flex;
+	    	border-bottom:1px dashed @fedcolor;
+	    	margin-bottom:15px;
+	    	&:last-of-type{
+	    		border:none;
+	    	}
 	    	& > .ui-textbox{width:29%; margin-right:20px;}
 	    	button{
 	    		margin:10px;
@@ -306,6 +332,12 @@ export default {
 	    	span{
 	    		margin-top:16px;
 	    		cursor:pointer;
+	    	}
+	    	picture{
+	    		img{width:150px;height:auto;margin-bottom:20px;}
+	    	}
+	    	.uploader{
+	    		margin-left:20px;
 	    	}
 	    }
 	}

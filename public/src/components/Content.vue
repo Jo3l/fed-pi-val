@@ -490,7 +490,8 @@ export default {
             
         	var vm = this;
 	        vm.loading=true;
-	        vm.$http.get('/jugador/search/'+query, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get('/jugador/search/'+query, { cache: auth })
 	        .then(function (response) {
 	            vm.buscadorJugadorLocal = response.data;
 	            vm.loading=false;
@@ -507,7 +508,8 @@ export default {
             
         	var vm = this;
 	        vm.loading=true;
-	        vm.$http.get('/jugador/search/'+query, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get('/jugador/search/'+query, { cache: auth })
 	        .then(function (response) {
 	            vm.buscadorJugadorVisitant = response.data;
 	            vm.loading=false;
@@ -524,7 +526,8 @@ export default {
             
         	var vm = this;
 	        vm.loading=true;
-	        vm.$http.get('/equip/search/'+query, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get('/equip/search/'+query, { cache: auth })
 	        .then(function (response) {
 	            vm.local = response.data;
 	            vm.loading=false;
@@ -541,7 +544,8 @@ export default {
             
         	var vm = this;
 	        vm.loading=true;
-	        vm.$http.get('/equip/search/'+query, { cache: false })
+	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+	        vm.$http.get('/equip/search/'+query, { cache: auth })
 	        .then(function (response) {
 	            vm.visitant = response.data;
 	            vm.loading=false;
@@ -632,8 +636,8 @@ export default {
 			vm.equipLocal=[];
 			vm.equipVisitant=[];
 			element.selected=true;
-			
-			vm.$http.get('/participa/'+element.id, { cache: false })
+			var auth = !this.$store.getters.isAuthenticatedWithRole(0);
+			vm.$http.get('/participa/'+element.id, { cache: auth })
 	        .then(function (response) {
 
 				vm.openModalMatch('matchedit');
