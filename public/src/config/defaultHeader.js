@@ -27,7 +27,7 @@ export default {
 	link: [
 	  { rel: 'canonical', href: 'http://fedpival.es/', id: 'canonical' },
 	  { rel: 'author', href: 'indiza', undo: false }, // undo property - not to remove the element
-	  { rel: 'icon', href: require('../../static/logo.png'), sizes: '16x16', type: 'image/png' }, 
+	  { rel: 'icon', href: '/static/logo.png', sizes: '16x16', type: 'image/png' }, 
 	  // with shorthand
 	  //{ r: 'icon', h: '../static/logo.png', sz: '32x32', t: 'image/png' },
 	  // ...

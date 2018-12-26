@@ -167,6 +167,11 @@ export default {
             console.log(vm.product);
             vm.loaded=true;
             vm.productTitle=vm.product.content[vm.$i18n.locale].name
+            
+	  		setTimeout(function(){ 
+	  			vm.simulateClick( document.querySelector('#swatch-0-variation') );
+	  		}, 100);
+	  		
             vm.$emit('updateHead')
 
 			if(vm.product.images.length>1) {
@@ -285,8 +290,6 @@ export default {
 	mounted: function() {
 	  		var vm=this;
 	  		
-	  		//vm.simulateClick( document.querySelector('#swatch-0-variation') );
-
 	},
 	beforeRouteUpdate (to, from, next) {
     	this.getData('producte/slug/'+to.params.slug);

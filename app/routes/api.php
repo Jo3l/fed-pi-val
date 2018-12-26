@@ -181,6 +181,13 @@ $app->post('/api/node/{id:[0-9]+}', '\app\Nodes::insert_element'); // jerarquia 
 
 /*
 * @description
+* Obtindre els nodes d'inscripció actius (o siga, que la data actual estiga entre inici i fi i que no tinga fills)
+* URL: /api/inscripcions
+*/
+$app->get('/api/inscripcions', '\app\Nodes::inscripcions');
+
+/*
+* @description
 * Obtindre els equips d'un club (o siga, que pertanyen a un club)
 * URL: /api/equipsdeclub/12
 */

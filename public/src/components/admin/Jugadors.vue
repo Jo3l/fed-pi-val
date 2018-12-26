@@ -35,10 +35,10 @@
 					</template>
 					
 					<template slot="icon2" scope="props">
-						<td class="actiu">
+						<td class="segur">
 							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.segur==1"></ui-icon>
 							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
-							<ui-checkbox v-model="props.row.segur" @change="saveChanges(props.row)">actiu</ui-checkbox>
+							<ui-checkbox v-model="props.row.segur" @change="saveChanges(props.row)">segur</ui-checkbox>
 						</td>
 					</template>
 					

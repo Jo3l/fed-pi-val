@@ -114,6 +114,15 @@ static public function login($json) /*use($app)*/ {
         	$res= $db->sql("select id,concat('club:',nom) as nom,pwd,email, 10 as rol FROM club where email='".$email."' limit 1;");
         	$result= $db->getResult();
         }
+        
+        if(count($result)==0) {
+        	$result= array();
+        	foreach(config::ALT_CREDS as $var) {
+        		if ($var['email']==$email && $var['pwd']==hash('sha256',$clau)) array_push($result,$var);
+        		//echo $var['email'],'==',$email,'&&', $var['pwd'],'==',$clau,'---';
+        	}
+        	//print_r($result);exit;
+        }
 
 		if(count($result) > 0){
         	$result= $result[0];

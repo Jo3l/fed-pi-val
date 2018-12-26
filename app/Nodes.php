@@ -17,7 +17,8 @@ class Nodes {
 * @description
 * Modificació de l'ordre de varios nodes
 */
-static public function ordre_nodes(Request $in, Response $out, $params){
+static public function ordre_nodes(Request $request, Response $response, $params){
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	$json = json_decode(file_get_contents("php://input"), true);
 	$db = new db();
     foreach( $json as $elm ) {
@@ -32,7 +33,8 @@ static public function ordre_nodes(Request $in, Response $out, $params){
 * @description
 * Modificació de l'ordre dels elements
 */
-static public function ordre_elements(Request $in, Response $out, $params){
+static public function ordre_elements(Request $request, Response $response, $params){
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	$json = json_decode(file_get_contents("php://input"), true);
 	$nodeid= $params['id'];
 	$db = new db();
@@ -50,6 +52,7 @@ static public function ordre_elements(Request $in, Response $out, $params){
 * Eliminació d'un node  dela jerarquia
 */
 static public function delete_node(Request $request, Response $response, $params) {
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	//api/node/{tipus:federacio|competicio/federacions/competicions}/{id:[0-9]+}
     $id= $params['id'];
     $db= new db();
@@ -65,7 +68,10 @@ static public function delete_node(Request $request, Response $response, $params
 * @description
 * crea un node en la jerarquia
 */
-static public function insert_node(Request $request, Response $response, $params) {	return Nodes::guardanode($params); }
+static public function insert_node(Request $request, Response $response, $params) {	
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
+	return Nodes::guardanode($params); 
+}
 
 //  //  //  //  //  //  //  //
 /*
@@ -73,6 +79,7 @@ static public function insert_node(Request $request, Response $response, $params
 * Elimina un element
 */
 static public function delete_element(Request $request, Response $response, $params) {
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	//api/node/{pare:[0-9]+}/element/{id:[0-9]+}
     $id= $params['id'];
     $pare= $params['pare'];
@@ -91,6 +98,7 @@ static public function delete_element(Request $request, Response $response, $par
 * inserta un nou bloc o element d'un tipus indicat
 */
 static public function insert_element(Request $request, Response $response, $params) {
+	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
     return Nodes::editaelement($params['id']);
 }
 
@@ -125,7 +133,7 @@ static public function list_nodes(Request $request, Response $response, $params)
 */
 static private function jerarquia($fill='competicions') {
     $db = new db();
-	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements from _jerarquia order by id asc;");
+	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements, inici,fi from _jerarquia order by id asc;");
 	$result= $db->getResult();
 	$resultids= array();
 	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
@@ -172,6 +180,7 @@ static private function jerarquia($fill='competicions') {
 * funció que modifica un element... Val tant per a modificar (amb id existent) com per a insertar un de nou (sense id)
 */
 static private function editaelement($id) {
+	// es privada, no necessita verificar rol pq ja se fa en les de dalt
     $json= json_decode(file_get_contents("php://input"),true);
     $db= new db();
     if (isset($json['id'])) { // UPDATE!
@@ -302,6 +311,46 @@ static private function guardanode($params) {
 	return Fun::render(Nodes::jerarquia($params['tipus']),true);
 }
 
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* funció que modifica un element... Val tant per a modificar (amb id existent) com per a insertar un de nou (sense id)
+*/
+static public function inscripcions() {
+	$jerarquia= Nodes::jerarquia();
+	echo '<pre>';
+    function walker(&$node,$slug) {
+        if (empty($node)) return;
+        $node['fullSlug']= $slug.$node['slug'];
+        if (!empty($node['children'])) {
+            for ($a=0;$a<count($node['children']);$a++) {
+                walk($node['children'][$a],$node['fullSlug'].'/');
+            }
+        }
+        if ($node['inici']<=date('Ymd000000') && $node['fi']>=date('Ymd000000')) echo print_r($node);
+        echo print_r($node);
+    }
+    walker($jerarquia,'');
+	//echo '<pre>',print_r($jerarquia);
+	exit;
 	
+	
+    $db = new db();
+	$db->sql("select id,nom_es,nom_val,(select count(*) from jerarquia jj where jj.pare=j.id) as fills,inici,fi from _jerarquia j where (select count(*) from jerarquia jj where jj.pare=j.id)=0 order by id asc;");
+	$result= $db->getResult();
+	$resultids= array();
+	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
+	unset($result);
+	echo '<pre>',print_r($resultids);
+	exit;
+    print_r($nodes);
+	$actius= array();
+	foreach($nodes as $node) {
+		if ($node['inici']<=date('Ymd000000') && $node['fi']>=date('Ymd000000')) 
+		array_push($actius,$node);
+	}
+	return Fun::render($actius,true);
+}	
 	
 }

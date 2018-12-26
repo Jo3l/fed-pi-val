@@ -184,7 +184,7 @@ export default {
 	    background-color: rgba(254,254,254,0.8);
 	    border-radius: 0px 0px 0px 10px;
 	    transition: all 1s ease;
-	    transition-delay:2s;
+	    transition-delay:1s;
 	    max-height: 460px;
     	overflow-y: auto;
     	@media(max-width:@screenTablet) {

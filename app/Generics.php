@@ -20,6 +20,7 @@ private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // ta
 //  //  //  //  //  //  //  //
 static public function generic_update(Request $request, Response $response, $params) {
 	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
+	// posar-ho tmb en Nodes.php -> elements
 	if ($params['tabla']=='usuari') {
 	    if ( !Auth::verifyRol($request,0) ) die('error auth:24 usuari '.print_r($_SESSION));
 	}

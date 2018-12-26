@@ -26,6 +26,8 @@ const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resol
 const adminProductes = function(resolve) {require(['./components/admin/Products.vue'], resolve)}
 const adminProducte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
 
+//gestio
+const GClub = function(resolve) {require(['./components/gestio/Club.vue'], resolve)}
 
 import Test from './components/Test.vue'
 import productEditor from './components/admin/editor.vue'
@@ -60,7 +62,7 @@ const routes = [
 	    meta: {...defaultHead,
 	    	...{
 		    	title: {
-				  inner: 'aço es l´inici'
+				  inner: 'Pàgina oficial de la Federació de Pilota Valenciana'
 				},
 		    }
 	    }
@@ -70,7 +72,13 @@ const routes = [
 	    name: 'Inicio',
 	    component: Start,
 	    lang:'es', 
-	    meta: defaultHead
+	    meta: {...defaultHead,
+	    	...{
+		    	title: {
+				  inner: 'Página oficial de la Federación de Pelota Valenciana'
+				},
+		    }
+	    }
 	  },
 	  {
 	    path: '/val/noticies',
@@ -341,6 +349,12 @@ const routes = [
 	    role: 0
 	  },
 	  {
+	    path: '/gestio/club',
+	    name: 'Editar Producte',
+	    component: GClub,
+	    role: 10
+	  },
+	  {
 	    path: '/404',
 	    name: '404',
 	    component: PageNotFound
@@ -362,5 +376,14 @@ router.beforeEach( function(to, from, next) {
 	  next()
 })
 */
+
+ga('set', 'page', router.currentRoute.path);
+ga('send', 'pageview');
+
+router.afterEach(function(to, from) {
+  ga('set', 'page', to.path);
+  ga('send', 'pageview');
+});
+
 
 export default router;

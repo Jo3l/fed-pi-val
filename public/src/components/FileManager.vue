@@ -131,9 +131,9 @@ export default {
 			vm.tipo=tipo;
 			
 			if(vm.tipo=="pdf") {
-				vm.uploadFolder = "pdf/" + (Date.today().month().getYear() + 1900) + "/" + ("0" + Date.today().month().getMonth()).slice(-2);
+				vm.uploadFolder = "pdf/" + (Date.today().getYear() + 1900) + "/" + ("0" + (Date.today().getMonth()+1)).slice(-2);
 			} else {
-				vm.uploadFolder = "upload/" + (Date.today().month().getYear() + 1900) + "/" + ("0" + Date.today().month().getMonth()).slice(-2);
+				vm.uploadFolder = "upload/" + (Date.today().getYear() + 1900) + "/" + ("0" + (Date.today().getMonth()+1)).slice(-2);
 			}
 
 			vm.getData(vm.uploadFolder);

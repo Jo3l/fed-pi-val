@@ -2,7 +2,7 @@
 
     	<div class="itemContainer">
     		<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop')+'/'+product.json.content[$i18n.locale].slug }">
-	    		<em v-if="product.destacada">{{$i18n.t('cart.highlight')}}</em>
+	    		<em v-if="product.destacada==1">{{$i18n.t('cart.highlight')}}</em>
 		    	<div class="img" :style="'background:url('+product.json.images[0].img+') no-repeat center / cover;'"></div>
 	    	</router-link>
 	    	<div class="productText">

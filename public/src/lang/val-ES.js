@@ -26,7 +26,7 @@ export default {
 		itemNotAvailable: 'Model no disponible',
 		quantity: 'quantitat',
 		emptyCart:'La cistella esta buida.',
-		options: 'Opciones',
+		options: 'Opcions',
 		productDescription: 'Descripció del producte',
 		technicalData:'Dades tècniques',
 		info:'Informació',

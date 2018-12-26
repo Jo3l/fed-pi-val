@@ -3,6 +3,7 @@
 use Slim\App;
 use Slim\Middleware\TokenAuthentication;
 use \app\Auth;
+use config;
 
 
 function rol_auth($request, TokenAuthentication $tokenAuth, $rol) {
@@ -39,12 +40,12 @@ $app->add(new TokenAuthentication([
     'path' =>   '/restrict',
     'authenticator' => $authenticator2,
     'secure' => true,
-    'relaxed' => ['localhost', 'fedpival.indiza.com', 'fedpival2.indiza.com', 'api-fedpival.indiza.com'] // ignora no tindre https
+    'relaxed' => ALLOWED_DOMAINS // ignora no tindre https
 ]));
 
 $app->add(new TokenAuthentication([
-    'path' =>   [/*'/api/jugador.*',/*'/api/equip/.*','/api/club/.*',*/'/api/aaaauthtest'],
+    'path' => AUTH_PATHS,
     'authenticator' => $authenticator7	,
     'secure' => true,
-    'relaxed' => ['localhost', 'fedpival.indiza.com', 'fedpival2.indiza.com', 'api-fedpival.indiza.com']
+    'relaxed' => ALLOWED_DOMAINS
 ]));
