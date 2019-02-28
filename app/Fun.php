@@ -125,6 +125,7 @@ static public function getPost($tabla) {
 /*
 * @description
 * Obtindre els equips d'un club (o siga, que pertanyen a un club)
+* borrable en maig2019
 */
 static public function equipsdeclub(Request $request, Response $response, $params) {
 	$json= json_decode(file_get_contents("php://input"),true);
@@ -135,7 +136,54 @@ static public function equipsdeclub(Request $request, Response $response, $param
     $db = new db();
 	$club= $params['club'];
 	$options= array();
-	$sql= "SELECT id,nom FROM equip WHERE club=".$club;
+	$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
+	$sql= "SELECT equip.id,nom,competicio,json,cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
+	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
+	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
+	$db->sql($sql);
+	$data= $db->all();
+	foreach($data as $id=>$elm) {
+		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
+		$data[$id]['cami']['es']= implode(' > ',array_splice(explode('/',$data[$id]['cami_es']),1));
+		unset ($data[$id]['cami_es']);
+		//$data[$id]['cami']['val']= str_replace('/',' > ',$data[$id]['cami_val']);
+		$data[$id]['cami']['val']= implode(' > ',array_splice(explode('/',$data[$id]['cami_val']),1));
+		unset ($data[$id]['cami_val']);
+	}
+    echo json_encode($data);
+}
+
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obtindre els equips d'una competicio
+*/
+static public function inscripcionsdecompeticio(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	if ( $request->getMethod() == 'POST' ) {
+		echo 'POST';
+		exit;
+	}
+    $db = new db();
+	$node= $params['node'];
+	$options= array();
+	$sql= "SELECT equip.id,nom,json,club, (select club.nom from club where club.id=equip.club) as nomclub FROM equip WHERE competicio=".$node;
+	$db->sql($sql);
+	$data= $db->all();
+    echo json_encode($data);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obtindre els jugadors d'una inscripcio
+*/
+static public function inscrits(Request $request, Response $response, $params) {
+    $db = new db();
+	$equip= $params['equip'];
+	$options= array();
+	$sql= "SELECT id,numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador,pertany WHERE pertany.jugador=jugador.id and equip=".$equip;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
 	$db->sql($sql);
@@ -146,15 +194,70 @@ static public function equipsdeclub(Request $request, Response $response, $param
 //  //  //  //  //  //  //  //
 /*
 * @description
-* Obtindre els jugadors d'un equip (o siga, que juguen amb un equip)
+* Vincula un jugador a una inscripcio
+* URL: /api/inscrits/[idinscripcio] POST {"jugador":[idjugador]}
 */
-static public function jugadorsdequip(Request $request, Response $response, $params) {
-    $db = new db();
+static public function insert_inscrit(Request $request, Response $response, $params) {
+	$json = Fun::getPost($tabla);
+	$id= $json['jugador'];
 	$equip= $params['equip'];
+	$db= new db();
+	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador WHERE numsoci=".$id;
+	$db->sql($sql);
+	$data= $db->all();
+	if (empty($data)) {
+		header("HTTP/1.0 404 Not found");
+		die('{"error":"No existeix eixe número de soci"}');
+	}
+	$db->sql("select count(*) as compte from pertany where jugador=".$data[0]['id']." and equip=".$equip);
+	$compte= $db->all();
+	// si ja existeix apuntat
+	if ($compte[0]['compte']>0) { header("HTTP/1.0 404 Not found"); die('{"error":"Jugador ja apuntat"}'); }
+	// cree la nova relació amb l'equip indicat i data d'alta actual
+	$db->sql("insert into pertany (jugador,equip,alta) values (".$data[0]['id'].",".$equip.",'".date('YmdHis')."');");
+	return;	
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Elimina jugador d'una inscripcio
+* URL: /api/inscrits/[idinscripcio] DELETE {"jugador":[idjugador]}
+*/
+static public function delete_inscrit(Request $request, Response $response, $params) {
+	$equip= $params['equip'];
+	$jugador= $params['jugador'];
+	$db= new db();
+	$db->sql("delete from pertany where jugador=".$jugador." and equip=".$equip.";");
+	return Fun::inscrits($request,$response,$params);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obtindre els jugadors d'un club 
+*/
+static public function jugadorsdeclub(Request $request, Response $response, $params) {
+    $db = new db();
+	$club= $params['club'];
 	$options= array();
-	$sql= "SELECT id,dni,nom,cognoms FROM jugador,pertany WHERE pertany.jugador=jugador.id and equip=".$equip;
+	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador WHERE club=".$club;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
+	$db->sql($sql);
+	$data= $db->all();
+    echo json_encode($data);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obtindre dades bàsiques d'un jugador pel seu num de soci 
+*/
+static public function soci(Request $request, Response $response, $params) {
+    $db = new db();
+	$num= $params['num'];
+	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador WHERE numsoci=".$num;
 	$db->sql($sql);
 	$data= $db->all();
     echo json_encode($data);
@@ -208,69 +311,70 @@ static public function ultimsResultats(Request $request, Response $response) {
 	//echo '<pre>',print_r($resultids);exit;
 	$sql= "select id,jerarquia,local, (select nom from equip where equip.id=local) as nomlocal,(select nom from equip where equip.id=visitant) as nomvisitant,visitant,resultatlocal,resultatvisitant,(select trinquet.nom from trinquet where trinquet.id=lloc) as lloc,(select trinquet.dir from trinquet where trinquet.id=lloc) as dir,(select trinquet.gps from trinquet where trinquet.id=lloc) as gps,modificacio from partida where data<NOW()+1000000 and (resultatlocal>0 or resultatvisitant>0) order by modificacio limit 10";
 	$sql= "select jerarquia from partida where data<NOW()+1000000 and (resultatlocal>0 or resultatvisitant>0) group by jerarquia limit 10";
+	$sql= "select jerarquia, (select cami_es from _camins where _camins.id=jerarquia) as cami_es, (select cami_val from _camins where _camins.id=jerarquia) as cami_val from partida where data<NOW()+1000000 and (resultatlocal>0 or resultatvisitant>0) group by jerarquia limit 10";
 	$db->sql($sql);
 	$data= $db->all();
-	// puc obtindre cami de la partida de dos maneres. Una, seguir cada node cap a dalt fins arribar a competicions i catxejar. O bé obtindre tots els possibles camins i obtindre el més adient. Millor la primera opció perquè quan porten uns mesos, obtindre tots els camins no serà ràpid...
-	// per tant, en aquest punt, he de recorrer $data mirant el camp jerarquia i afegint la ruta sencera (i catxejant per estalviar consultes)
-	$cache= array();
-	foreach($data as $cod => $partida) {
-		$jerarquia= $partida['jerarquia'];
-		if (isset($cache[$jerarquia])) {
-			//$data[$cod]['path']= $cache[$jerarquia]['path'];
-			//$data[$cod]['nomnode']= $cache[$jerarquia]['node'];
-			$data[$cod]= $cache[$jerarquia];
-			continue;
-		}
-		$max= 10; // maxima profunditat permesa
-		$pathes= $pathval= '';
-		$actual= $jerarquia;
-		// bucle per reconstruir el camí fins a un node determinat a partir del node on resideix la partida
-		while ($max--) {
-			//$db->sql("select jerarquia.id as id,pare,text from jerarquia, idioma where registreid=jerarquia.id and tipus='jerarquia' /*and idioma='".(Fun::$idioma)."'*/ and jerarquia.id=".$actual);
-			$db->sql("select jerarquia.id as id,pare,(select text from idioma where registreid=jerarquia.id and tipus='jerarquia' and idioma='es') as es, (select text from idioma where registreid=jerarquia.id and tipus='jerarquia' and idioma='val') as val  from jerarquia where jerarquia.id=".$actual);
-			$f= $db->all()[0];
-			if (empty($data[$cod]['es'])) $data[$cod]['es']= array('nom'=>$f['es']);
-			if (empty($data[$cod]['val'])) $data[$cod]['val']= array('nom'=>$f['val']);
-			//$db->sql("select pare,text from jerarquia, idioma where registreid=jerarquia.id and tipus='jerarquia' and idioma='".(Fun::$idioma)."' and jerarquia.id=".$actual.";");
-			//$f= $db->all();
-			// pare == 1 == (Competicions/nes)
-			$pathes= $resultids[$f['id']]['slug_es'].'/'.$pathes;
-			$pathval= $resultids[$f['id']]['slug_val'].'/'.$pathval;
-			$actual= $f['pare'];
-			if ($actual==0) {
-				$pathes= '/es/'.$pathes;
-				$pathval= '/val/'.$pathval;
-				$max=0; // end
-				continue;
-			}
-		}
-		$data[$cod]['es']['path']= $pathes;
-		$data[$cod]['val']['path']= $pathval;
-		//$cache[$jerarquia]= array('path'=>$path, 'node'=>$data[$cod]['nomnode']);
-		$cache[$jerarquia]= $data[$cod];
-	}
-    echo json_encode($data);
+	$data= $data[0];
+	$cami='';
+	foreach( explode('/',substr($data['cami_es'],1)) as $elm ) $cami= $cami.'/'.Fun::slugify($elm,false);
+	$data['es']['slugpath']= $cami;
+	$data['es']['nom']= $elm;
+	$cami='';
+	foreach( explode('/',substr($data['cami_val'],1)) as $elm ) $cami= $cami.'/'.Fun::slugify($elm,false);
+	$data['val']['slugpath']= $cami;
+	$data['val']['nom']= $elm;
+	unset($data['cami_es']);
+	unset($data['cami_val']);
+    echo json_encode(array($data));
 }
-
 
 //  //  //  //  //  //  //  //
 /*
 * @description
-* Vincula un jugador a un equip
-* URL: /api/pertany/[idjugador] POST {"id":[idequip]}
-* URL: /api/pertany/1 POST {"id":1} 
+* funció que obté els nodes d'inscripció actius (inici < hui < fi) indicant els apuntats del club actual (token.id)
 */
-static public function pertany(Request $request, Response $response, $params) {
-	$json = Fun::getPost($tabla);
-	$id= $params['jugador'];
-	$equip= $json['id'];
-	$db= new db();
-	// pose baixe a relacions anteriors existents
-	$db->sql("update pertany set baixa='".date('YmdHis')."' where jugador=".$id." and equip=".$equip);
-	// cree la nova relació amb l'equip indicat i data d'alta actual
-	$db->sql("insert into pertany (jugador,equip,alta) values (".$id.",".$equip.",'".date('YmdHis')."');");
-	return;	
-}
+static public function inscripcions($request,$response,$params) {
+	$user= Auth::getUser($request,$response);
+	$club= $user->data->id;
+	$jerarquia= Nodes::jerarquia();
+	$inscripcions= array();
+	if ($club) {
+		$sql= "SELECT id, competicio, nom from equip where club=".$club;
+		$db= new db();
+		$db->sql( $sql );
+		$result= $db->getResult();
+		foreach ($result as $r) {
+			if (!isset($inscripcions[$r['competicio']])) $inscripcions[$r['competicio']]= array();
+			array_push( $inscripcions[$r['competicio']], $r);
+		}
+	}
+    function walker(&$node,$slug,$cami) {
+        if (empty($node)) return;
+		$result= array();
+        $node['fullSlug']= $slug.$node['slug'];
+        $node['fullName']= $cami.(substr($node['name'],0,9)!='Competici'?$node['name']:'');
+        if (!empty($node['children'])) {
+            for ($a=0;$a<count($node['children']);$a++) {
+            	$nouresult= walker($node['children'][$a],$node['fullSlug'].'/',$node['fullName'].' > ');
+                $result= array_merge($result,$nouresult);
+            }
+        }
+        if (date('Ymd000000',strtotime($node['inici']))<=date('Ymd000000') && date('Ymd235959',strtotime($node['fi']))>=date('Ymd235959')) {
+        	//echo var_dump($result),var_dump($node);
+        	$result= array_merge($result,array($node));
+        }
+        return $result;
+    }
+    $result= walker($jerarquia,'','');
+    foreach($result as $idr=>$r) {
+    	$result[$idr]['apuntat']= null;
+    	if (in_array($r['id'],array_keys($inscripcions))) {
+    		$result[$idr]['apuntat']= $inscripcions[$r['id']];
+    	}
+    }
+    return Fun::render($result);
+}	
+
 
 //  //  //  //  //  //  //  //
 /*
@@ -282,9 +386,22 @@ static public function participants(Request $request, Response $response, $param
 	$json = Fun::getPost($tabla);
 	$id= $params['partida'];
 	$db= new db();
-	$db->sql("select participa.equip as equip, jugador.* from jugador, participa where participa.jugador=jugador.id and participa.partida=".$id.";'".date('YmdHis')."');");
+	$db->sql("select jugador.id as id, participa.equip as equip, concat(nom,' ',substring(cognoms,1,1),'.') as nom, numsoci from jugador, participa where participa.jugador=jugador.id and participa.partida=".$id.";"/*."'".date('YmdHis')."');"*/);
 	$data= $db->all();
-	return Fun::render($data);
+	$tot= [];
+	foreach($data as $jug) { 
+		if (empty($tot[$jug['equip']])) $equips[$jug['equip']]=[];
+		$tot[$jug['equip']]['inscrits']= [];
+		array_push($tot[$jug['equip']],$jug);
+	}
+	//pertany (jugador,equip
+	$sql= "SELECT id, numsoci, equip, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador,pertany WHERE jugador.id=pertany.jugador and equip in (".implode(',',array_keys($tot)).");";
+	$db->sql($sql);
+	$inscrits= $db->all();
+	foreach($inscrits as $inscrit) {
+		array_push($tot[$inscrit['equip']]['inscrits'],$inscrit);
+	}
+	return Fun::render($tot);
 }
 
 //  //  //  //  //  //  //  //
@@ -292,17 +409,32 @@ static public function participants(Request $request, Response $response, $param
 * @description
 * Vincula un jugador i equip a una partida
 * URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
+* URL: /api/participa/[idpartida] POST {"numsoci":[numsoci], "equip":[idequip]}
 */
 static public function participa(Request $request, Response $response, $params) {
 	$json = Fun::getPost($tabla);
 	$id= $params['partida'];
 	$jugador= $json['id'];
-	$equip= $json['equip'];
+	$numsoci= $json['numsoci'];
 	$db= new db();
-	$db->sql("select count(*) as yaexiste from participa where jugador=".$jugador." and partida=".$id);
+	if (empty($jugador)) {
+		$db->sql("select id from jugador where numsoci=".$numsoci);
+		$jugador= $db->all();
+		$jugador= $jugador[0]['id'];
+	}
+	if (empty($jugador)) {
+		header("HTTP/1.0 404 Not found");
+		die('{"error":"Numero de soci no trobat"}');
+	}
+	$equip= $json['equip'];
+	$sql= "select count(*) as yaexiste from participa where jugador=".$jugador." and partida=".$id;
+	$db->sql($sql);
 	$ya = $db->all();
 	$ya= $ya[0]['yaexiste'];
-	if ($ya>0) die('{"error":"Ja existeix eixe jugador en aquesta partida"}');
+	if ($ya>0) {
+		header("HTTP/1.0 406 Not acceptable");
+		die('{"error":"Ja existeix eixe jugador en aquesta partida"}');
+	}
 	$db->sql("insert into participa (jugador,equip,partida,creacio) values (".$jugador.",".$equip.",".$id.",'".date('YmdHis')."');");
 	return Fun::participants($request,$response,$params);
 }
@@ -324,6 +456,28 @@ static public function delete_participa(Request $request, Response $response, $p
 //  //  //  //  //  //  //  //
 /*
 * @description
+* Obté les partides actives (data -10 a +2) d'un club
+* URL: /api/partides/[idclub]
+*/
+static public function partides(Request $request, Response $response, $params) {
+	$db= new db();
+	// compte: només lliste els que apareixen com a local
+	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+3 days'))."';");
+	$data = $db->all();
+	foreach($data as $id=>$elm) {
+		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
+		$data[$id]['cami']['es']= implode(' > ',array_splice(explode('/',$data[$id]['cami_es']),1));
+		unset ($data[$id]['cami_es']);
+		//$data[$id]['cami']['val']= str_replace('/',' > ',$data[$id]['cami_val']);
+		$data[$id]['cami']['val']= implode(' > ',array_splice(explode('/',$data[$id]['cami_val']),1));
+		unset ($data[$id]['cami_val']);
+	}
+	Fun::render($data);
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
 * Tradueix l'objecte indicat en la URL a la taula (o vista) adequada per a poder accedir a la info de la BD segons el tipus d'acció
 */
 static public function tables($elm, $for='select') {
@@ -336,13 +490,14 @@ static public function tables($elm, $for='select') {
 	        'noticies'=>'_noticia_'.Fun::$idioma,
 	        'noticias'=>'_noticia_'.Fun::$idioma,
 	        'equips'=>'_equip',
+	        'inscripcio'=>'_equip',
 	        'club'=>'club',
 	        'clubs'=>'_club',
 	        'jugador'=>'jugador',
 	        'jugadors'=>'jugador',
 	        'node'=>'_element_'.Fun::$idioma,
 	        'jerarquia'=>'_jerarquia',
-	        'partida'=>'partida',
+	        'partida'=>'_partida',
 	        'partidas'=>'partida',
 	        'partides'=>'partida',
 	        'producte'=>'producte',
@@ -360,6 +515,7 @@ static public function tables($elm, $for='select') {
 	        'acte'=>'pagina',
 	        'noticia'=>'pagina',
 	        'equip'=>'equip',
+	        'inscripcio'=>'equip',
 	        'club'=>'club',
 	        'jugador'=>'jugador',
 	        'node'=>'pagina',
@@ -514,24 +670,21 @@ static public function comprar(Request $request, Response $response, $params) {
 }
 
 static public function email($to,$sub,$text){
-	# Instantiate the client.
-	$mgClient = new Mailgun(config::mailgundata['secretkey']);
+	# Include the Autoloader (see "Libraries" for install instructions)
+	//require 'vendor/autoload.php';
+	//use Mailgun\Mailgun;
+	# First, instantiate the SDK with your API credentials
+	$mg = Mailgun::create(config::mailgundata['secretkey']);
+	# Now, compose and send your message.
+	# $mg->messages()->send($domain, $params);
 	$domain = config::mailgundata['domain'];
-	# Issue the call to the client.
-/*	$result = $mgClient->get("address/validate", array('address' => $to));
-	# is_valid is 0 or 1
-	$isValid = $result->http_response_body->is_valid;
-	if (!$isValid) die('Dir no valida');
-*/	# Make the call to the client.
-	$result = $mgClient->sendMessage("$domain",
-	          array('from'    => config::mailgundata['from'],
-	                'to'      => $to,
-	                'subject' => $sub,
-	                'text'    => $text
-	          )
-	);
+	$result = $mg->messages()->send($domain, [
+	  'from'    => config::mailgundata['from'],
+	  'to'      => $to,
+	  'subject' => $sub,
+	  'text'    => $text
+	]);
 	# You can see a record of this email in your logs: https://app.mailgun.com/app/logs
-	# You can send up to 300 emails/day from this sandbox server.
 	# Next, you should add your own domain so you can send 10,000 emails/month for free.
 	return '{"result":'.json_encode($result).'}';
 }

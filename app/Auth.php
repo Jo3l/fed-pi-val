@@ -33,12 +33,25 @@ public function getUserByToken($token,$rol=9999)
 {
     try{
     	$secretKey = base64_decode(config::SECRET_KEY);
+    	//$secretKey = JWT::encode($token, config::SECRET_KEY);
     	$dectoken= JWT::decode($token, $secretKey, array('HS256'));
     	if ($dectoken->data->rol>$rol) throw new UnauthorizedException('Not enough permission '.$rol.'<'.$dectoken->data->rol);
     } catch(PDOException $e){
         throw new UnauthorizedException('Invalid Token');
     }
     return $dectoken;
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obté un usuari
+*/
+public function getUser(Request $request, Response $response)
+{
+	//die($request->getServerParam('HTTP_AUTHORIZATION').'.');
+	$token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
+	return Auth::getUserByToken($token);
 }
 
 
@@ -70,6 +83,7 @@ static public function authtest($request) {
 	// el token el dona al autenticar-se
     echo "m'has pillao.<br>";
     $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
+    if (empty($token)) die('no has posat el bearer, llig comentaris d`authtest');
     $data= Auth::getUserByToken($token);
     echo 'Faltan: ', round(($data->exp - time())/60) ,' min<br>';
     Auth::extend($token);
@@ -145,15 +159,18 @@ static public function login($json) /*use($app)*/ {
             } else {
                 header("HTTP/1.0 401 Not Authorized");
                 echo '{"status":"fail", "message":"1 Unable to log you in. Please try again!'.hash('sha256',$clau).'"}';
+                exit;
             }
         }
         else{
             header("HTTP/1.0 401 Not Authorized");
             echo '{"status":"fail", "message":"2 Unable to log you in. Please try again!"}';
+            exit;
         }
     } catch(Exception $ex) {
         header("HTTP/1.0 401 Not Authorized");
         echo '{"status":"fail", "message":"3 Unable to log you in. Please contact your system administrator"}';
+        exit;
     } 
 }
 
@@ -167,8 +184,8 @@ static public function login($json) /*use($app)*/ {
 static public function token($data, $tokenId=null) {
     if (empty($tokenId)) $tokenId= base64_encode(random_bytes(32));
     $issueAt = time();
-    $notBefore = $issueAt + 10; //Adding 10 seconds
-    $expire = $notBefore + 1800; // adding 30 minutes
+    $notBefore = $issueAt + 0; //Adding 0 seconds
+    $expire = $notBefore + 6*60*60; // adding 6 hours
     $serverName = $_SERVER['SERVER_NAME']; // get the server name. Not sure if that's the right way to get the server name.
     // create the token
     $data = array(
@@ -211,7 +228,7 @@ static public function emailclub(Request $request, Response $response, $params) 
 static public function emailpwd(Request $request, Response $response, $params) /*use($app)*/ {
 
 	function randomPassword() {
-	    $alphabet = "abcdefghijklmnopqrstuwxyz0123456789";
+	    $alphabet = "abcdefghjknpqrtuwxyz2346789";
 	    $pass='';
 	    for ($i = 0; $i < 8; $i++) {
 	        $n = rand(0, strlen($alphabet)-1);
@@ -223,11 +240,15 @@ static public function emailpwd(Request $request, Response $response, $params) /
 	$hashpwd= hash('sha256',$pwd);
 	$json= json_decode(file_get_contents("php://input"),true);
 	foreach($json as $nom=>$val) list($tabla,$id)=array($nom,intval($val));
-    $sql = "UPDATE ".$tabla." set pwd='".$hashpwd."', json='{\"pwd\":\"".$pwd."\"}' where id=".$id;
 	$db= new db();
+    $sql = "UPDATE ".$tabla." set pwd='".$hashpwd."', json='{\"pwd\":\"".$pwd."\"}' where id=".$id;
     $res= $db->sql($sql);
-    $text= "S'ha generat una nova contrasenya per al teu compte de la Federació de Pilota en http://fedpival.indiza.com/login :\n\n".$pwd."\n".$res;
-	Fun::email("mailgun.com.alsanan@neverbox.com","Nova contrasenya generada per a fedpival.es",$text);
+    $sql = "SELECT email from club where id=".$id;
+    $res= $db->sql($sql);
+    $data= $db->all();
+    $email= $data[0]['email'];
+    $text= "S'ha generat una nova contrasenya per al teu compte de la Federació de Pilota en http://fedpival.indiza.com/login :\n\n".$email."\nClau: ".$pwd;
+	Fun::email($email,"Nova contrasenya generada per a fedpival.es",$text);
 	echo '{"result":"ok"}';
 }
 

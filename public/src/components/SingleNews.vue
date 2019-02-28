@@ -22,8 +22,13 @@
 				
 		        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
 	            
-				<label>Data Publicació:</label><br>
-				<vue-datepicker-local v-model="publishedDate" :local="datePickerOptions" format="DD-MM-YYYY HH:mm:ss"></vue-datepicker-local>
+				<ui-datepicker
+	                placeholder="$i18n.t('calendar.dateTip')"
+	                :start-of-week="datePickerOptions.dow"
+	                v-model="publishedDate"
+	                :lang="datePickerOptions"
+	            >Data Publicació:</ui-datepicker>
+				            
 				<br>
 				<label>Titular:</label>
 				<ui-textbox
@@ -120,7 +125,6 @@
 
 import NewsCarousel from './NewsCarousel.vue';
 import VueCoreImageUpload from 'vue-core-image-upload'
-import VueDatepickerLocal from 'vue-datepicker-local'
 import VuePellEditor from 'vue-pell-editor'
 import VuePellEditorConfig from '../config/pelleditor'
 import FileManager from './FileManager.vue'
@@ -131,7 +135,7 @@ import VueGoodshareTelegram from 'vue-goodshare/src/providers/Telegram.vue'
 
 export default {
 	name: 'News',
-  	components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram, 'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager, VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
+  	components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram, 'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager,'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
 			viewTags:false,
@@ -150,15 +154,17 @@ export default {
 			        icon: 'delete'
 			    }
 			],
-			datePickerOptions: {
-				yearSuffix: '',
-				monthsHead: this.$parent.$i18n.t('calendar.months'),
-				dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
-        		hourTip: this.$parent.$i18n.t('calendar.hourTip'),
-    			minuteTip: this.$parent.$i18n.t('calendar.minuteTip'),
-        		secondTip: this.$parent.$i18n.t('calendar.secondTip'),
-        		months: this.$parent.$i18n.t('calendar.monthsShort'),
-    			weeks: this.$parent.$i18n.t('calendar.weekShort')
+		    datePickerOptions: {
+			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  months: {
+			    full: this.$parent.$i18n.t('calendar.months'),
+			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
+			  },
+			  days: {
+			    full: this.$parent.$i18n.t('calendar.weekLong'),
+			    abbreviated: this.$parent.$i18n.t('calendar.weekShort'),
+			    initials: this.$parent.$i18n.t('calendar.weekInitials')
+			  }
 			},
 			editorOptions: VuePellEditorConfig(this.openModal),
 		}

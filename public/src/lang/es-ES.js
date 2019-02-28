@@ -1,8 +1,9 @@
 export default {
 	calendar: {
-		mondayFirst: 'true',
+		mondayFirst: '1',
 		weekShort : [ 'Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
 		weekLong : ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+		weekInitials: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
 		months : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
 		monthsShort: ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Sete', 'Oct', 'Nov', 'Des'],
 		events : 'Events',
@@ -10,6 +11,7 @@ export default {
 		hourTip: 'Selecciona hora',
     	minuteTip: 'Selecciona minuto',
         secondTip: 'Selecciona segundo',
+        dateTip: 'Selecciona una fecha'
 	},
 	cart : {
 		viewAllProducts:'Haz click aquí para ver todos los productos.',
@@ -77,7 +79,7 @@ export default {
 		insert_node : 'Insertar nuevo nodo',
 		write_node : 'Escribe aquí el nombre del nodo',
 		remember_node: 'Recuerda usar un nombre claro y sencillo',
-		rename_node: 'Renombrar nodo',
+		rename_node: 'Modificar nodo',
 		insert_game: 'Insertar partida',
 		save_game: 'Guardar partida'
 	}, 

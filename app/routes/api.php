@@ -17,19 +17,6 @@ error_reporting(E_ALL);
 
 //$app->etag(md5($_SERVER['REQUEST_URI']));
 
-// tractament d'errors
-
-$c = $app->getContainer();
-$c['errorHandler'] = function ($c) {
-    return function ($request, $response, $exception) use ($c) {
-        return $response->withStatus(500)
-            ->withHeader('Content-Type', 'text/html')
-            ->write('error!'.var_dump($response));
-    };
-};
-
-// fi tractament d'errors 
-
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
@@ -179,50 +166,6 @@ $app->get('/api/node/{id:[0-9]+}', '\app\Nodes::list_elements'); // obtindre ele
 */
 $app->post('/api/node/{id:[0-9]+}', '\app\Nodes::insert_element'); // jerarquia federacio o competicions
 
-/*
-* @description
-* Obtindre els nodes d'inscripció actius (o siga, que la data actual estiga entre inici i fi i que no tinga fills)
-* URL: /api/inscripcions
-*/
-$app->get('/api/inscripcions', '\app\Nodes::inscripcions');
-
-/*
-* @description
-* Obtindre els equips d'un club (o siga, que pertanyen a un club)
-* URL: /api/equipsdeclub/12
-*/
-$app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::equipsdeclub'); // buscar
-
-/*
-* @description
-* Guardar els equips d'un club (o siga, que pertanyen a un club)
-* Exemple de paràmetre {"equips":[1,2,4,8]}
-* URL: POST /api/equipsdeclub/12
-*/
-$app->post('/api/equipsdeclub/{club:[0-9]+}', '\app\Fun::equipsdeclub');
-
-/*
-* @description
-* Obtindre els equips sense club (o siga, que poden assignar-se a un club)
-* URL: GET /api/equipssense
-*/
-$app->post('/api/equipssense', '\app\Fun::equipssense');
-
-
-/*
-* @description
-* Obtindre els jugadors d'un equip (o siga, que juguen amb un equip)
-* URL: /api/jugadorsdequip/12
-*/
-$app->get('/api/jugadorsdequip/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::jugadorsdequip'); // buscar
-
-/*
-* @description
-* Guarda les partides creades amb el generador i transmeses amb un json
-* URL: /api/equips/genera
-* Exemple de paràmetre: [ {"data":"2018-07-21T15:45:40.480Z","enfrontaments":[[{"id":"1","nom":"TEST: equip-prova","club":"1"},{"id":"2","nom":"TEST: equip-prova 2","club":"2"}]]} , {"data":"2018-07-28T15:45:40.000Z","enfrontaments":[[{"id":"2","nom":"TEST: equip-prova 2","club":"2"},{"id":"1","nom":"TEST: equip-prova","club":"1"}]]} ]
-*/
-$app->post('/api/equip/genera', '\app\Fun::generaPartides'); // buscar
 
 /*
 * @description
@@ -239,13 +182,139 @@ $app->get('/api/ultimsresultats', '\app\Fun::ultimsResultats');
 */
 $app->get('/api/modalitats', '\app\Fun::modalitats'); 
 
+
+/*
+* @description
+* Obtindre els nodes d'inscripció actius (o siga, que la data actual estiga entre inici i fi i que no tinga fills)
+* URL: /api/inscripcions
+*/
+$app->get('/api/inscripcions', '\app\Fun::inscripcions');
+
+/*
+* @description
+* Obtindre els equips d'un club (o siga, que pertanyen a un club)
+* URL: /api/equipsdeclub/12
+*/
+$app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::equipsdeclub'); // buscar
+
+/*
+* @description
+* Obtindre els equips d'una competicio 
+* URL: /api/inscripcionsdecompeticio/12
+*/
+$app->get('/api/inscripcionsdecompeticio/{node:[0-9]+}', '\app\Fun::inscripcionsdecompeticio');
+
+
+/*
+* @description
+* Guardar els equips d'un club (o siga, que pertanyen a un club)
+* Exemple de paràmetre {"equips":[1,2,4,8]}
+* URL: POST /api/equipsdeclub/12
+* borrable en maig2019
+*/
+//$app->post('/api/equipsdeclub/{club:[0-9]+}', '\app\Fun::equipsdeclub');
+
+/*
+* @description
+* Obtindre els equips sense club (o siga, que poden assignar-se a un club)
+* URL: GET /api/equipssense
+* borrable en febrer2019
+*/
+//$app->post('/api/equipssense', '\app\Fun::equipssense');
+
+
+/*
+* @description
+* Obtindre els jugadors d'un equip (o siga, que juguen amb un equip)
+* URL: /api/inscrits/1
+*/
+$app->get('/api/inscrits/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::inscrits'); // buscar
+
+
+/*
+* @description
+* Vincula un jugador a un equip
+* URL: /api/inscrits/[idinscripcio] POST {"jugador":[idjugador]}
+* URL: /api/inscrits/1 POST {"jugador":1}
+*/
+$app->post('/api/inscrits/{equip:[0-9]+}', '\app\Fun::insert_inscrit'); 
+
+/*
+* @description
+* Desvincula un jugador d'un equip
+* URL: /api/inscrits/[idinscripcio]/[idjugador]
+* URL: /api/inscrits/1/1
+*/
+$app->delete('/api/inscrits/{equip:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_inscrit'); 
+
+/*
+* @description
+* Obtindre els jugadors d'un club (o siga, que estan assignats a un club)
+* URL: /api/jugadorsdeclub/12
+*/
+$app->get('/api/jugadorsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::jugadorsdeclub'); // buscar
+
+/*
+* @description
+* Obtindre dades bàsiques d'un jugador pel seu num de soci
+* URL: /api/soci/1234
+*/
+$app->get('/api/soci/{num:[0-9]+}', '\app\Fun::soci'); // buscar
+
+/*
+* @description
+* Guarda les partides creades amb el generador i transmeses amb un json
+* URL: /api/equips/genera
+* Exemple de paràmetre: [ {"data":"2018-07-21T15:45:40.480Z","enfrontaments":[[{"id":"1","nom":"TEST: equip-prova","club":"1"},{"id":"2","nom":"TEST: equip-prova 2","club":"2"}]]} , {"data":"2018-07-28T15:45:40.000Z","enfrontaments":[[{"id":"2","nom":"TEST: equip-prova 2","club":"2"},{"id":"1","nom":"TEST: equip-prova","club":"1"}]]} ]
+*/
+$app->post('/api/equip/genera', '\app\Fun::generaPartides'); // buscar
+$app->post('/api/inscripcions/genera', '\app\Fun::generaPartides'); // buscar
+
+
+/*
+* @description
+* Vincula un jugador i equip a una partida
+* URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
+*/
+$app->post('/api/participa/{partida:[0-9]+}', '\app\Fun::participa'); 
+
+/*
+* @description
+* Obté els jugadors d'una partida
+* URL: /api/participa/[idpartida]
+*/
+$app->get('/api/participa/{partida:[0-9]+}', '\app\Fun::participants'); 
+
+/*
+* @description
+* Elimina un jugador d'una partida
+* URL: /api/participa/[idpartida]/[idjugador] DELETE
+*/
+$app->delete('/api/participa/{partida:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_participa'); 
+
+/*
+* @description
+* Obté les partides actives (data -10 a +2) d'un club
+* URL: /api/partides/[idclub]
+*/
+$app->get('/api/partides/{club:[0-9]+}', '\app\Fun::partides'); 
+
+/*
+ok /api/pertany/[idjugador] GET per obtindre l’equip al que pertany actualment
+ok /api/pertany/[idjugador] POST amb {id:equipid} per a vincular-lo a un equip
+ok /api/jugadorsdequip/[id] GET per obtindre els jugadors d’un equip
+ok /api/participa/[idpartida] GET per a obtindre els jugadors d’una partida
+de moment no incloc l’opció de veure les partides d’un jugador
+ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_juga
+*/
+
 /*
 * @description
 * Obtindre un registre d'una taula a partir del seu ID
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari|pertany}/{id:[0-9]+}', '\app\Generics::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_id');
 
 /*
 * @description
@@ -253,7 +322,7 @@ $app->get('/api/{tabla:postal|partida|club|equip|jugador|producte|jerarquia|noti
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_delete');
+$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_delete');
 
 /*
 * @description
@@ -261,7 +330,7 @@ $app->delete('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_update');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_update');
 
 /*
 * @description
@@ -270,7 +339,7 @@ $app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|ac
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal
 */
-$app->post('/api/{tabla:partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Generics::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Generics::generic_insert');
 
 /*
 * @description
@@ -311,44 +380,7 @@ $app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/[A-Za-z0-9_\+\-]+|/s/\w+|/o/[a-z
 */
 $app->get('/api/{tabla:[A-Za-z]+}/search/{que:[^/]+}[{p1:/p/\d+|/o/[a-z-]+|/i/\w+}[{p2:/p/\d+|/o/[a-z-]+|/i/\w+}[{p3:/p/\d+|/o/[a-z-]+|/i/\w+}]]]', '\app\Generics::generic_search'); // buscar
 
-/*
-* @description
-* Vincula un jugador a un equip
-* URL: /api/pertany/[idjugador] POST {"id":[idequip]}
-* URL: /api/pertany/1 POST {"id":1}
-*/
-$app->post('/api/pertany/{jugador:[0-9]+}', '\app\Fun::pertany'); 
 
-/*
-* @description
-* Vincula un jugador i equip a una partida
-* URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
-*/
-$app->post('/api/participa/{partida:[0-9]+}', '\app\Fun::participa'); 
-
-/*
-* @description
-* Elimina un jugador d'una partida
-* URL: /api/participa/[idpartida]/[idjugador] DELETE
-*/
-$app->delete('/api/participa/{partida:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_participa'); 
-
-
-/*
-* @description
-* Vincula un jugador i equip a una partida
-* URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
-*/
-$app->get('/api/participa/{partida:[0-9]+}', '\app\Fun::participants'); 
-
-/*
-ok /api/pertany/[idjugador] GET per obtindre l’equip al que pertany actualment
-ok /api/pertany/[idjugador] POST amb {id:equipid} per a vincular-lo a un equip
-ok /api/jugadorsdequip/[id] GET per obtindre els jugadors d’un equip
-ok /api/participa/[idpartida] GET per a obtindre els jugadors d’una partida
-de moment no incloc l’opció de veure les partides d’un jugador
-ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_juga
-*/
 
 /*
 * @description

@@ -4,7 +4,6 @@
 		<div v-if="!acabat" class="generator">
 			<h3>Generador de partides</h3>
 		
-			<div class="test">
 			
 			<ui-switch id="trofeu" v-model="esTrofeu" @change="genera()">Lliga</ui-switch>
 			
@@ -22,12 +21,38 @@
 			    error="Camp obligatori"
 				@query-change="onQueryChangeEquip"
 				@select="afegirEquip"
+				v-if="false"
 			></ui-select>
 			
-			<div v-for="(equip,key) in equips" class="ui-button ui-button--type-secondary ui-button--color-red ui-button--icon-position-left ui-button--size-small">  
+			<table class="equips">
+				<caption>Equips Inscrits</caption>
+				<thead>
+					<tr>
+						<th></th>
+						<th>Club</th>
+						<th>Equip</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+				<draggable style="display:contents" v-model="equips" @end="genera()">
+					<tr v-for="(equip,key) in equips">
+						<td><ui-icon icon="unfold_more"></ui-icon></td>
+						<td>{{equip.nomclub}}</td>
+						<td>{{equip.nom}}</td>
+						<th>
+							 <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
+						</th>
+					</tr>
+				</draggable>
+				</tbody>
+			</table>
+			
+			<div v-if="false" v-for="(equip,key) in equips" class="ui-button ui-button--type-secondary ui-button--color-red ui-button--icon-position-left ui-button--size-small">  
 			{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
 			</div>
-			
+
+			<br><br>
 			<h2 v-if="esTrofeu && equips.length==16">Octaus de final</h2>
 			<h2 v-if="esTrofeu && equips.length==8">Quarts de final</h2>
 			<h2 v-if="esTrofeu && equips.length==4">Semifinals</h2>
@@ -37,18 +62,18 @@
 			<div id="lesdates">
 				<div v-if="jornades && jornades.length" v-for="(jor,index) in jornades" class="jornada">
 					
-					<label v-if="jor?true:false">Jornada {{ index+1 }}:
-						<vue-datepicker-local class="dplocal" 
-							v-model="jor.data" 
-							:local="datePickerOptions" 
-							format="DD-MM-YYYY" 
-							@onDateChange="inpChangedForCode(index,jor.data)">
-						</vue-datepicker-local>
-					</label>
+					<ui-datepicker
+						v-if="jor?true:false"
+		                placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jor.data" 
+		                :lang="datePickerOptions"
+		                @input="inpChangedForCode(index,jor.data)"
+		            >Jornada {{ index+1 }}:</ui-datepicker>
 					
 					<div v-if="jor?true:false">
-						<div v-if="jor.enfrontaments.length" v-for="j in (jor.enfrontaments)">
-							<span class="local">{{ j[0].nom }}</span> - <span class="visitante">{{ j[1].nom }}</span>
+						<div v-if="jor.enfrontaments.length" v-for="(j,index) in jor.enfrontaments">
+							<span class="local">{{ j[0].nom }}</span> - <span class="visitant">{{ j[1].nom }}</span>
 							<br/>
 						</div>
 					</div>
@@ -60,28 +85,18 @@
 	
 			<ui-button v-if="jornades.length>0 && jornades[0]" color="fedpival" icon="done_all" @click="enviar">Generar aquestes partides</ui-button>
 
-			</div>
 
 	    </div>
     </transition>
 </template>
 
-<style lang="less">
-	@import "../assets/less/defines.less";
-	.test { margin: 0 20px; text-align:center; }
-	.local { margin-left:30px; background-color:#fee !important; }
-	.local, .visitante { border:1px outset white; color:gray; padding:0 4px; margin-bottom:8px; background-color:#eef; }
-	.jornada { padding-bottom:4px; text-align:center; }
-</style>
-
 <script>
 import draggable from 'vuedraggable'
-import VueDatepickerLocal from 'vue-datepicker-local'
 
 export default {
-  	components: { draggable, VueDatepickerLocal },
+  	components: { draggable },
   	props: ['nodeId', 'blockId'],
-	name: 'Test',
+	name: 'generator',
 	data () {
 		return {
 			/// http://tournamentscheduler.net
@@ -99,8 +114,8 @@ export default {
 				//4 equips, 6 partides 3 jornades
 				4:{
 				  0:[[0,1],[2,3]],
-				  1:[[0,2],[1,3]],
-				  2:[[0,3],[1,2]]
+				  1:[[0,3],[1,2]],
+				  2:[[0,2],[1,3]]
 				},
 				//5 equips, 10 partides 5 jornades
 				5:{
@@ -112,13 +127,20 @@ export default {
 				},
 				//6 equips, 15 partides 5 jornades
 				6:{
-				  0:[[0,3],[2,5],[1,4]],
-				  1:[[0,2],[1,3],[4,5]],
-				  2:[[0,5],[3,4],[1,2]],
-				  3:[[0,1],[2,4],[3,5]],
-				  4:[[0,4],[1,5],[2,3]]
+				  0:[[0,1],[2,3],[4,5]],
+				  1:[[5,0],[1,2],[3,4]],
+				  2:[[0,4],[3,1],[2,5]],
+				  3:[[0,3],[4,2],[5,1]],
+				  4:[[2,0],[1,4],[3,5]]
 				},
 				//7 equips, 21 partides 7 jornades
+				'6b':{
+				  0:[[1,0],[3,2],[5,4]],
+				  1:[[0,5],[2,1],[4,3]],
+				  2:[[4,0],[1,3],[5,2]],
+				  3:[[3,0],[2,4],[1,5]],
+				  4:[[0,2],[4,1],[5,3]]
+				},
 				7:{
 				  0:[[0,1],[2,3],[4,6]],
 				  1:[[0,3],[2,5],[1,6]],
@@ -129,13 +151,22 @@ export default {
 				  6:[[3,6],[1,2],[4,5]]
 				},
 				8:{
-				  0:[[7,2],[5,0],[4,6],[3,1]],
-				  1:[[7,3],[1,4],[6,5],[0,2]],
-				  2:[[7,5],[4,2],[3,0],[1,6]],
-				  3:[[7,1],[6,3],[0,4],[2,5]],
-				  4:[[7,0],[2,6],[5,1],[4,3]],
-				  5:[[7,6],[0,1],[2,3],[5,4]],
-				  6:[[7,4],[3,5],[1,2],[6,0]]
+				  0:[[0,1],[2,3],[4,5],[6,7]],
+				  1:[[1,2],[3,4],[5,6],[7,0]],
+				  2:[[0,3],[2,5],[4,7],[6,1]],
+				  3:[[1,4],[3,6],[5,0],[7,2]],
+				  4:[[0,2],[4,6],[1,3],[5,7]],
+				  5:[[6,0],[2,4],[3,5],[7,1]],
+				  6:[[4,0],[2,6],[5,1],[7,3]]
+				},
+				'8b':{
+				  0:[[1,0],[3,2],[5,4],[7,6]],
+				  1:[[2,1],[4,3],[6,5],[0,7]],
+				  2:[[3,0],[5,2],[7,4],[1,6]],
+				  3:[[4,1],[3,6],[5,0],[7,2]],
+				  4:[[0,2],[4,6],[1,3],[5,7]],
+				  5:[[6,0],[2,4],[3,5],[7,1]],
+				  6:[[4,0],[2,6],[5,1],[7,3]]
 				},
 				9:{
 				  0:[[1,4],[0,3],[7,2],[6,8]],
@@ -159,7 +190,7 @@ export default {
 				  7:[[2,1],[5,8],[6,3],[4,9],[7,0]],
 				  8:[[2,3],[8,9],[1,0],[5,7],[6,4]]
 				}
-			},	
+			},
 			inici: new Date(),
 			loading:false,
 			equipSeleccionat: '',
@@ -171,16 +202,30 @@ export default {
 			tornades:true,
 			acabat:false,
 			eixida: '',
-			datePickerOptions: {
-				yearSuffix: '',
-				monthsHead: this.$parent.$i18n.t('calendar.months'),
-				dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
-        		hourTip: this.$parent.$i18n.t('calendar.hourTip'),
-    			minuteTip: this.$parent.$i18n.t('calendar.minuteTip'),
-        		secondTip: this.$parent.$i18n.t('calendar.secondTip'),
-        		months: this.$parent.$i18n.t('calendar.monthsShort'),
-    			weeks: this.$parent.$i18n.t('calendar.weekShort')
-			}
+		    columnsEquips:[
+		    	{
+	                label: 'Club',
+	                field: 'nomclub',
+	                html: false,    
+	            },
+	            {
+	                label: 'Nom',
+	                field: 'nom',
+	                html: false,    
+	            }
+	        ],
+		    datePickerOptions: {
+			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  months: {
+			    full: this.$parent.$i18n.t('calendar.months'),
+			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
+			  },
+			  days: {
+			    full: this.$parent.$i18n.t('calendar.weekLong'),
+			    abbreviated: this.$parent.$i18n.t('calendar.weekShort'),
+			    initials: this.$parent.$i18n.t('calendar.weekInitials')
+			  }
+			},
 		}
 	},
 	methods: {
@@ -329,18 +374,33 @@ export default {
 	            console.log(error);
 	        });
 
+        },
+        getEquips: function() {
+	        var vm = this;
+	        vm.$http.get('/inscripcionsdecompeticio/'+vm.nodeId, { cache: false })
+	        .then(function (response) {
+	            
+	            vm.equips = response.data;
+	            
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+
         }
+        
     },
 	watch: {
 		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; }
 	},
 	mounted: function () {
+		this.getEquips();
 	}
 }
 
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 @import "../assets/less/defines.less";
 	
@@ -348,6 +408,47 @@ export default {
 	width:100%;
 	border:1px dashed @fedcolor;
 	padding:10px;
+}
+	
+.test { margin: 0 20px; text-align:center; }
+
+.local, .visitant { 
+    border-radius: .125rem;
+    border: none;
+    cursor: default;
+    display: inline-block;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica, Arial, sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    padding: 8px;
+    margin: 6px 0;
+    text-transform: uppercase;
+}
+
+.local { background-color:#ffe5dd; }
+.visitant { background-color:#ffc5c5; }
+
+.jornada { padding-bottom:4px; text-align:center; }
+
+
+.equips {
+	width:100%;
+	cursor:grab;
+	&:active {
+		cursor: grabbing;
+	}
+	caption{
+	    text-align: center;
+	    font-size: 1.1em;
+	    font-weight: bolder;
+	}
+	tr{
+		border: 1px solid #e2e2e2;
+		padding:10px;
+	}
+	th {
+		padding:10px!important;
+	}
 }
 	
 </style>

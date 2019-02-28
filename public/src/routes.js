@@ -29,7 +29,6 @@ const adminProducte = function(resolve) {require(['./components/admin/Product.vu
 //gestio
 const GClub = function(resolve) {require(['./components/gestio/Club.vue'], resolve)}
 
-import Test from './components/Test.vue'
 import productEditor from './components/admin/editor.vue'
 import Trofeu from './components/Tournament.vue'
 
@@ -350,7 +349,7 @@ const routes = [
 	  },
 	  {
 	    path: '/gestio/club',
-	    name: 'Editar Producte',
+	    name: 'Gestió Club',
 	    component: GClub,
 	    role: 10
 	  },

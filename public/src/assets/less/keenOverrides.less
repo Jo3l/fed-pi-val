@@ -276,3 +276,37 @@
 .ui-modal__body{
 	position:relative;
 }
+
+
+.ui-toolbar__brand-text {
+	@media (max-width: 380px){
+		    font-size: 0.7em;
+	}
+}
+
+.ui-select {
+    margin-bottom: 2rem;
+}
+
+.ui-tabs--indicator-color-primary .ui-tab-header-item::after {
+    background-color: @fedcolor;
+}
+
+.ui-calendar--color-primary .ui-calendar__header {
+    background-color: @fedcolor;
+}
+
+.ui-calendar--color-primary .ui-calendar-week__date.is-selected, body[modality="keyboard"] .ui-calendar--color-primary .ui-calendar-week__date.is-selected {
+    background-color: @fedcolor;
+}
+
+.ui-calendar--color-primary .ui-calendar-week__date.is-today {
+    color: @fedcolor;
+}
+
+.ui-datepicker.is-active:not(.is-disabled) .ui-datepicker__label-text, .ui-datepicker.is-active:not(.is-disabled) .ui-datepicker__icon-wrapper .ui-icon {
+    color: @fedcolor;
+}
+.ui-datepicker.is-active:not(.is-disabled) .ui-datepicker__display {
+    border-bottom-color:@fedcolor;
+}

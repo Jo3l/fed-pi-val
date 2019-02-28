@@ -1,8 +1,9 @@
 export default { 
 	calendar: {
-		mondayFirst: 'true',
+		mondayFirst: '1',
 		weekShort : [ 'Diu', 'Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss'],
 		weekLong : [ 'Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
+		weekInitials: ['D', 'D', 'D', 'D', 'D', 'D', 'D'],
 		months : ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'],
 		monthsShort: ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Sete', 'Oct', 'Nov', 'Des'],
 		events : 'Events',
@@ -10,6 +11,7 @@ export default {
 		hourTip: 'Sel·lecciona hora',
     	minuteTip: 'Sel·lecciona minut',
         secondTip: 'Sel·lecciona segon',
+        dateTip: 'Sel·lecciona una data'
 	},
 	cart : {
 		viewAllProducts:'Punxa ací per vore tots els productes.',
@@ -77,7 +79,7 @@ export default {
 		insert_node : 'Insertar nou node',
 		write_node : 'Escriu ací el nom del node',
 		remember_node: 'Recorda insertar un nom clar y senzill',
-		rename_node: 'Renombrar node',
+		rename_node: 'Modificar node',
 		insert_game: 'Insertar partida',
 		save_game: 'Guardar partida'
 	}, 

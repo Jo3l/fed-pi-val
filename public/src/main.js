@@ -4,6 +4,7 @@
 
 import Vue from 'vue'
 import KeenUI from 'keen-ui'
+import 'keen-ui/dist/keen-ui.css';
 import VueProgressiveImage from 'vue-progressive-image'
 import Date from '../vendor/datejs'
 import axios from './axios'

@@ -19,6 +19,8 @@ private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // ta
 
 //  //  //  //  //  //  //  //
 static public function generic_update(Request $request, Response $response, $params) {
+	if (in_array($params['tabla'],array('partida','equip','club'))) Auth::verifyRol($request,10);
+	else
 	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	// posar-ho tmb en Nodes.php -> elements
 	if ($params['tabla']=='usuari') {
@@ -49,7 +51,11 @@ static public function generic_update(Request $request, Response $response, $par
 	}
 	$pairs= implode(', ',$pairs);
 	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
-	$db->sql($sql);
+	try {
+		$db->sql($sql);
+	} catch (Exception $e) {
+		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
+	}
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::update_idioma($params,$id,$json);
 	// en cas de guardar una partida, he de tornar els blocs
 	// 1AGO, kike em diu q ja no cal
@@ -62,8 +68,14 @@ static public function generic_update(Request $request, Response $response, $par
 //  //  //  //  //  //  //  //
 // inserció genèrica de contingut
 public function generic_insert(Request $request, Response $response, $params) {
-	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
-	if ($params['tabla']=='usuari') {
+	$tabla= $params['tabla'];
+	$autoritzat= false;
+	if (in_array($params['tabla'],array('equip','club'))) Auth::verifyRol($request,10);
+	else
+	if (Auth::verifyRol($request,10) && in_array($tabla,array('equip','jugador','partida'))) $autoritzat= true;
+	else if (Auth::verifyRol($request,1)) $autoritzat= true;
+	if (!autoritzat) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}'));
+	if ($tabla=='usuari') {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
 	}
@@ -87,10 +99,14 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$keys= implode(',',$filtrekeys);
 	$values= implode(",",$filtrevalues);
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
-	$db->sql($sql);
-	$sql= "SELECT LAST_INSERT_ID() as id";
-	$db->sql($sql);
-	$id = $db->all();
+	try {
+		$db->sql($sql);
+		$sql= "SELECT LAST_INSERT_ID() as id";
+		$db->sql($sql);
+		$id = $db->all();
+	} catch (Exception $e) {
+		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
+	}
 	$id= $id[0]['id'];
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::insert_idioma($params,$id,$json);
 	$params['id']= $id;
@@ -103,6 +119,8 @@ public function generic_insert(Request $request, Response $response, $params) {
 
 //  //  //  //  //  //  //  //
 public function generic_delete(Request $request, Response $response, $params) {
+	if (in_array($params['tabla'],array('equip','club'))) Auth::verifyRol($request,10);
+	else
 	if (!Auth::verifyRol($request,1)) die('error auth:22 insuficient');
 	if ($params['tabla']=='usuari') {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
@@ -114,7 +132,9 @@ public function generic_delete(Request $request, Response $response, $params) {
     $db = new db();
     try{
     	$db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
-    } catch(Exception $e) { Fun::render(array("error"=>$e->getMessage())); }
+    } catch(Exception $e) { 
+		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
+    }
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::delete_idioma($params,$params['id'],$json);
 }
 
@@ -126,10 +146,10 @@ static public function generic_query(Request $request, Response $response, $para
 	}
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= array( 'limit'=>Fun::$itemsPerPage );
-	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
+	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+	if (in_array('p3',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
+	if (in_array('p4',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
 	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
     $db = new db();
@@ -137,7 +157,7 @@ static public function generic_query(Request $request, Response $response, $para
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
     if (!empty($options['limit'])) $sql.= " limit ".$options['limit'];
-//echo $sql;exit;
+//print_r($options);echo $sql;exit;
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
@@ -198,9 +218,9 @@ static public function generic_search(Request $request, Response $response, $par
 	if (isset($params['i'])) $options['idioma']= $params['i'];
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= array( );
-	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
+	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+	if (in_array('p3',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
     $db = new db();
     $tabla= Fun::tables($params['tabla'],'select'); // pot canviar la taula de busqueda depenent de l'idioma
 	$db->sql("SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$tabla."' and data_type in ('varchar','text','mediumtext');");
@@ -373,14 +393,15 @@ static private function procesaparam($str,$options,$tabla) {
 static public function date_query(Request $request, Response $response, $params) {
     $tabla= Fun::tables('acte','select');
 	$options= array( 'limit'=>Fun::$itemsPerPage);
-	$options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
-	$options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
+	if (in_array('p1',$params)) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	if (in_array('p2',$params)) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+	if (in_array('p3',$params)) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
+	if (in_array('p4',$params)) $options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $db = new db();
     $tabla= Fun::tables('acte','select'); // segona vegada per si canvia l'idioma la taula on buscar
     $sql= "SELECT * FROM ".$tabla;
-	array_push( $option['wheres'], "tipus='A'" );
+	if (!in_array('wheres',$options)) $options['wheres']= array('1=1');
+	array_push( $options['wheres'], "tipus='A'" );
 	$mes= $params['mes'];
 	$mes= strtotime( substr($mes,0,4).'-'.substr($mes,4,2) );
 	$mes0= date('Ym',$mes);

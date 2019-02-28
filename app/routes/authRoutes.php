@@ -40,12 +40,12 @@ $app->add(new TokenAuthentication([
     'path' =>   '/restrict',
     'authenticator' => $authenticator2,
     'secure' => true,
-    'relaxed' => ALLOWED_DOMAINS // ignora no tindre https
+    'relaxed' => config::ALLOWED_DOMAINS // ignora no tindre https
 ]));
 
 $app->add(new TokenAuthentication([
-    'path' => AUTH_PATHS,
+    'path' => config::AUTH_PATHS,
     'authenticator' => $authenticator7	,
     'secure' => true,
-    'relaxed' => ALLOWED_DOMAINS
+    'relaxed' => config::ALLOWED_DOMAINS
 ]));

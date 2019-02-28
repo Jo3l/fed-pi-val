@@ -76,7 +76,7 @@ class Filem
 		return intval($ini_v) * ($s[strtolower(substr($ini_v,-1))] ?: 1);
 	}
 
-	static private function prepare($f) {
+	static private function prepare($f='') {
 		Filem::$absolutePath = $_SERVER['DOCUMENT_ROOT'].'/static';
 		Filem::$MAX_UPLOAD_SIZE = min(Filem::asBytes(ini_get('post_max_size')), Filem::asBytes(ini_get('upload_max_filesize')));
 		Filem::$tmp_dir = (Filem::$absolutePath);
@@ -95,7 +95,7 @@ class Filem
 		$path= $file= Filem::prepare( $params['path'] );
 		// si no estan creats els subdirectoris del mes actual en uploads|jugadors|pdf, els crea
 		if (!is_dir(Filem::$absolutePath.'/upload/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/upload/'.date('Y/m'));
-		if (!is_dir(Filem::$absolutePath.'/productes/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/upload/'.date('Y/m'));
+		if (!is_dir(Filem::$absolutePath.'/productes/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/productes/'.date('Y/m'));
 		if (!is_dir(Filem::$absolutePath.'/jugadors/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/jugadors/'.date('Y/m'));
 		if (!is_dir(Filem::$absolutePath.'/pdf/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/pdf/'.date('Y/m'));
 		//echo is_dir($path)?1:0;
@@ -105,8 +105,9 @@ class Filem
 			$files = array_diff(scandir($directory), ['.','..']);
 		    foreach($files as $entry) 
 		    	if($entry !== basename(__FILE__))
-		    		if (!in_array(strtolower(pathinfo($entry, PATHINFO_EXTENSION)), $hidden_extensions)) {
-			    		$file = $_REQUEST['file'] ? $_REQUEST['file'] .'/'. $entry : $entry;
+		    		if (!in_array(strtolower(pathinfo($entry, PATHINFO_EXTENSION)), Filem::$hidden_extensions)) {
+			    		// ho canviem per eliminar un warning: $file = $_REQUEST['file'] ? $_REQUEST['file'] .'/'. $entry : $entry;
+			    		$file= $entry;
 				    	$stat = stat($path.'/'.$file);
 				        $result[] = [
 				        	//'element' => $i,

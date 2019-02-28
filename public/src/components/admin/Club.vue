@@ -55,9 +55,13 @@
 					            v-model="club.email"
 					        ></ui-textbox>
 				        	
-				        	<label>Data Fundació
-							<vue-datepicker-local v-model="club.fundacio" :local="datePickerOptions" format="YYYY" v-if="typeof club.fundacio === 'object'"></vue-datepicker-local>
-							</label>
+							<ui-datepicker
+				                placeholder="$i18n.t('calendar.dateTip')"
+				                :start-of-week="datePickerOptions.dow"
+				                v-model="club.fundacio"
+				                v-if="typeof club.fundacio === 'object'"
+				                :lang="datePickerOptions"
+				            >Data Fundació</ui-datepicker>
 				        
 							<ui-textbox
 							    floating-label
@@ -104,11 +108,11 @@
 							<!--<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
 							<progressive-img v-else  :src="mapa" fallback="/static/img/mapsPlaceholder.jpg" />-->
 					        
-					        </div>
-					        <div class="left50">
+				        </div>
+				        <div class="left50">
 					        
-							<img v-if="club.imatge==null" class="jugador" src="/static/img/shield.png" style="opacity: 0.15;">
-							<progressive-img v-else class="jugador" :src="club.imatge" fallback="/static/img/shield.png" style="opacity: 0.15;"/>
+							<img v-if="club.imatge==null" class="jugador" src="/static/img/shield.png">
+							<progressive-img v-else class="jugador" :src="club.imatge" fallback="/static/img/shield.png"/>
 							
 							<vue-core-image-upload
 							    :text="$i18n.t('image.uploadAndCut')"
@@ -135,7 +139,7 @@
                 </ui-tab>
 
                 <ui-tab title="Equips">
-                	<span class="button-right">
+                	<span class="button-right" v-if="false">
 						<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Equip</ui-button>
 					</span>
 					<br>
@@ -143,7 +147,7 @@
 						<tablerone :tableList="list" :tableColumns="columns">
 							<th slot="headActions"></th>
 							<template slot="actions" scope="props">
-								<td class="actions">
+								<td class="actions" v-if="false">
 									<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
 									<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
 								</td>
@@ -171,14 +175,14 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import VueCoreImageUpload from 'vue-core-image-upload'
-import VueDatepickerLocal from 'vue-datepicker-local'
+
 import VuePellEditor from 'vue-pell-editor'
 import VuePellEditorConfig from '../../config/pelleditor'
 import Table from '../custom/Table.vue';
 import Paginate from 'vuejs-paginate'
 
 export default {
-  	components: { VueDatepickerLocal, VuePellEditor, 'vue-core-image-upload': VueCoreImageUpload, 'tablerone':Table, 'paginate': Paginate},
+  	components: { VuePellEditor, 'vue-core-image-upload': VueCoreImageUpload, 'tablerone':Table, 'paginate': Paginate},
 	data () {
 		return {
 		    list:{},
@@ -208,14 +212,16 @@ export default {
 				  secretari:null
 		    },
 		    datePickerOptions: {
-				yearSuffix: '',
-				monthsHead: this.$parent.$i18n.t('calendar.months'),
-				dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
-        		hourTip: this.$parent.$i18n.t('calendar.hourTip'),
-    			minuteTip: this.$parent.$i18n.t('calendar.minuteTip'),
-        		secondTip: this.$parent.$i18n.t('calendar.secondTip'),
-        		months: this.$parent.$i18n.t('calendar.monthsShort'),
-    			weeks: this.$parent.$i18n.t('calendar.weekShort')
+			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  months: {
+			    full: this.$parent.$i18n.t('calendar.months'),
+			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
+			  },
+			  days: {
+			    full: this.$parent.$i18n.t('calendar.weekLong'),
+			    abbreviated: this.$parent.$i18n.t('calendar.weekShort'),
+			    initials: this.$parent.$i18n.t('calendar.weekInitials')
+			  }
 			},
 			editorOptions: VuePellEditorConfig(this.openModal),
 		}

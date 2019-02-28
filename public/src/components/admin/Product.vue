@@ -325,7 +325,7 @@ export default {
 	    	&:last-of-type{
 	    		border:none;
 	    	}
-	    	& > .ui-textbox{width:29%; margin-right:20px;}
+	    	& > .ui-textbox{width:29%; margin-right:20px;margin-top: 2%;}
 	    	button{
 	    		margin:10px;
 	    	}

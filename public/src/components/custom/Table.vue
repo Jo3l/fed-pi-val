@@ -61,7 +61,7 @@ export default {
 					
 				result = result[splitter[i]];
 			}
-			return result!=undefined ? result.toLowerCase() : result;
+			return result!=undefined ? result.toString().toLowerCase() : result;
 		},
 	},
 	mounted: function () {

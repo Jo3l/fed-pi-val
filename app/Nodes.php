@@ -85,6 +85,10 @@ static public function delete_element(Request $request, Response $response, $par
     $pare= $params['pare'];
     if ( $id==32715 ) return Fun::render(Nodes::contingutnode($pare), true); // bloc d'avisos no es pot esborrar
     $db= new db();
+    $db->sql("SELECT * FROM partida where registreid=".$id);
+    if ($db->numRows()>0) {
+    	return Fun::render(Nodes::contingutnode($pare), true); // Encara hi ha partides en aquest bloc.
+    }
     $db->sql(" START TRANSACTION;");
     $db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$id);
     $db->sql(" DELETE FROM pagina WHERE id=".$id);
@@ -131,9 +135,9 @@ static public function list_nodes(Request $request, Response $response, $params)
 * @description
 * funció que torna un array amb la estructura jerarquica de nodes amb contingut 
 */
-static private function jerarquia($fill='competicions') {
+static public function jerarquia($fill='competicions') {
     $db = new db();
-	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements, inici,fi from _jerarquia order by id asc;");
+	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements, inici,fi,minimjugadors,puntspartida,puntstanteig from _jerarquia order by id asc;");
 	$result= $db->getResult();
 	$resultids= array();
 	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
@@ -245,7 +249,7 @@ static public function contingutnode($id) {
 	if (!empty(Fun::$wheres)) $sql.= " and ".implode(' and ',Fun::$wheres);
 	$sql.= Fun::$order;
 
-	//echo// '/* ',$sql,' */';
+	//echo '/* ',$sql,' */';
 	$db->sql( $sql );
 
 	$result= $db->getResult();
@@ -258,6 +262,7 @@ static public function contingutnode($id) {
 	if (count($ids_elements_partides)>0) {
 		$sql= "SELECT *, (select id from FROM partida WHERE registreid in (".implode(',',$ids_elements_partides).");";
 		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and registreid in (".implode(',',$ids_elements_partides).");";
+		//die($sql);
 		$db->sql( $sql );
 		$result2= $db->getResult();
 		$partides= array();
@@ -273,8 +278,11 @@ static public function contingutnode($id) {
 		}
 		//if (empty($result2)) $result2= array();
 		foreach($result as $i=>$elm) {
-		    if($elm['tipus']=='J') 
-		        $result[$i]['partides']= $partides[$elm['id']] ? $partides[$elm['id']] : array();
+		    if($elm['tipus']=='J') {
+		    	//if (in_array($elm['id'],array_keys($partides))) die('...'.$elm['id'].','.print_r($partides,true));
+		    	if (in_array($elm['id'],array_keys($partides)))
+		        	$result[$i]['partides']= $partides[$elm['id']] ? $partides[$elm['id']] : array();
+		    }
 		}
 	}
     return $result;
@@ -293,12 +301,19 @@ static private function guardanode($params) {
     if (isset($json['id'])) {
         $sql= "UPDATE idioma set text='".str_replace("'","\\'",$json['name'])."' where registreid=".$json['id']." and idioma='".$json['idioma']."' and tipus='jerarquia';";
         $db->sql($sql);
+        $updates= [];
+	    if (isset($json['inici'])) array_push($updates,"inici='".$json['inici']."'");
+	    if (isset($json['fi'])) array_push($updates,"fi='".$json['fi']."'");
+	    if (isset($json['minimjugadors'])) array_push($updates,"minimjugadors='".$json['minimjugadors']."'");
+	    if (isset($json['puntspartida'])) array_push($updates,"puntspartida='".$json['puntspartida']."'");
+	    if (isset($json['puntstanteig'])) array_push($updates,"puntstanteig='".$json['puntstanteig']."'");
+	    if (count($updates)) $db->sql("update jerarquia set ".implode(',',$updates)." where id=".$json['id']);
         return Fun::render( Nodes::jerarquia($params['tipus']) , true);
     }
     // Si no està definit és un insert...
     $sql="BEGIN;";
     $db->sql($sql);
-    $sql="INSERT INTO jerarquia (pare) VALUES (".$json['parent_id'].");";
+    $sql="INSERT INTO jerarquia (pare,inici,fi,minimjugadors,puntspartida,puntstanteig) VALUES (".$json['parent_id'].",'".$json['inici']."','".$json['fi']."',".$json['minimjugadors'].",".$json['puntspartida'].",".$json['puntstanteig'].");";
     $db->sql($sql);
     $sql="SET @last_id = LAST_INSERT_ID();";
     $db->sql($sql);
@@ -311,46 +326,4 @@ static private function guardanode($params) {
 	return Fun::render(Nodes::jerarquia($params['tipus']),true);
 }
 
-
-//  //  //  //  //  //  //  //
-/*
-* @description
-* funció que modifica un element... Val tant per a modificar (amb id existent) com per a insertar un de nou (sense id)
-*/
-static public function inscripcions() {
-	$jerarquia= Nodes::jerarquia();
-	echo '<pre>';
-    function walker(&$node,$slug) {
-        if (empty($node)) return;
-        $node['fullSlug']= $slug.$node['slug'];
-        if (!empty($node['children'])) {
-            for ($a=0;$a<count($node['children']);$a++) {
-                walk($node['children'][$a],$node['fullSlug'].'/');
-            }
-        }
-        if ($node['inici']<=date('Ymd000000') && $node['fi']>=date('Ymd000000')) echo print_r($node);
-        echo print_r($node);
-    }
-    walker($jerarquia,'');
-	//echo '<pre>',print_r($jerarquia);
-	exit;
-	
-	
-    $db = new db();
-	$db->sql("select id,nom_es,nom_val,(select count(*) from jerarquia jj where jj.pare=j.id) as fills,inici,fi from _jerarquia j where (select count(*) from jerarquia jj where jj.pare=j.id)=0 order by id asc;");
-	$result= $db->getResult();
-	$resultids= array();
-	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
-	unset($result);
-	echo '<pre>',print_r($resultids);
-	exit;
-    print_r($nodes);
-	$actius= array();
-	foreach($nodes as $node) {
-		if ($node['inici']<=date('Ymd000000') && $node['fi']>=date('Ymd000000')) 
-		array_push($actius,$node);
-	}
-	return Fun::render($actius,true);
-}	
-	
 }

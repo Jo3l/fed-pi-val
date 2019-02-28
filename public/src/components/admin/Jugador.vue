@@ -74,10 +74,14 @@
 			            :invalid="$store.getters.validate({string:jugador.email,type:'email'})"
 			        ></ui-textbox>
 		        	
-		        	<label>Data Naixement
-					<vue-datepicker-local v-model="jugador.naixement" :local="datePickerOptions" format="DD-MM-YYYY" v-if="typeof jugador.naixement === 'object'"></vue-datepicker-local>
-					</label>
-		        
+					<ui-datepicker
+						v-if="typeof jugador.naixement === 'object'"
+		                placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.naixement"
+		                :lang="datePickerOptions"
+		            >Data Naixement</ui-datepicker>
+	            
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
@@ -152,11 +156,10 @@
 <script>
 
 import VueCoreImageUpload from 'vue-core-image-upload'
-import VueDatepickerLocal from 'vue-datepicker-local'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
-  	components: { VueDatepickerLocal,'vue-core-image-upload': VueCoreImageUpload},
+  	components: { 'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
 			loading:false,
@@ -177,14 +180,16 @@ export default {
 			      foto: null,
 		    },
 		    datePickerOptions: {
-				yearSuffix: '',
-				monthsHead: this.$parent.$i18n.t('calendar.months'),
-				dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
-        		hourTip: this.$parent.$i18n.t('calendar.hourTip'),
-    			minuteTip: this.$parent.$i18n.t('calendar.minuteTip'),
-        		secondTip: this.$parent.$i18n.t('calendar.secondTip'),
-        		months: this.$parent.$i18n.t('calendar.monthsShort'),
-    			weeks: this.$parent.$i18n.t('calendar.weekShort')
+			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  months: {
+			    full: this.$parent.$i18n.t('calendar.months'),
+			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
+			  },
+			  days: {
+			    full: this.$parent.$i18n.t('calendar.weekLong'),
+			    abbreviated: this.$parent.$i18n.t('calendar.weekShort'),
+			    initials: this.$parent.$i18n.t('calendar.weekInitials')
+			  }
 			},
 		}
 	},

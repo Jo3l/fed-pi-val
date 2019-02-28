@@ -59,14 +59,15 @@
     <meta name="msapplication-TileColor" content="">
     <meta name="msapplication-tap-highlight" content="no">
     
-	<link rel="stylesheet" href="/dist/keen-ui.min.css">
+
 	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 	
     <script>
       window.Promise || document.write('<script src="https://unpkg.com/es6-promise@3.2.1/dist/es6-promise.min.js"><\/script><script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Array.prototype.find,Intl,Object.assign,Object.values"><\/script>');
       //window.fetch || document.write('<script src="https://unpkg.com/whatwg-fetch@1.0.0/fetch.js"><\/script>');
+      if(!console) {console={}; console.log = function(){};} //per als navegadors vells vells q casquen amb un console.log
     </script>
-
+    
   </head>
   <body>
   	

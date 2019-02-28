@@ -8,12 +8,13 @@ Vue.use(VueAuthenticate)
 Vue.prototype.$http = axios;
 
 var vueAuth = VueAuthenticate.factory(Vue.prototype.$http, {
-  baseUrl: '',
+  //baseUrl: '',
   tokenName: 'access_token',
 })
 
 const state = {
-  isAuthenticated: vueAuth.isAuthenticated()
+  isAuthenticated: vueAuth.isAuthenticated(),
+  error:{}
 }
 
 const getters = {
@@ -25,11 +26,22 @@ const getters = {
 			return state.isAuthenticated && jwt_decode(vueAuth.getToken() ).data.rol <= n;
     	}
     },
+    isAuthenticatedWithExactRole: function (state) {
+    	return function (n) {
+			return state.isAuthenticated && jwt_decode(vueAuth.getToken() ).data.rol == n;
+    	}
+    },
     role: function(state) {
     	if(state.isAuthenticated) return jwt_decode(vueAuth.getToken() ).data.rol;
     },
     userMail: function(state) {
     	if(state.isAuthenticated)  return jwt_decode(vueAuth.getToken() ).data.email;
+    },
+    userId: function(state) {
+    	if(state.isAuthenticated)  return jwt_decode(vueAuth.getToken() ).data.id;
+    }, 
+    error: function(state){
+    	return state.error;
     }
 }
 
@@ -37,7 +49,10 @@ const getters = {
 const mutations = {
     isAuthenticated: function (state, payload) {
       state.isAuthenticated = payload.isAuthenticated;
-    }
+    }, 
+    error: function (state, payload) {
+      state.error = payload.error;
+    }, 
 }
 
 const actions = {
@@ -52,6 +67,11 @@ const actions = {
 	
     	}
       )
+      .catch(function (error) {
+	        return context.commit('error', {
+	          error: error
+	        });
+	  });
 
     },
     logout: function (context, payload) {

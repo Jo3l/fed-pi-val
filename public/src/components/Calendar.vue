@@ -460,11 +460,11 @@ export default {
 	    width: 100%;
 	    font-family: 'Rambla', cursive;
 	    display: block;
-	    font-size: 2em;
+	    font-size: 1.5em;
 	    border: none;
 	    border-bottom: 1px dashed #ccc;
-	    margin-bottom: 0.5em;
-	    min-height: 42px;
+	    //margin-bottom: 0.5em;
+	    //min-height: 42px;
 	    color: rgba(0, 0, 0, 0.87);
 	}
 

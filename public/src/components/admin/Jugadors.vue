@@ -104,11 +104,6 @@ export default {
 	                label: 'Cognoms',
 	                field: 'cognoms',
 	                html: false,    
-	            },
-	            {
-	                label: 'Club',
-	                field: 'clubs',
-	                html: false,    
 	            }
 	            
 	        ],

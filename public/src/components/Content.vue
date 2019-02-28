@@ -27,9 +27,9 @@
 								<th>Data</th>
 								<th>Lloc</th>
 								<th>Local</th>
-								<th>Visitant</th>
-								<th>Res. Visitant</th>
 								<th>Res. Local</th>
+								<th>Res. Visitant</th>
+								<th>Visitant</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -37,9 +37,9 @@
 								<td>{{ element.data.toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
-								<td>{{element.visitant.nom}}</td>
-								<td>{{element.resultatvisitant}}</td>
 								<td>{{element.resultatlocal}}</td>
+								<td>{{element.resultatvisitant}}</td>
+								<td>{{element.visitant.nom}}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -137,12 +137,15 @@
 							</tbody>
 						</table>
 						
-						<div class="form" v-if="!generator">
+
         				<ui-modal ref="matchedit" size="large"  title="Editar partida">
-							 <label>Data
-							
-							 <vue-datepicker-local v-model="newGame.data" :local="datePickerOptions" format="DD-MM-YYYY"></vue-datepicker-local>
-							 </label>
+
+							 <ui-datepicker
+				                placeholder="$i18n.t('calendar.dateTip')"
+				                :start-of-week="datePickerOptions.dow"
+				                v-model="newGame.data"
+				                :lang="datePickerOptions"
+				            >Data</ui-datepicker>
 							 
 							 <input type="hidden" v-model="newGame.id">
 							 
@@ -202,7 +205,7 @@
 									<tbody>
 										<tr v-for="element in equipLocal">
 											<td>{{element.nom}} {{element.cognoms}}</td>
-											<td>{{element.poblacio}}</td>
+											<td>{{element.id}}</td>
 											<th>
 												<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element, 'local')"></ui-icon-button>
 											</th>
@@ -221,7 +224,7 @@
 									<tbody>
 										<tr v-for="element in equipVisitant">
 											<td>{{element.nom}} {{element.cognoms}}</td>
-											<td>{{element.poblacio}}</td>
+											<td>{{element.id}}</td>
 											<th>
 												<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element, 'visitant')"></ui-icon-button>
 											</th>
@@ -287,7 +290,6 @@
 
     					</ui-modal>
 
-						</div>
 						<div class="form" v-if="generator">
 							<match-generator :nodeId="element.jerarquia" :blockId="element.id"></match-generator>
 						</div>
@@ -352,13 +354,12 @@
 import draggable from 'vuedraggable'
 import VuePellEditor from 'vue-pell-editor'
 import VuePellEditorConfig from '../config/pelleditor'
-import VueDatepickerLocal from 'vue-datepicker-local'
 import FileManager from './FileManager.vue'
 import MatchGenerator from './MatchGenerator.vue'
 
 
 export default {
-  	components: { draggable, VuePellEditor, VueDatepickerLocal, 'filemanager':FileManager, MatchGenerator },
+  	components: { draggable, VuePellEditor, 'filemanager':FileManager, MatchGenerator },
   	props: ['nodeId', "disableBlock"],
 	data () {
 		return {
@@ -393,16 +394,17 @@ export default {
 				  position: 'top-left'
 				}
 			},
-			
-			datePickerOptions: {
-				yearSuffix: '',
-				monthsHead: this.$parent.$i18n.t('calendar.months'),
-				dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
-        		hourTip: this.$parent.$i18n.t('calendar.hourTip'),
-    			minuteTip: this.$parent.$i18n.t('calendar.minuteTip'),
-        		secondTip: this.$parent.$i18n.t('calendar.secondTip'),
-        		months: this.$parent.$i18n.t('calendar.monthsShort'),
-    			weeks: this.$parent.$i18n.t('calendar.weekShort')
+		    datePickerOptions: {
+			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  months: {
+			    full: this.$parent.$i18n.t('calendar.months'),
+			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
+			  },
+			  days: {
+			    full: this.$parent.$i18n.t('calendar.weekLong'),
+			    abbreviated: this.$parent.$i18n.t('calendar.weekShort'),
+			    initials: this.$parent.$i18n.t('calendar.weekInitials')
+			  }
 			},
             editorOptions: VuePellEditorConfig(this.openModal),
 			searchList:[],
@@ -447,7 +449,7 @@ export default {
 		addPlayer: function(player, destination){
 			var vm = this;
 			var partida = vm.newGame;
-			var jugador = {'equip':player.equip, 'nom':player.nom, 'cognoms':player.cognoms, 'id':player.id, 'poblacio':player.poblacio};
+			var jugador = {'equip':player.equip, 'nom':player.nom, 'cognoms':player.cognoms, 'id':player.id};
 			
 
 			if(destination=="local" && player){

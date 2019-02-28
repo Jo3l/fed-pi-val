@@ -9,6 +9,15 @@
         :raised="false"
     >
         <ui-icon-button
+        	v-if="isMobileDevice()"
+	        color="black"
+	        icon="account_circle"
+	        size="large"
+	        type="secondary"
+	        @click="$router.push({ path: `/login` })"
+	    ></ui-icon-button>
+	    
+        <ui-icon-button
     		v-if="isMobileDevice()"
         	class="cartBasket mobile"
             color="black"
@@ -101,7 +110,7 @@
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/clubs' }">Clubs</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/productes' }">Productes</router-link></li>
-			<li v-if="$store.getters.isAuthenticatedWithRole(10)"><router-link :to="{ path: '/gestio/club' }">Club</router-link></li>
+			<li v-if="$store.getters.isAuthenticatedWithExactRole(10)"><router-link :to="{ path: '/gestio/club' }">Club</router-link></li>
 	    </ul>
 	</div>
 

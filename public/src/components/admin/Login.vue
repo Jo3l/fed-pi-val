@@ -37,6 +37,15 @@
 
 				</div>
 			
+			
+		<ui-modal ref="error" title="">
+            {{error}}
+	        <div slot="footer">
+	            <ui-button @click="closeModal('error')">Ok</ui-button>
+	        </div>
+        </ui-modal>
+        
+        
 	    </div>
     </transition>
 </template>
@@ -47,6 +56,7 @@ export default {
 	name: 'Login',
 	data () {
 		return {
+			error:'',
 			user: {
 				email:'',
 				clau:'',
@@ -55,11 +65,30 @@ export default {
 		}
 	},
 	methods: {
+		closeModal: function(ref) {
+            this.$refs[ref].close();
+        },
 		login: function (user) {
 			var vm=this;
+			
 			vm.$store.dispatch('login', { user }).then(function(){
-				vm.$router.push({ path: `/` });
+				
+				var s=setInterval(function(){
+					
+					if(vm.$store.getters.isAuthenticated) {
+						clearInterval(s);
+						vm.$router.go(-1)
+					} else {
+						vm.error=vm.$store.getters.error.message;
+						vm.$refs.error.open()
+						clearInterval(s);
+						console.log(vm.error);
+					}
+					//console.log('matame');
+				}, 300);
+				
 			});
+
 	    },
 	    newClub: function (user) { console.log(user); },
 	    checkExistingClubEmail: function(user) { 
@@ -96,6 +125,7 @@ export default {
 	    left: 5%;
 	    opacity: .1;
 	    max-width: 60%;
+	    pointer-events:none;
 	}
 	.formulari {
 		width:256px;
