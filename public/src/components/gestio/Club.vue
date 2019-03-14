@@ -209,18 +209,15 @@
   		<ui-modal ref="updateEquip" size="large" title="Inscripció - Insertar Jugadors">
 			<div class="ui-autocomplete__content">
 
-				<ui-textbox
-						    floating-label
-				            autocomplete="off"
-				            label="Nom de la inscripció"
-							type="text"
-				            v-model="subscribeName"
-				 ></ui-textbox>
-				<div class="buttonGroupRight">
-					<ui-button size="small" @click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
-					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
-				</div>
-	
+				<section class="overflow-hidden">
+					<ui-textbox
+							    floating-label
+					            autocomplete="off"
+					            label="Nom de la inscripció"
+								type="text"
+					            v-model="subscribeName"
+					 ></ui-textbox>
+				</section>
 			    <table class="table results">
 					<thead>
 						<tr>
@@ -239,7 +236,12 @@
 						</tr>
 					</tbody>
 				</table>
-				<section>
+				
+				<ui-alert type="warning" v-show="equip.length<minimjugadors">
+	                Falt{{ ((minimjugadors-(equip?equip.length:0))==1?'a':'en') }} {{minimjugadors-(equip?equip.length:0)}} jugador{{ ((minimjugadors-(equip?equip.length:0))==1?'':'s') }} per a completar l'inscripció.
+	            </ui-alert>
+	            
+				<section class="overflow-hidden">
 					<ui-textbox
 							    floating-label
 					            autocomplete="off"
@@ -248,17 +250,24 @@
 					            v-model="insertaJugador"
 					 ></ui-textbox>
 				</section>
-				<div class="buttonGroupRight">
-					<ui-button
-	                    color="fedpival"
-	                    icon="add"
-						:disabled="insertaJugador.length==0"
-	                    size="small"
-	                    @click="addPlayer(insertaJugador)"
-	                >Afegir jugador</ui-button>
-				</div>
-                
 
+
+				<ui-button
+                    color="fedpival"
+                    icon="add"
+					:disabled="insertaJugador.length==0"
+                    size="small"
+                    @click="addPlayer(insertaJugador)"
+                >Afegir jugador</ui-button>
+
+
+				<div class="buttonGroupRight">
+					<ui-button size="small" :disabled="equip.length<minimjugadors" @click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
+					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
+				</div>
+				
+
+	            
 			</div>
         </ui-modal>
        
@@ -290,15 +299,16 @@
 							<tr>
 								<th>Nº Soci</th>
 								<th>Nom</th>
-								<th></th>
+								<th>Participa</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr v-for="element in equipLocal">
 								<td>{{element.numsoci}}</td>
-								<td>{{element.nom}}</td>
+								<td>{{element.nom.toLowerCase()}}</td>
 								<th>
-									<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayerPartida(element.id)"></ui-icon-button>
+									<ui-switch v-model="element.juga" @click="element.juga==!element.juga"></ui-switch>
+									<ui-icon-button v-if="false" icon="delete" size="small" type="secondary" @click="deletePlayerPartida(element.id)"></ui-icon-button>
 								</th>
 							</tr>
 						</tbody>
@@ -310,15 +320,16 @@
 							<tr>
 								<th>Nº Soci</th>
 								<th>Nom</th>
-								<th></th>
+								<th>Participa</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr v-for="element in equipVisitant">
 								<td>{{element.numsoci}}</td>
-								<td>{{element.nom}}</td>
+								<td>{{element.nom.toLowerCase()}}</td>
 								<th>
-									<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayerPartida(element.id)"></ui-icon-button>
+									<ui-switch v-model="element.juga" @click="element.juga==!element.juga"></ui-switch>
+									<ui-icon-button v-if="false" icon="delete" size="small" type="secondary" @click="deletePlayerPartida(element.id)"></ui-icon-button>
 								</th>
 							</tr>
 						</tbody>
@@ -354,7 +365,7 @@
 				<br>
 				
 				
-				<section>
+				<section class="overflow-hidden">
 		            <ui-textbox
 		                enforce-maxlength
 		                floating-label
@@ -410,6 +421,7 @@ export default {
 		    equipVisitant:[],
 		    buscadorJugador:[],
 		    insertaJugador:'',
+		    minimjugadors:0,
 		    columnsInscripcions:[
 	            {
 	                label: 'Competició',
@@ -502,7 +514,30 @@ export default {
 	methods: {
 		addPlayer: function(player){
 			var vm = this;
-
+			console.log(player)
+			for(var i = 0; i < vm.equip.length; i++) {
+			    if( parseInt(vm.equip[i].numsoci) == parseInt(player) ) {
+			    	vm.error={};
+			    	vm.error.response = {};
+			    	vm.error.response.data = {};
+			    	vm.error.response.data.error="Ja existeix el jugador";
+					vm.$refs.error.open();
+			        return false;
+			    }
+			}
+			
+			vm.$http.get('/soci/'+player)
+	        .then(function (response) {
+				vm.equip.push(response.data);
+	        })
+	        .catch(function (error) {
+	            vm.error=error;
+				vm.$refs.error.open();
+				console.log(error);
+	        });
+	        
+			
+			/*
 				vm.$http.post('/inscrits/'+vm.subscribeId,{"jugador":player})
 		        .then(function (response) {
 		        	vm.getJugadorsEquip(vm.subscribeId);
@@ -512,20 +547,29 @@ export default {
 					vm.$refs.error.open()
 		            console.log(error);
 		        });
+		    */
 
 		},
 		deletePlayer: function(player){
 			var vm = this;
+			for(var i = 0; i < vm.equip.length; i++) {
+			    if(vm.equip[i].id == player) {
+			        vm.equip.splice(i, 1);
+			        break;
+			    }
+			}
 
-				vm.$http.delete('/inscrits/'+vm.subscribeId+'/'+player)
-		        .then(function (response) {
-		        	vm.getJugadorsEquip(vm.subscribeId);
-		        })
-		        .catch(function (error) {
-		        	vm.error=error;
-					vm.$refs.error.open()
-		            console.log(error);
-		        });
+			/*
+			vm.$http.delete('/inscrits/'+vm.subscribeId+'/'+player)
+	        .then(function (response) {
+	        	vm.getJugadorsEquip(vm.subscribeId);
+	        })
+	        .catch(function (error) {
+	        	vm.error=error;
+				vm.$refs.error.open()
+	            console.log(error);
+	        });
+	        */
 
 		},
 		deletePlayerPartida: function(player){
@@ -559,6 +603,7 @@ export default {
 	    modSubscribe:function(champ){
 			var vm=this;
 			vm.currChamp=champ.competicio;
+			vm.minimjugadors=champ.minimjugadors;
 			vm.subscribeName = champ.nom;
 			vm.subscribeId = champ.id;
 			vm.getJugadorsEquip(champ.id);
@@ -567,11 +612,14 @@ export default {
 		subscribe: function(champ){
 			var vm=this;
 			vm.currChamp=champ.id;
-			vm.$refs.insertNomEquip.open()
+			vm.minimjugadors=champ.minimjugadors;
+			console.log(champ);
+			vm.$refs.updateEquip.open();
+			//vm.$refs.insertNomEquip.open()
 		},
 		doModSubscribe:function(id){
 			var vm=this;
-			vm.$http.post('/equip/'+id, {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":id})
+			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null)})
 			.then( function(response) {
 				
 				if(response.data.exception){
@@ -579,8 +627,22 @@ export default {
 					vm.$refs.error.open()
 					console.log(vm.error);
 				} else {
-					vm.closeAllModals();
-					vm.getEquips(vm.$store.getters.userId);
+					
+					vm.$http.post('/inscrits/'+(id?id:response.data[0].id), vm.equip)
+					.then( function(response) {
+						vm.closeAllModals();
+						vm.getEquips(vm.$store.getters.userId);
+						vm.getInscripcions();
+						vm.insertaJugador=null;
+					})
+					.catch( function (error) { 
+						vm.error=error;
+						vm.$refs.error.open()
+						console.log(vm.error);
+						console.log(error);
+					} );
+					
+
 				}
 				
 
@@ -604,6 +666,7 @@ export default {
 				} else {
 					vm.closeAllModals();
 					vm.getInscripcions();
+					vm.insertaJugador=null;
 				}
 				
 
@@ -716,6 +779,7 @@ export default {
 				  inscripcions[key].inici = vm.parseTime(inscripcions[key].inici).toString('d/M/yyyy');
 				  inscripcions[key].fi = vm.parseTime(inscripcions[key].fi).toString('d/M/yyyy');
 				  inscripcions[key].fullName = inscripcions[key].fullName.substring(2);
+				  inscripcions[key].minimjugadors = inscripcions[key].minimjugadors;
 				}
 
 	            vm.inscripcions = inscripcions;
@@ -767,13 +831,8 @@ export default {
 	        var vm = this;
 	        vm.$http.get('/participa/'+idPartida, { cache: false })
 	        .then(function (response) {
-	            vm.equipLocal = response.data.filter(function(player) {
-					return player.equip == vm.partida.local;
-				});
-
-	            vm.equipVisitant = response.data.filter(function(player) {
-					return player.equip == vm.partida.visitant;
-				});
+	            vm.equipLocal = response.data.local;
+	            vm.equipVisitant = response.data.visitant;
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -824,8 +883,19 @@ export default {
 			var vm=this;
 			vm.$http.post('/partida/'+vm.partida.id, {"resultatlocal":vm.partida.resultatlocal, "resultatvisitant":vm.partida.resultatvisitant,  "comentari":vm.partida.comentari})			
 	        .then(function (response) {
-	        	vm.getData()
-	        	vm.closeAllModals();
+
+				vm.$http.post('/participa/'+vm.partida.id,{"local":vm.equipLocal, "visitant":vm.equipVisitant})
+		        .then(function (response) {
+					vm.getData()
+	        		vm.closeAllModals();
+		        })
+		        .catch(function (error) {
+		        	vm.error=error;
+					vm.$refs.error.open()
+		            console.log(error);
+		        });
+	        	
+
 	        })
 	        .catch(function (error) {
 	        	vm.error=error;
@@ -871,6 +941,7 @@ export default {
 		@media(max-width:@screenTablet) {
 			width:100%;
 		}
+		td {text-transform:Capitalize;}
 		caption{
 			text-align:center;
 			color:black;
@@ -891,6 +962,10 @@ export default {
     }
 }
 
+.overflow-hidden {
+	overflow:hidden;
+}
+		
 .score {
 	p{text-align:center;}
 	.escuts {

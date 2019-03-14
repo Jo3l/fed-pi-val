@@ -137,7 +137,7 @@ static public function equipsdeclub(Request $request, Response $response, $param
 	$club= $params['club'];
 	$options= array();
 	$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
-	$sql= "SELECT equip.id,nom,competicio,json,cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
+	$sql= "SELECT equip.id,nom,competicio,json,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
 	$db->sql($sql);
@@ -194,28 +194,32 @@ static public function inscrits(Request $request, Response $response, $params) {
 //  //  //  //  //  //  //  //
 /*
 * @description
-* Vincula un jugador a una inscripcio
-* URL: /api/inscrits/[idinscripcio] POST {"jugador":[idjugador]}
+* Vincula un conjunt de jugadors a un equip (elimina possibles vincles anteriors)
+* URL: /api/inscrits/[idinscripcio] POST [{"id":idjugador},{"id":idjugador]
 */
 static public function insert_inscrit(Request $request, Response $response, $params) {
 	$json = Fun::getPost($tabla);
-	$id= $json['jugador'];
+	//$id= $json['jugador'];
 	$equip= $params['equip'];
+	$ids=[];
+	foreach($json as $jug) { array_push($ids,$jug['id']); }
 	$db= new db();
-	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador WHERE numsoci=".$id;
-	$db->sql($sql);
+	// obtinc els jugadors d'equips de la mateixa competicio que aquest pero que no siguen d'este equip 
+	$db->sql("select jugador, numsoci, equip, (select nom from equip ee where ee.id=equip) as nom from pertany,equip,jugador where equip=equip.id and jugador.id=jugador and competicio=(select competicio from equip e where e.id=4400) and equip<>4400 and jugador in (".implode(',',$ids).")");
 	$data= $db->all();
-	if (empty($data)) {
+	if (count($data)) {
+		$info='';
+		foreach($data as $jug) { $info.= 'Soci '.$jug['numsoci'].' en inscripció `'.$jug['nom'].'`.\n'; }
 		header("HTTP/1.0 404 Not found");
-		die('{"error":"No existeix eixe número de soci"}');
+		die('{"error":"Ja existeix un jugador en altra inscripció d\'aquesta competició:\n'.$info.'"}');
 	}
-	$db->sql("select count(*) as compte from pertany where jugador=".$data[0]['id']." and equip=".$equip);
-	$compte= $db->all();
-	// si ja existeix apuntat
-	if ($compte[0]['compte']>0) { header("HTTP/1.0 404 Not found"); die('{"error":"Jugador ja apuntat"}'); }
+	// esborre tots els actuals
+	$db->sql("DELETE from pertany where equip=".$equip);
 	// cree la nova relació amb l'equip indicat i data d'alta actual
-	$db->sql("insert into pertany (jugador,equip,alta) values (".$data[0]['id'].",".$equip.",'".date('YmdHis')."');");
-	return;	
+	foreach($json as $jug) {
+		$db->sql("insert into pertany (jugador,equip,alta) values (".$jug['id'].",".$equip.",'".date('YmdHis')."');");
+	}
+	return;
 }
 
 //  //  //  //  //  //  //  //
@@ -223,14 +227,16 @@ static public function insert_inscrit(Request $request, Response $response, $par
 * @description
 * Elimina jugador d'una inscripcio
 * URL: /api/inscrits/[idinscripcio] DELETE {"jugador":[idjugador]}
+* borrable en juny2019
 */
-static public function delete_inscrit(Request $request, Response $response, $params) {
+/*static public function delete_inscrit(Request $request, Response $response, $params) {
 	$equip= $params['equip'];
 	$jugador= $params['jugador'];
 	$db= new db();
 	$db->sql("delete from pertany where jugador=".$jugador." and equip=".$equip.";");
 	return Fun::inscrits($request,$response,$params);
 }
+*/
 
 //  //  //  //  //  //  //  //
 /*
@@ -260,7 +266,11 @@ static public function soci(Request $request, Response $response, $params) {
 	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador WHERE numsoci=".$num;
 	$db->sql($sql);
 	$data= $db->all();
-    echo json_encode($data);
+	if (count($data)==0) {
+		header("HTTP/1.0 404 Not found");
+		die('{"error":"No existeix eixe número de soci"}');
+	}
+    echo json_encode($data[0]);
 }
 
 //  //  //  //  //  //  //  //
@@ -386,8 +396,29 @@ static public function participants(Request $request, Response $response, $param
 	$json = Fun::getPost($tabla);
 	$id= $params['partida'];
 	$db= new db();
-	$db->sql("select jugador.id as id, participa.equip as equip, concat(nom,' ',substring(cognoms,1,1),'.') as nom, numsoci from jugador, participa where participa.jugador=jugador.id and participa.partida=".$id.";"/*."'".date('YmdHis')."');"*/);
+	$db->sql("select jugador, equip, visitant, local from participa, partida where participa.partida=partida.id and participa.partida=".$id.";"/*."'".date('YmdHis')."');"*/);
 	$data= $db->all();
+	$participan= [ 'visitant'=>[], 'local'=>[] ];
+	$visitant= $data[0]['visitant'];
+	$local= $data[0]['local'];
+	foreach($data as $elm) {
+		$on= ($elm['equip']==$local ? 'local' : 'visitant');
+		array_push($participan[$on],$elm['jugador']);
+	}
+	$sql= "SELECT jugador.id,numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom, equip FROM jugador,pertany,partida WHERE pertany.jugador=jugador.id and (equip=local or equip=visitant) and partida.id=".$id;
+	$db->sql($sql);
+	$data= $db->all();
+	$participants= [ 'visitant'=>[], 'local'=>[] ];
+	foreach($data as $elm) {
+		$on= ($elm['equip']==$local ? 'local' : 'visitant' );
+		$elm['juga']= in_array(strval($elm['id']),$participan[$on]);
+		//if(!isset($participants[$elm['equip']])) $participants[$elm['equip']]= [];
+		array_push( $participants[$on],$elm);
+	}
+	return Fun::render($participants);
+	
+	//$db->sql("select jugador.id as id, participa.equip as equip, concat(nom,' ',substring(cognoms,1,1),'.') as nom, numsoci from jugador, participa where participa.jugador=jugador.id and participa.partida=".$id.";"/*."'".date('YmdHis')."');"*/);
+	/*$data= $db->all();
 	$tot= [];
 	foreach($data as $jug) { 
 		if (empty($tot[$jug['equip']])) $equips[$jug['equip']]=[];
@@ -401,19 +432,34 @@ static public function participants(Request $request, Response $response, $param
 	foreach($inscrits as $inscrit) {
 		array_push($tot[$inscrit['equip']]['inscrits'],$inscrit);
 	}
-	return Fun::render($tot);
+	return Fun::render($tot);*/
 }
 
 //  //  //  //  //  //  //  //
 /*
 * @description
-* Vincula un jugador i equip a una partida
-* URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
+* Estableix els vincles entre participant i partida
 * URL: /api/participa/[idpartida] POST {"numsoci":[numsoci], "equip":[idequip]}
 */
 static public function participa(Request $request, Response $response, $params) {
 	$json = Fun::getPost($tabla);
 	$id= $params['partida'];
+	// esborre vincles i els torne a crear
+	$db= new db();
+	$db->sql("delete from participa where partida=".$id.";");
+	$db->sql("select visitant, local from partida where id=".$id.";"/*."'".date('YmdHis')."');"*/);
+	$data= $db->all();
+	$visitant= $data[0]['visitant'];
+	$local= $data[0]['local'];
+	foreach($json as $equip=>$jugadorsdequip) {
+		foreach($jugadorsdequip as $jug) {
+			if($equip=='local') $equip= $local;
+			if($equip=='visitant') $equip= $visitant;
+			if($jug['juga']) $db->sql("insert into participa (jugador,equip,partida,creacio) values (".$jug['id'].",".$equip.",".$id.",'".date('YmdHis')."');");
+		}
+	}
+	return Fun::participants($request,$response,$params);
+	/*
 	$jugador= $json['id'];
 	$numsoci= $json['numsoci'];
 	$db= new db();
@@ -436,7 +482,7 @@ static public function participa(Request $request, Response $response, $params) 
 		die('{"error":"Ja existeix eixe jugador en aquesta partida"}');
 	}
 	$db->sql("insert into participa (jugador,equip,partida,creacio) values (".$jugador.",".$equip.",".$id.",'".date('YmdHis')."');");
-	return Fun::participants($request,$response,$params);
+	return Fun::participants($request,$response,$params);*/
 }
 
 //  //  //  //  //  //  //  //
@@ -445,13 +491,13 @@ static public function participa(Request $request, Response $response, $params) 
 * Elimina jugador d'una partida
 * URL: /api/participa/[idpartida]/[idjugador] DELETE
 */
-static public function delete_participa(Request $request, Response $response, $params) {
+/*static public function delete_participa(Request $request, Response $response, $params) {
 	$partida= $params['partida'];
 	$jugador= $params['jugador'];
 	$db= new db();
 	$db->sql("delete from participa where jugador=".$jugador." and partida=".$partida.";");
 	return Fun::participants($request,$response,$params);
-}
+}*/
 
 //  //  //  //  //  //  //  //
 /*

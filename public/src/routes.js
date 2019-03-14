@@ -45,12 +45,10 @@ const routes = [
 	  },
 	  {
 	    path: '/val',
-	    component: Start,
 	    redirect: '/val/inici',
 	  },
 	  {
 	    path: '/es',
-	    component: Start,
 	    redirect: '/es/inicio',
 	  },
 	  {

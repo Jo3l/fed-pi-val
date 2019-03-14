@@ -233,9 +233,9 @@ $app->get('/api/inscrits/{equip:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun:
 
 /*
 * @description
-* Vincula un jugador a un equip
-* URL: /api/inscrits/[idinscripcio] POST {"jugador":[idjugador]}
-* URL: /api/inscrits/1 POST {"jugador":1}
+* Vincula un conjunt de jugadors a un equip (elimina possibles vincles anteriors)
+* URL: /api/inscrits/[idinscripcio] POST [{"id":idjugador},{"id":idjugador]
+* URL: /api/inscrits/1 POST [{"id":1},{"id":2}]
 */
 $app->post('/api/inscrits/{equip:[0-9]+}', '\app\Fun::insert_inscrit'); 
 
@@ -245,7 +245,7 @@ $app->post('/api/inscrits/{equip:[0-9]+}', '\app\Fun::insert_inscrit');
 * URL: /api/inscrits/[idinscripcio]/[idjugador]
 * URL: /api/inscrits/1/1
 */
-$app->delete('/api/inscrits/{equip:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_inscrit'); 
+//$app->delete('/api/inscrits/{equip:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_inscrit'); 
 
 /*
 * @description
@@ -273,8 +273,8 @@ $app->post('/api/inscripcions/genera', '\app\Fun::generaPartides'); // buscar
 
 /*
 * @description
-* Vincula un jugador i equip a una partida
-* URL: /api/participa/[idpartida] POST {"jugador":[idjugador], "equip":[idequip]}
+* Vincula un conjunt de participants a una partida
+* URL: /api/participa/[idpartida] POST {"idequiplocal":[{"id":, "nom":, "equip":, "juga":true}, ... ], "idequipvisitant": [] }
 */
 $app->post('/api/participa/{partida:[0-9]+}', '\app\Fun::participa'); 
 
@@ -290,7 +290,7 @@ $app->get('/api/participa/{partida:[0-9]+}', '\app\Fun::participants');
 * Elimina un jugador d'una partida
 * URL: /api/participa/[idpartida]/[idjugador] DELETE
 */
-$app->delete('/api/participa/{partida:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_participa'); 
+//$app->delete('/api/participa/{partida:[0-9]+}/{jugador:[0-9]+}', '\app\Fun::delete_participa'); 
 
 /*
 * @description
