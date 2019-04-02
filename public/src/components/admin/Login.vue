@@ -93,14 +93,7 @@ export default {
 	    newClub: function (user) { console.log(user); },
 	    checkExistingClubEmail: function(user) { 
 	    	//user.email
-	    	var vm= this;
-	        vm.$http.get('emailclub/'+user.email, { cache: false })
-	        .then( (response) => { 
-	        	console.log(vm.existingClubEmail= response.data);
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
+	    	return;
 	    }
 	},
 	mounted: function () {

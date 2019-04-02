@@ -34,7 +34,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0">
-								<td>{{ element.data.toString('d/M/yyyy') }}</td>
+								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
 								<td>{{element.resultatlocal}}</td>
@@ -1105,6 +1105,9 @@ export default {
 		}
 		article {
 			width:100%;
+			& * {
+				max-width:100%;
+			}
 		}
 		textarea, input {
 		    width: 100%;

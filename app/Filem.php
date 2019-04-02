@@ -155,7 +155,7 @@ class Filem
 	static public function upload(Request $req, Response $res, $params, $what='upload') {
 		if (Filem::$allow_upload != true) Filem::err(404,'Sense permis per enviar info');
 		$file= Filem::prepare( );
-		$_FILES['files']['name']= str_replace(' ','_',$_FILES['files']['name']);
+		$_FILES['files']['name']= preg_replace('/[[:^print:]]/', '', str_replace(' ','_',$_FILES['files']['name']) );
 		
 		foreach(Filem::$disallowed_extensions as $ext) 
 			if(preg_match(sprintf('/\.%s$/',preg_quote($ext)), $_FILES['files']['name'])) 

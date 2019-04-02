@@ -311,6 +311,9 @@ static private function guardanode($params) {
         return Fun::render( Nodes::jerarquia($params['tipus']) , true);
     }
     // Si no està definit és un insert...
+    if(!isset($json['minimjugadors'])) $json['minimjugadors']='null';
+    if(!isset($json['puntspartida'])) $json['puntspartida']='null';
+    if(!isset($json['puntstanteig'])) $json['puntstanteig']='null';
     $sql="BEGIN;";
     $db->sql($sql);
     $sql="INSERT INTO jerarquia (pare,inici,fi,minimjugadors,puntspartida,puntstanteig) VALUES (".$json['parent_id'].",'".$json['inici']."','".$json['fi']."',".$json['minimjugadors'].",".$json['puntspartida'].",".$json['puntstanteig'].");";

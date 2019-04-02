@@ -181,8 +181,6 @@
 							
 						</div>
 						
-						<ui-button color="saveForm" icon="security" size="small" type="secondary" title="Només es pot enviar amb un email correcte especificat" :class="emailValid(club.email)?'':'is-disabled'" @click="sendPwd()">{{$i18n.t('common.sendPwd')}}</ui-button>
-
 						<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 		
 					</div>
@@ -221,7 +219,7 @@
 			    <table class="table results">
 					<thead>
 						<tr>
-							<th>Nº Soci</th>
+							<th>Nº Llicència</th>
 							<th>Nom</th>
 							<th></th>
 						</tr>
@@ -245,7 +243,7 @@
 					<ui-textbox
 							    floating-label
 					            autocomplete="off"
-					            label="Nº de Soci a inscriure"
+					            label="Nº de Llicència a inscriure"
 								type="number"
 					            v-model="insertaJugador"
 					 ></ui-textbox>
@@ -297,7 +295,7 @@
 				    	<caption>Local</caption>
 						<thead>
 							<tr>
-								<th>Nº Soci</th>
+								<th>Nº Llicència</th>
 								<th>Nom</th>
 								<th>Participa</th>
 							</tr>
@@ -318,7 +316,7 @@
 				    	<caption>Visitant</caption>
 						<thead>
 							<tr>
-								<th>Nº Soci</th>
+								<th>Nº Llicència</th>
 								<th>Nom</th>
 								<th>Participa</th>
 							</tr>
@@ -349,7 +347,7 @@
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            label="Nº de Soci a inscriure"
+			            label="Nº de Llicència a inscriure"
 						type="number"
 			            v-model="insertaJugador"
 					 ></ui-textbox>
@@ -364,7 +362,33 @@
 				</section>
 				<br>
 				
-				
+				<label><strong>Delegat:</strong></label>
+				<div class="triple-flex">
+					<ui-textbox
+					    floating-label
+			            autocomplete="off"
+			            label="Nom"
+						type="text"
+			            v-model="partida.nomDelegat"
+					 ></ui-textbox>
+					
+					<ui-textbox
+					    floating-label
+			            autocomplete="off"
+			            label="Num llicència"
+						type="text"
+			            v-model="partida.llicenciaDelegat"
+					 ></ui-textbox>
+					 
+					<ui-textbox
+					    floating-label
+			            autocomplete="off"
+			            label="Nº contacte o correu"
+						type="text"
+			            v-model="partida.contacteDelegat"
+					 ></ui-textbox>
+				 </div>
+				 
 				<section class="overflow-hidden">
 		            <ui-textbox
 		                enforce-maxlength
@@ -631,8 +655,9 @@ export default {
 					vm.$http.post('/inscrits/'+(id?id:response.data[0].id), vm.equip)
 					.then( function(response) {
 						vm.closeAllModals();
-						vm.getEquips(vm.$store.getters.userId);
-						vm.getInscripcions();
+						vm.getData();  //afegit per vore si refresca a la segona inscripcio
+						//vm.getEquips(vm.$store.getters.userId);
+						//vm.getInscripcions();
 						vm.insertaJugador=null;
 					})
 					.catch( function (error) { 
@@ -730,12 +755,7 @@ export default {
 		emailValid: function(email) {
 			return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 		},
-		sendPwd: function() {
-			var vm= this;
-			vm.$http.post('/pwd/',{"club":vm.club.id})
-			.then( (response)=> { if(response.data.result=='ok') alert("correu enviat"); else alert("error enviant nova clau"); } )
-			.catch( (error) => { console.log(error); } );
-		},
+
 		getPhoto:function(res) {
 			var vm=this;
 			vm.club.imatge = '/static'+res.file;
@@ -881,7 +901,14 @@ export default {
 		}, 
 		guardaPartida: function() {
 			var vm=this;
-			vm.$http.post('/partida/'+vm.partida.id, {"resultatlocal":vm.partida.resultatlocal, "resultatvisitant":vm.partida.resultatvisitant,  "comentari":vm.partida.comentari})			
+			vm.$http.post('/partida/'+vm.partida.id, {
+				"resultatlocal":vm.partida.resultatlocal,
+				"resultatvisitant":vm.partida.resultatvisitant,
+				"comentari":vm.partida.comentari,
+				"nomDelegat":vm.partida.nomDelegat,
+				"llicenciaDelegat":vm.partida.llicenciaDelegat,
+				"contacteDelegat":vm.partida.contacteDelegat
+			})			
 	        .then(function (response) {
 
 				vm.$http.post('/participa/'+vm.partida.id,{"local":vm.equipLocal, "visitant":vm.equipVisitant})
@@ -950,6 +977,17 @@ export default {
 		}
 	}
 	
+}
+
+.triple-flex {
+	display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+	@media(max-width:@screenTablet) {
+		display:block;
+	}
 }
 
 .add-local-visitant {

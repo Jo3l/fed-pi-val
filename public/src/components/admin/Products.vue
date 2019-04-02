@@ -77,7 +77,7 @@ export default {
 	  	remove:function(row) {
 			var vm=this;
 
-			vm.$http.post('/producte/', {'delete_id': row.id})
+			vm.$http.delete('/producte/'+row.id)
 	        .then(function (response) {
 	        	
 	            vm.getData('/productes');
@@ -89,7 +89,9 @@ export default {
 	    },
 	  	getData: function(apiUrl) {
 	        var vm = this;
-	        this.$http.get(apiUrl, {
+	        this.$http.get(apiUrl, { cache: false }
+	        /*
+	        , {
 			    // use before callback
 			    before(request) {
 			      // abort previous request, if exists
@@ -99,7 +101,9 @@ export default {
 			      // set previous request on Vue instance
 			      this.previousRequest = request;
 			    }
-			}).then(function (response) {
+			}
+			*/
+			).then(function (response) {
 				
 	            vm.products = response.data;
 	            vm.allProducts = response.data;

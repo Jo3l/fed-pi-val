@@ -405,12 +405,12 @@ static public function participants(Request $request, Response $response, $param
 		$on= ($elm['equip']==$local ? 'local' : 'visitant');
 		array_push($participan[$on],$elm['jugador']);
 	}
-	$sql= "SELECT jugador.id,numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom, equip FROM jugador,pertany,partida WHERE pertany.jugador=jugador.id and (equip=local or equip=visitant) and partida.id=".$id;
+	$sql= "SELECT jugador.id,numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom, equip, if(equip=partida.local,'local','visitant') as tipus FROM jugador,pertany,partida WHERE pertany.jugador=jugador.id and (equip=local or equip=visitant) and partida.id=".$id;
 	$db->sql($sql);
 	$data= $db->all();
 	$participants= [ 'visitant'=>[], 'local'=>[] ];
 	foreach($data as $elm) {
-		$on= ($elm['equip']==$local ? 'local' : 'visitant' );
+		$on= $elm['tipus'];
 		$elm['juga']= in_array(strval($elm['id']),$participan[$on]);
 		//if(!isset($participants[$elm['equip']])) $participants[$elm['equip']]= [];
 		array_push( $participants[$on],$elm);

@@ -309,11 +309,11 @@ export default {
 	        });
 		},
 		emailValid: function(email) {
-			return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+			return /^\w+([\.\+_-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 		},
 		sendPwd: function() {
 			var vm= this;
-			vm.$http.post('/pwd/',{"club":vm.club.id})
+			vm.$http.post('/pwd/',{"club":vm.club.id,"email":vm.club.email})
 			.then( (response)=> { if(response.data.result=='ok') alert("correu enviat"); else alert("error enviant nova clau"); } )
 			.catch( (error) => { console.log(error); } );
 		},

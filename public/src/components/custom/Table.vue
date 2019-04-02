@@ -1,6 +1,7 @@
 <template>
     <transition name="fade">
          <div class="table-responsive">
+         	<em><ui-icon icon="arrow_back"></ui-icon><ui-icon icon="touch_app"></ui-icon><ui-icon icon="arrow_forward"></ui-icon></em>
             <table class="table">
                <thead>
 					<tr>
@@ -73,7 +74,17 @@ export default {
 <style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
-
+em{
+	display:none;
+	text-align:center;
+	opacity:0.5;
+	@media(max-width:@screenTablet) {
+		display:block;
+		position:absolute;
+		left:~"calc(50% - 35px)";
+    	margin-top: -30px;
+	}
+}
 td {text-transform:capitalize;}
 
 </style>

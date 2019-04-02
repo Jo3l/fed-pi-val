@@ -8,14 +8,22 @@
         type="clear"
         :raised="false"
     >
-        <ui-icon-button
-        	v-if="isMobileDevice()"
+        <ui-icon-button has-dropdown
+        	v-if="isMobileDevice()&&$store.getters.isAuthenticated"
 	        color="black"
 	        icon="account_circle"
 	        size="large"
 	        type="secondary"
-	        @click="$router.push({ path: `/login` })"
-	    ></ui-icon-button>
+	    >
+	        <ui-menu
+	            contain-focus
+	            has-icons
+	            slot="dropdown"
+	            :options="userOptions"
+	            @select="selectUserOptions"
+	            @close="$refs.localeSelector.closeDropdown()"
+	        ></ui-menu>
+        </ui-icon-button>
 	    
         <ui-icon-button
     		v-if="isMobileDevice()"
@@ -33,7 +41,7 @@
 			<img src="/static/logo.png">
 		</div>
 	    <div slot="actions">
-	    	<ui-button has-dropdown v-if="$store.getters.isAuthenticated" icon="account_circle" size="small">{{$store.getters.userMail}}
+	    	<ui-button class="actionDesktop" has-dropdown v-if="$store.getters.isAuthenticated" icon="account_circle" size="small">{{$store.getters.userMail}}
 	                <ui-menu
 	                    contain-focus
 	                    has-icons
@@ -43,7 +51,18 @@
 	                    @close="$refs.localeSelector.closeDropdown()"
 	                ></ui-menu>
 	    	</ui-button>
-
+	    	
+	    	<ui-button class="actionMobile" has-dropdown v-if="$store.getters.isAuthenticated" icon="account_circle" size="small">
+	                <ui-menu
+	                    contain-focus
+	                    has-icons
+	                    slot="dropdown"
+	                    :options="userOptions"
+	                    @select="selectUserOptions"
+	                    @close="$refs.localeSelector.closeDropdown()"
+	                ></ui-menu>
+	    	</ui-button>
+	    	
             <ui-icon-button
             	v-else
                 color="black"
@@ -103,10 +122,12 @@
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
+
 	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen">
 	    		<router-link v-bind:to="menu.path">{{ menu.name }}</router-link>
 	    	</li>
-	    	<li v-if="$store.getters.isAuthenticatedWithRole(0) || $store.getters.isAuthenticatedWithRole(10)">|</li>
+	    	<li v-if="!$store.getters.isAuthenticated" class="login" @click="$router.push({ path: `/login` })">{{$t('common.login')}}</li>
+	    	<li class="separator" v-if="$store.getters.isAuthenticatedWithRole(0) || $store.getters.isAuthenticatedWithRole(10)">|</li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/clubs' }">Clubs</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/productes' }">Productes</router-link></li>
@@ -231,6 +252,17 @@ export default {
 		background-color:rgba(255,255,255,0.2);
 	}
 	.menu {
+		.login{
+			cursor:pointer;
+			@media(min-width:@screenMobile) {
+				display:none;
+			}
+		}
+		.separator {
+			@media(max-width:@screenMobile) {
+				display:none;
+			}
+		}
 		a {
 			text-decoration: none;
 			color: #232323;
@@ -267,6 +299,16 @@ export default {
 	    border-radius: 50px;
 	    background-color: @fedcolor;
 	    opacity:.75;
+	}
+	.actionDesktop {
+		@media(max-width:@screenTablet) {
+			display:none;
+		}
+	}
+	.actionMobile {
+		@media(min-width:@screenTablet) {
+			display:none;
+		}
 	}
 }
 
