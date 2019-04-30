@@ -383,7 +383,7 @@
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            label="Nº contacte o correu"
+			            label="Telèfon o e-mail"
 						type="text"
 			            v-model="partida.contacteDelegat"
 					 ></ui-textbox>

@@ -60,7 +60,7 @@ const actions = {
       vueAuth.login(payload.user, payload.requestOptions).then(
       	
       	function (response) {
-      		
+      		console.log(54321,context,response,12345)
 	        return context.commit('isAuthenticated', {
 	          isAuthenticated: vueAuth.isAuthenticated()
 	        });
@@ -68,16 +68,26 @@ const actions = {
     	}
       )
       .catch(function (error) {
+      	
 	        return context.commit('error', {
 	          error: error
 	        });
 	  });
 
     },
+    vuexLogin:function(context,payload){
+        return context.commit('isAuthenticated', {
+          isAuthenticated: vueAuth.isAuthenticated()
+        });
+    },
+    removeError: function(context, payload) {
+    	return context.commit('error',{error:null});	
+    },
     logout: function (context, payload) {
       vueAuth.logout().then(
       	function () {return context.commit('isAuthenticated', {isAuthenticated: vueAuth.isAuthenticated()});}
       );
+      window.location.href='/';
     }
 }
 

@@ -28,6 +28,14 @@ static public function generic_update(Request $request, Response $response, $par
 	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
+	if ($tabla=='partida') {
+		$delegat= array(
+			'contacte'=>$json['contacteDelegat'],
+			'llicencia'=>$json['llicenciaDelegat'],
+			'nom'=>$json['nomDelegat']
+		);
+		$json['json']= json_encode($delegat);
+	}
 	$camps= Generics::getFields($tabla);
 	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$id= $params['id'];
@@ -198,6 +206,12 @@ static public function generic_id(Request $request, Response $response, $params)
 		$a= $data[0]['json']; 
 		$a= json_decode($a,true); 
 		$data[0]['json']= $a;
+	}
+	if ($params['tabla']=='partida') {
+		$delegat= json_decode($data[0]['json'],true);
+		$data[0]['contacteDelegat']= $delegat['contacte'];
+		$data[0]['llicenciaDelegat']= $delegat['llicencia'];
+		$data[0]['nomDelegat']= $delegat['nom'];
 	}
 	header('Content-Type: application/json, charset=utf-8');
     echo json_encode($data);

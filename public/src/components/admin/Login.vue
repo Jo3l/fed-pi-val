@@ -52,6 +52,8 @@
 
 <script>
 
+import { get,set } from "lodash-es"
+
 export default {
 	name: 'Login',
 	data () {
@@ -68,25 +70,47 @@ export default {
 		closeModal: function(ref) {
             this.$refs[ref].close();
         },
-		login: function (user) {
+        login: function () {
+        	var vm= this;
+			this.$auth.login(this.user).then(function () {
+	      		//if (vm.$store.getters.isAuthenticated) 
+	      		vm.$store.dispatch('vuexLogin').then(function(){
+					if (vm.$store.getters.isAuthenticatedWithRole(0)) vm.$router.push('/admin/clubs')
+					if (vm.$store.getters.isAuthenticatedWithExactRole(10)) vm.$router.push('/gestio/club')
+	      		});
+	      		//else console.log(vm.$store.getters);
+	        	// Execute application logic after successful login
+	    	}).catch(function(error) {
+				vm.error= error.response.data.error;
+				vm.$refs.error.open()
+	    	})
+	    },
+		login2: function (user) {
 			var vm=this;
 			
+			vm.$store.dispatch('removeError');
 			vm.$store.dispatch('login', { user }).then(function(){
 				
-				var s=setInterval(function(){
+				//var s=setInterval(function(){
 					
-					if(vm.$store.getters.isAuthenticated) {
-						clearInterval(s);
-						vm.$router.go(-1)
+					//if(vm.$store.getters.isAuthenticated) {
+					
+					if( !get(vm.$store,'getters.error.message') ) {
+				//		clearInterval(s);
+						if (vm.$store.getters.isAuthenticatedWithRole(0)) vm.$router.push('/admin/clubs')
+						if (vm.$store.getters.isAuthenticatedWithExactRole(10)) vm.$router.push('/gestio/club')
 					} else {
-						vm.error=vm.$store.getters.error.message;
+						vm.error= vm.$store.getters.error.response.data.error;
 						vm.$refs.error.open()
-						clearInterval(s);
-						console.log(vm.error);
+				//		clearInterval(s);
+						console.dir(vm.error);
 					}
 					//console.log('matame');
-				}, 300);
+				//}, 300);
 				
+			}).catch(function(err){
+				console.log(321,err)
+				console.log(vm.$store.getters.error.message)
 			});
 
 	    },

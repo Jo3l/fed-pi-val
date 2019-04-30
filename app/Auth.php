@@ -155,21 +155,23 @@ static public function login($json) /*use($app)*/ {
 			        'HS256'
 			    );
                 
+                header("HTTP/1.0 200 Successful");
                 echo json_encode(array('access_token' => $jwt ));
+                exit;
             } else {
                 header("HTTP/1.0 401 Not Authorized");
-                echo '{"status":"fail", "message":"1 Unable to log you in. Please try again!'.hash('sha256',$clau).'"}';
+                echo '{"error":"Credencials incorrectes."}';
                 exit;
             }
         }
         else{
             header("HTTP/1.0 401 Not Authorized");
-            echo '{"status":"fail", "message":"2 Unable to log you in. Please try again!"}';
+            echo '{"error":"Credencials incorrectes.."}';
             exit;
         }
     } catch(Exception $ex) {
         header("HTTP/1.0 401 Not Authorized");
-        echo '{"status":"fail", "message":"3 Unable to log you in. Please contact your system administrator"}';
+        echo '{"error":"Credencials incorrectes..."}';
         exit;
     } 
 }
