@@ -341,7 +341,9 @@ export default {
 	      	vm.modFinal=new Date();
 	      	vm.currentNodeName.inici='';
 	      	vm.currentNodeName.fi='';
-
+	      	vm.currentNodeName.minimjugadors=0;
+	      	vm.currentNodeName.puntstanteig=0;
+	      	vm.currentNodeName.puntspartida=0;
         })
         .catch(function (error) {
             console.log(error);
@@ -382,6 +384,9 @@ export default {
 		if(vm.findNodeBySlug(vm.tree, lastBread).inici&&vm.findNodeBySlug(vm.tree, lastBread).fi) {
 	      	vm.modInici=vm.fixDateForParse(vm.findNodeBySlug(vm.tree, lastBread).inici);
 	      	vm.modFinal=vm.fixDateForParse(vm.findNodeBySlug(vm.tree, lastBread).fi);
+	    	vm.currentNodeName.minimjugadors= vm.findNodeBySlug(vm.tree, lastBread).minimjugadors;
+	      	vm.currentNodeName.puntstanteig= vm.findNodeBySlug(vm.tree, lastBread).puntstanteig;
+	      	vm.currentNodeName.puntspartida= vm.findNodeBySlug(vm.tree, lastBread).puntspartida;
 	      	vm.currentNodeName.compNode=true;
 		} else {
 			vm.currentNodeName.compNode=false;

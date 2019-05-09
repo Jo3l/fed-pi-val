@@ -328,8 +328,8 @@
 		
 		<div class="flexWrap" v-if="$store.getters.isAuthenticatedWithRole(0)">
 				<hr>
-                <ui-icon-button @click="addContentHtml" tooltip="Insertar Contenido" size="small" icon="font_download" type="secondary"></ui-icon-button>
-                <ui-icon-button @click="addContentFile" tooltip="Insertar archivo" size="small" icon="file_upload" type="secondary"></ui-icon-button>
+                <ui-icon-button @click="addContentHtml" tooltip="Insertar Contenido" size="small" icon="add" type="secondary"></ui-icon-button>
+                <ui-icon-button @click="addContentFile" tooltip="Insertar archivo" size="small" icon="attach_file" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentMap" tooltip="Insertar Mapa" size="small" icon="map" type="secondary"></ui-icon-button>
                 <ui-icon-button v-if="disable && !gameOn" @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>

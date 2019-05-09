@@ -19,8 +19,6 @@
 							</template>
 						</tablerone>
 					</div>
-					
-					
                 </ui-tab>
 
                 <ui-tab title="Inscripcions">
@@ -30,7 +28,7 @@
 							<th slot="headActions"></th>
 							<template slot="actions" scope="props">
 								<td class="actions">
-									<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)">Modificar</ui-button>
+									<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi">Modificar</ui-button>
 								</td>
 							</template>
 						</tablerone>
@@ -189,7 +187,7 @@
             </ui-tabs>
 			
 			
-  		<ui-modal ref="insertNomEquip" size="normal" title="Insertar Nom del Equip">
+  		<ui-modal ref="insertNomEquip" size="normal" title="Insertar Nom del Equip" dismissOn="close-button">
 			<div class="ui-autocomplete__content">
 				<label class="ui-autocomplete__label">
 					<input v-model="subscribeName" placeholder="Nom del equip" class="ui-autocomplete__input"><br><br>
@@ -204,7 +202,7 @@
         </ui-modal>
 	
 	
-  		<ui-modal ref="updateEquip" size="large" title="Inscripció - Insertar Jugadors">
+  		<ui-modal ref="updateEquip" size="large" title="Inscripció - Insertar Jugadors" dismissOn="close-button">
 			<div class="ui-autocomplete__content">
 
 				<section class="overflow-hidden">
@@ -270,7 +268,7 @@
         </ui-modal>
        
        
-  		<ui-modal ref="updateResultats" size="large" title="Resultats">
+  		<ui-modal ref="updateResultats" size="large" title="Resultats" dismissOn="close-button">
 				<section class="score">
 					<p>Data: {{partida.date}}</p>
 					<p v-if="partida.lloc">Lloc: {{partida.lloc}}</p>
@@ -536,6 +534,9 @@ export default {
 		}
 	},
 	methods: {
+		refreshTab: function(tab) {
+			console.log(tab)	
+		},
 		addPlayer: function(player){
 			var vm = this;
 			console.log(player)
@@ -655,10 +656,7 @@ export default {
 					vm.$http.post('/inscrits/'+(id?id:response.data[0].id), vm.equip)
 					.then( function(response) {
 						vm.closeAllModals();
-						vm.getData();  //afegit per vore si refresca a la segona inscripcio
-						//vm.getEquips(vm.$store.getters.userId);
-						//vm.getInscripcions();
-						vm.insertaJugador=null;
+						window.location.reload();
 					})
 					.catch( function (error) { 
 						vm.error=error;
@@ -691,6 +689,7 @@ export default {
 				} else {
 					vm.closeAllModals();
 					vm.getInscripcions();
+					vm.getEquips(vm.$store.getters.userId);
 					vm.insertaJugador=null;
 				}
 				
@@ -817,7 +816,8 @@ export default {
 				  if(inscripcions[key].path) inscripcions[key].path = inscripcions[key].path.substring(2);
 				  inscripcions[key].nomCompeticio = inscripcions[key].cami[vm.$i18n.locale];
 				}
-	            vm.equips = inscripcions;
+				
+	            vm.equips = Object.assign({}, inscripcions);
 	        })
 	        .catch(function (error) {
 	            console.log(error);

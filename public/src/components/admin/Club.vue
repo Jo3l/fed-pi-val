@@ -130,8 +130,8 @@
 							
 						</div>
 						
-						<ui-button color="saveForm" icon="security" size="small" type="secondary" title="Només es pot enviar amb un email correcte especificat" :class="emailValid(club.email)?'':'is-disabled'" @click="sendPwd()">{{$i18n.t('common.sendPwd')}}</ui-button>
-
+						<ui-button color="saveForm" icon="security" size="small" type="secondary" title="Només es pot enviar amb un email correcte especificat" :class="emailValid(club.email)?'':'is-disabled'" v-if="club.id" @click="sendPwd()">{{$i18n.t('common.sendPwd')}}</ui-button>
+						
 						<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 		
 					</div>
