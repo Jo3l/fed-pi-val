@@ -264,7 +264,7 @@ export default {
 	            vm.news = n;
 	            vm.destacada = n.destacada=='1';
 	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio||n.alta));
-	            vm.publishedDateText = vm.fixDateForParse(n.publicacio||n.alta);
+	            vm.publishedDateText = vm.fixDate(n.publicacio||n.alta);
 	            vm.selectedTags = n.tags.split('|');
 	            vm.$emit('updateHead')
 	            

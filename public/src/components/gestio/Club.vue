@@ -209,7 +209,7 @@
 					<ui-textbox
 							    floating-label
 					            autocomplete="off"
-					            label="Nom de la inscripció"
+					            label="Nom del equip a inscriure"
 								type="text"
 					            v-model="subscribeName"
 					 ></ui-textbox>
@@ -360,7 +360,7 @@
 				</section>
 				<br>
 				
-				<label><strong>Delegat:</strong></label>
+				<label><strong>Delegat / Jutge:</strong></label>
 				<div class="triple-flex">
 					<ui-textbox
 					    floating-label
@@ -688,6 +688,7 @@ export default {
 					console.log(vm.error);
 				} else {
 					vm.closeAllModals();
+					//window.location.reload();
 					vm.getInscripcions();
 					vm.getEquips(vm.$store.getters.userId);
 					vm.insertaJugador=null;
