@@ -38,6 +38,7 @@ export default {
 		fail: 'L\'encomanda ha fallat, per a encomandes per telèfon cal cridar al 54645654645645 o enviar un correu electrònic a botiga@fedpival.es',
 	},
 	common : {
+		oldweb:'Si vols accedir a l\'antiga web, cal anar a',
 		login:'Accedir',
 		thisLocation:'Usar localització actual',
 		name:'Nom',
@@ -92,6 +93,7 @@ export default {
 	},
 	modal: {
 		ok: 'Acceptar',
-		cancel: 'Cancelar'
+		cancel: 'Cancelar',
+		close: 'Tancar'
 	}
 }

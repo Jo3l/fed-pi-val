@@ -38,6 +38,7 @@ export default {
 		fail: 'El pedido ha fallado, para pedidos por teléfono por favor llame al teléfono 96 374 95 58 o dirijase a nosotros al correo electrónico botiga@fedpival.es',
 	},
 	common : {
+		oldweb:'Si quieres acceder a la web antigua haz click en',
 		login:'Acceder',
 		thisLocation:'Usar localización actual',
 		name:'Nombre',
@@ -92,6 +93,7 @@ export default {
 	},
 	modal: {
 		ok: 'Aceptar',
-		cancel: 'Cancelar'
+		cancel: 'Cancelar',
+		close: 'Cerrar'
 	}
 }

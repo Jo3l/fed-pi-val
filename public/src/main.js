@@ -21,6 +21,7 @@ Vue.prototype.$http = axios;
 
 import Toolbar from './components/Toolbar.vue'
 import Cookie from './components/custom/Cookie.vue'
+import Alert from './components/custom/Alert.vue'
 
 Vue.prototype.$eventHub = new Vue(); // Global event bus
 
@@ -36,7 +37,7 @@ new Vue({
 	i18n,
 	router,
 	store,
-	components: { Toolbar, Cookie },
+	components: { Toolbar, Cookie, Alert },
 	data: {
 	}
 })
