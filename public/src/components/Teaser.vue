@@ -28,7 +28,7 @@
 				<div class="results">
 					<h3>{{$i18n.t('common.lastResults')}}</h3>
 					<ul>
-						<li v-for="result in lastResults"><router-link :to="{ path: result[$i18n.locale].path }">{{result[$i18n.locale].nom}}</router-link></li>
+						<li v-for="result in lastResults"><router-link :to="{ path: '/'+$i18n.locale+result[$i18n.locale].slugpath }">{{result[$i18n.locale].nom}}</router-link></li>
 					</ul>
 				</div>
 

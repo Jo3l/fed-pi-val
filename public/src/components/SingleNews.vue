@@ -434,6 +434,11 @@ export default {
 	    object-fit: cover;
 	}
 	
+	& > aside > * {
+		-webkit-print-color-adjust: exact !important;
+    	color-adjust: exact !important;    
+	}
+	
 	& > aside > h1 {
 		padding: 0px 5vw;
 		font-family: 'Rambla', cursive;
@@ -456,7 +461,9 @@ export default {
 	    margin-bottom: 20px;
 	    transition: max-height 1.5s ease;
 	    cursor:zoom-in;
-	    
+        @media print {    
+	    	max-height: 200px;
+		}
 	    & > div > div {
 	    	background-position: 50% 33%!important;
 			transition: all 1.5s ease;
@@ -503,6 +510,9 @@ export default {
 	    &.social{
 	    	display:block;
 	    	margin-top: 20px;
+	    	@media print {    
+		    	display: none !important;
+			}
 	    }
 	}
 }

@@ -3,7 +3,7 @@
 <div v-bind:class="{ 'alert':true, 'visible':!alertVisible }" v-if="!readCookie('seen-alert-message')">
 	
     <div class="consent-content">
-        <p>{{$i18n.t('common.oldweb')}} <a href="https://antiga.fedpival.es" target="_blank">https://antiga.fedpival.es</a></p>
+        <p>{{$i18n.t('common.oldweb')}} <a href="http://antiga.fedpival.es" target="_blank">http://antiga.fedpival.es</a></p>
     </div>
     <div class="consent-action">
          <button @click="acceptCookie" class="button cta"> {{$i18n.t('modal.close')}} </button>
@@ -69,6 +69,9 @@ export default {
     z-index:99;
     display:none;
     color: white;
+    @media print {    
+    	display: none !important;
+	}
 
 }
 .alert.visible {

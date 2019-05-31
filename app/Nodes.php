@@ -56,10 +56,14 @@ static public function delete_node(Request $request, Response $response, $params
 	//api/node/{tipus:federacio|competicio/federacions/competicions}/{id:[0-9]+}
     $id= $params['id'];
     $db= new db();
+    /*
+    // ja no esborre els nodes. Ara els marque de baixa
     $db->sql(" START TRANSACTION;");
     $db->sql(" DELETE FROM idioma WHERE tipus='jerarquia' and registreid=".$id);
     $db->sql(" DELETE FROM jerarquia WHERE id=".$id);
     $db->sql(" COMMIT;");
+    */
+    $db->sql(" UPDATE jerarquia SET baixa='".date('Ymd')."' where id=".$id);
     return Fun::render(Nodes::jerarquia($params['tipus']), true);
 }
 
@@ -85,14 +89,19 @@ static public function delete_element(Request $request, Response $response, $par
     $pare= $params['pare'];
     if ( $id==32715 ) return Fun::render(Nodes::contingutnode($pare), true); // bloc d'avisos no es pot esborrar
     $db= new db();
-    $db->sql("SELECT * FROM partida where registreid=".$id);
+    $db->sql("SELECT * FROM partida where baixa is null and registreid=".$id);
     if ($db->numRows()>0) {
     	return Fun::render(Nodes::contingutnode($pare), true); // Encara hi ha partides en aquest bloc.
     }
+    /*
+    // ja no esborre les partides. Ara les marque de baixa
     $db->sql(" START TRANSACTION;");
     $db->sql(" DELETE FROM idioma WHERE tipus='element' and registreid=".$id);
     $db->sql(" DELETE FROM pagina WHERE id=".$id);
     $db->sql(" COMMIT;");
+    */
+    $db->sql("UPDATE partida SET baixa='".date('Ymd')."' where registreid=".$id);
+    $db->sql("UPDATE pagina SET baixa='".date('Ymd')."' where id=".$id);
     return Fun::render(Nodes::contingutnode($pare), true);
 }
 
@@ -144,11 +153,12 @@ static public function jerarquia($fill='competicions') {
 	unset($result);
 	$estructura= array();
 	//echo '<pre>',print_r($resultids),'</pre>';exit;
-	$antilock= 300; // màxim de 300 nodes
+	$antilock= 1000; // màxim de 1000 nodes
 	while (count($resultids)>1) {
 	    $last= array_pop($resultids);
 	    $pareid= $last['pare'];
 	    //echo $last[id],' pare:',$last[pare],'<br/>';
+		if (empty($last)) continue; // ho afegisc després de l'error de antilock que m'ha eixit. El problema era que la vista filtrava les baixes i els primers nodes al tindre '' en baixa en lloc de null, no apareixien...
 	    if (!isset($resultids[$pareid]['children'])) $resultids[$pareid]['children']= array();
 	    unset($last['nom_es']);
 	    unset($last['nom_val']);
@@ -189,7 +199,7 @@ static private function editaelement($id) {
     $db= new db();
     if (isset($json['id'])) { // UPDATE!
         $camps= [];
-        foreach($json as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."='".$val."'");
+        foreach($json as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."=".(empty($val) ? 'NULL' : "'".$val."'"));
         $camps= implode(',',$camps);
         $sql= "START TRANSACTION;";
         $db->sql( $sql );
@@ -212,7 +222,7 @@ static private function editaelement($id) {
         if (empty($json['ordre'])) $json['ordre']=0;
         $sql= "START TRANSACTION;";
         $db->sql( $sql );
-        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta) values ('".$json['tipus']."',".$id.",".$json['ordre'].",'".$json['url']."','".date('YmdHis')."'); ";
+        $sql= "INSERT INTO pagina(tipus,jerarquia,ordre,url,alta,baixa) values ('".$json['tipus']."',".$id.",".$json['ordre'].",'".$json['url']."','".date('YmdHis')."',null); ";
         $db->sql( $sql );
         $sql= "SET @last_id = LAST_INSERT_ID(); ";
         $db->sql( $sql );

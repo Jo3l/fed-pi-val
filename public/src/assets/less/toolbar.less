@@ -103,7 +103,9 @@
 	transform: rotate(180deg);
 	z-index:9;
 	display:block!important;
-
+    @media print {    
+    	display: none !important;
+	}
 	svg {
 		width: 200%;
 		height: 100%;

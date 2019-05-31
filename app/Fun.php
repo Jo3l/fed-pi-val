@@ -707,12 +707,47 @@ static public function comprar(Request $request, Response $response, $params) {
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
-	$str= sprintf("Nom: %s - Adreça: %s - \n Tel: %s - Email comprador: %s \n Total: %s euros \n %s",
+	$str= sprintf("Nom: %s \nAdreça: %s\n Tel: %s\nEmail comprador: %s\nDespeses d'enviament: 8,90 euros\nTotal: %s euros\n%s\n",
 		$nom, $address, $tel, $email,
-		$preu,
-		str_replace('[',"\n[",json_encode($carro))
+		$preu+8.9,
+		str_replace(['[',','],"\n[",json_encode($carro))
 	);
-	return Fun::email('mailgun.com.alsanan@neverbox.com','Nova compra '.date('YmdHis'),$str);
+	$str.="\n\nEl termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
+		a la recepció del material.\n
+		Per a qualsevol devolució es imprescindible presentar la factura.\n
+		Si es canvia l'adreça d'enviament una volta s'ha enviat el producte,\n
+		s'hauràn de carregar dos voltes les despesses d'enviament.\n
+		Li recordem que les seues dades consten a un fitxer de titularitat de la\n
+		FEDERACIÓ DE PILOTA VALENCIANA necesari per a la gestió contable i fiscal\n
+		de l'empresa. Pot exercir els drets d'acces, rectificació, cancelació i\n
+		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
+		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
+		Juan, 32 baix B, Valencia, 46015";
+	/*
+	https://sis-t.redsys.es:25443/sis/realizarPago
+	Número de comercio (FUC)
+	(Ds_Merchant_MerchantCode)	272095225
+	Número de terminal
+	(Ds_Merchant_Terminal)	001
+	Moneda del terminal
+	(Ds_Merchant_Currency)	000 (978)
+	Clave secreta de encriptación	sq7HjrUOBfKmC576ILgskD5srU870gJ7
+	*/
+	
+	$ch = curl_init();
+	
+	//set the url, number of POST vars, POST data
+	curl_setopt($ch,CURLOPT_URL, 'https://sis-t.redsys.es:25443/sis/realizarPago');
+	curl_setopt($ch,CURLOPT_POST, true);
+	curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+	
+	//So that curl_exec returns the contents of the cURL; rather than echoing it
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
+	
+	//execute post
+	$result = curl_exec($ch);
+	
+	return Fun::email('botiga@fedpival.es,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
 }
 
 static public function email($to,$sub,$text){

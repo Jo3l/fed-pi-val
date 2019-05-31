@@ -8,8 +8,10 @@
 			  <swiper-slide v-for="(noticia, index) in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
 			    <div class="articleP">
 			    	
-			    	<img v-if="index>5" :data-src="noticia.url" class="swiper-lazy"/>
+			    	<img v-if="index>10" :data-src="noticia.url" class="swiper-lazy"/>
 			    	<img v-else :src="noticia.url" class="swiper-lazy"/>
+			    	
+			    	<div v-if="index>10" class="swiper-lazy-preloader"></div>
 			    	
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
@@ -76,7 +78,10 @@ export default {
 	        slidesPerView: 4,
 	        slidesPerColumn: 1,
 	        spaceBetween: 10,
-	        lazy: true,
+	        watchSlidesProgress: true,
+	        watchSlidesVisibility: true,
+		    preloadImages: false,
+		    lazy: true,
 	        navigation: {
 	          nextEl: '.swiper-button-next.nuws',
 	          prevEl: '.swiper-button-prev.nuws'
@@ -202,6 +207,9 @@ export default {
 }
 .newsCarousel {
 	min-height:374px;
+	@media print {    
+    	display: none !important;
+	}
 	a {text-decoration:none;color:black;}
 	.swiper-slide {
 		overflow:hidden;
@@ -225,7 +233,8 @@ export default {
 		    display: block;
 		    z-index: -1;
 		    top: 0;
-		    left: -25%;
+	        left: -40%;
+    		width: 175%;
 		}
 		.articleContainer {
 			background-image: linear-gradient(rgba(0, 0, 0, 0) 0%, #ffffff 41%);

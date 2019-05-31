@@ -7,18 +7,14 @@
 	RewriteEngine On
 	RewriteBase /
 	
-	#RewriteCond %{HTTP_HOST} ^f\.indiza\.com$
-	#RewriteCond %{REQUEST_FILENAME} !\.php$
-	#RewriteRule ^(.*)$ api.php [L]
-	#RewriteRule . /index.php [L]
-	
+	RewriteRule ^(static)($|/) - [L]
 	RewriteRule ^index\.html$ - [L]
 	
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteRule ^api/(.*)$ api.php [L]
 	
-	RewriteCond %{REQUEST_URI} !^(api|old_api)/ 
+	RewriteCond %{REQUEST_URI} !^(api|static)/ 
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteRule . /index.html [L]

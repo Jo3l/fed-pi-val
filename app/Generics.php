@@ -28,6 +28,7 @@ static public function generic_update(Request $request, Response $response, $par
 	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
+	if ($tabla=='pagina') { if (empty($json['titol'])) die('{"ERROR": "Sense títol... No s\'ha guardat..."}'); }
 	if ($tabla=='partida') {
 		$delegat= array(
 			'contacte'=>$json['contacteDelegat'],
@@ -43,7 +44,7 @@ static public function generic_update(Request $request, Response $response, $par
 	if (empty($json['modificacio'])) $json['modificacio']= date('YmdHis');
 	$db= new db();
 	$db->sql('select id from '.($tabla).' where id='.$id);
-	if ($db->numRows()!=1) die('ERROR: No existeix la fila o hi ha més d\'una');
+	if ($db->numRows()!=1) die('{"ERROR": "No existeix la fila o hi ha més d\'una"}');
 	$pairs= array();
 	foreach($json as $key=>$value) {
 		if($value!=null || $key!='ordre') {
@@ -90,6 +91,7 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$db= new db();
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
+	if ($tabla=='pagina') { if (empty($json['titol'])) die('{"ERROR": "Sense títol... No s\'ha guardat..."}'); }
 	$camps= Generics::getFields($tabla);
 	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$filtrekeys= array();
@@ -107,6 +109,7 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$keys= implode(',',$filtrekeys);
 	$values= implode(",",$filtrevalues);
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
+
 	try {
 		$db->sql($sql);
 		$sql= "SELECT LAST_INSERT_ID() as id";
@@ -160,6 +163,7 @@ static public function generic_query(Request $request, Response $response, $para
 	if (in_array('p4',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
 	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
+	if ($tabla=='producte') $options['limit']=PHP_INT_MAX;
     $db = new db();
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
@@ -172,7 +176,7 @@ static public function generic_query(Request $request, Response $response, $para
     if (in_array($tabla,array('noticia','_noticia_es','_noticia_val'))) {
 		foreach($data as $i=>$r) { // en cada registre...
 			foreach($r as $k=>$v) { // en cada parell de valors
-				if (empty($options['id']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth(strip_tags($v), 0, 100)."...");
+				if (empty($options['id']) && in_array($k,['titol','contingut']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth(strip_tags($v), 0, 100)."...");
 			}
 		}
 	}
@@ -406,7 +410,7 @@ static private function procesaparam($str,$options,$tabla) {
 //  //  //  //  //  //  //  //
 static public function date_query(Request $request, Response $response, $params) {
     $tabla= Fun::tables('acte','select');
-	$options= array( 'limit'=>Fun::$itemsPerPage);
+	$options= array( 'limit'=>	PHP_INT_MAX);
 	if (in_array('p1',$params)) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	if (in_array('p2',$params)) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	if (in_array('p3',$params)) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));

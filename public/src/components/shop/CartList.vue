@@ -39,7 +39,7 @@
 				        	</div>
 				        	
 							<h3>{{$i18n.t('cart.info')}}:</h3>
-							<p>{{$i18n.t('cart.shippingInfo')}} <a href="mailto:tenda@fedpival.es">tenda@fedpival.es</a></p>
+							<p>{{$i18n.t('cart.shippingInfo')}} <a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
 							<div class="clientData">
 								<div class="form">
 						            <ui-textbox
@@ -47,6 +47,7 @@
 						                label="Nom"
 						                placeholder="Pose el seu nom"
 						                v-model="order.name"
+						                :invalid="order.name.length<4"
 						            ></ui-textbox>
 		
 						            <ui-textbox
@@ -54,6 +55,7 @@
 						                label="Adreça"
 						                placeholder="Pose l'adreça on es va a enviar"
 						                v-model="order.address"
+						                :invalid="order.address.length<4"
 						            ></ui-textbox>
 		
 						            <ui-textbox
@@ -62,6 +64,7 @@
 						                placeholder="Pose el seu codi postal"
 						                type="number"
 						                v-model="order.cp"
+						                :invalid="isNaN(order.cp)||order.cp.toString().length!=5"
 						            ></ui-textbox>
 		
 						            <ui-textbox
@@ -72,6 +75,7 @@
 						                type="number"
 						                placeholder="Pose el seu nº de telèfon"
 						                v-model="order.tel"
+						                :invalid="isNaN(order.tel)||order.tel.toString().length<9"
 						            ></ui-textbox>
 						            
 						            <ui-textbox
@@ -96,7 +100,7 @@
 									    </div>
 
 									</div>
-									<span class="finalPrice">Total {{cartTotalPrice}}€</span>
+									<span class="finalPrice">+Despeses d'enviament 8.90€<br/><br/><strong>Total {{ (parseFloat(cartTotalPrice)+8.9).toFixed(2) }}€</strong></span>
 								</div>
 				            </div>
 				            

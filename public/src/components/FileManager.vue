@@ -19,6 +19,7 @@
 			    :text="$i18n.t('image.uploadAndCut')"
 			    class="uploader"
 				crop="local"
+				:maxWidth="1188"
 				cropRatio="2.26: 1"
 				compress="50"
 			    url="/api/static/uploadimg"
@@ -33,6 +34,7 @@
 			    :text="$i18n.t('image.uploadImages')"
 			    class="uploader"
 			    :max-file-size="5242880"
+			    :maxWidth="1188"
 			    :multiple="true"
 				:multiple-size="4"
 				compress="50"
@@ -121,7 +123,7 @@ export default {
 			actualRelativePath:'',
 			uploadFolder: '',
 			selected:{},
-			imgCrop:false,
+			imgCrop:true,
 			tipo:'img',
 		}
 	},

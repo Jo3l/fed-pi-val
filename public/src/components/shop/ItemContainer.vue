@@ -3,7 +3,8 @@
     	<div class="itemContainer">
     		<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop')+'/'+product.json.content[$i18n.locale].slug }">
 	    		<em v-if="product.destacada==1">{{$i18n.t('cart.highlight')}}</em>
-		    	<div class="img" :style="'background:url('+product.json.images[0].img+') no-repeat center / cover;'"></div>
+		    	<div class="img" v-if="product.json.images[0]" :style="'background:url('+product.json.images[0].img+') no-repeat center / cover;'"></div>
+		    	<div class="img" v-else :style="'background:url(//cdn.shopify.com/s/files/1/1047/6452/products/product_large.png) no-repeat center / cover;'"></div>
 	    	</router-link>
 	    	<div class="productText">
 	    		<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop')+'/'+product.json.content[$i18n.locale].slug }">

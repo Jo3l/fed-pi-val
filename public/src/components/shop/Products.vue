@@ -29,7 +29,7 @@
 		<div class="shop full" v-else="v-else">
 			<h3 v-if="categoria" @click="setCategoria('all')">{{$i18n.t('cart.viewAllProducts')}}</h3>
 			<div class="products">
-				<div v-for="product in products" class="item" >
+				<div v-for="product in products" class="item">
 					
 					<item-container :product="product">
 						<template slot="categoria">

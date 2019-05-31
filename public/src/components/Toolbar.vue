@@ -241,6 +241,9 @@ export default {
 
 #toolbarContainer {
 	width:100%;
+	@media print {    
+    	display: none !important;
+	}
 	.closeCart{
 		position: fixed;
 	    width: 100%;

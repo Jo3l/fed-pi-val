@@ -33,9 +33,9 @@ export default {
 		technicalData:'Datos técnicos',
 		info:'Información',
 		customerData:'Datos del cliente',
-		shippingInfo: 'Rellene este formulario y recibirá por correo electrónico las instrucciones para el pago del contenido del carrito via transferencia. Para cualquier otra pregunta puede dirigirse a nosotros al teléfono 96 374 95 58 o al correo electrónico botiga@fedpival.es',
-		success: 'El pedido se ha realizado. A continuación recibirá un correo electrónico con las opciones de pago.',
-		fail: 'El pedido ha fallado, para pedidos por teléfono por favor llame al teléfono 96 374 95 58 o dirijase a nosotros al correo electrónico botiga@fedpival.es',
+		shippingInfo: 'Rellene este formulario y recibirá por correo electrónico las instrucciones para el pago del contenido del carrito. Para cualquier otra pregunta puede dirigirse a nosotros al teléfono 963749558 o al correo electrónico botiga@fedpival.es',
+		success: 'El pedido se ha realizado. A continuación recibirá un correo electrónico.',
+		fail: 'El pedido ha fallado, para pedidos por teléfono por favor llame al teléfono 963749558 o dirijase a nosotros al correo electrónico botiga@fedpival.es',
 	},
 	common : {
 		oldweb:'Si quieres acceder a la web antigua haz click en',

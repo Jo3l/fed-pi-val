@@ -81,6 +81,9 @@ export default {
     z-index:99;
     display:none;
     color: white;
+    @media print {    
+    	display: none !important;
+	}
     .waveHorizontals{
     	top:-20px;
     	position: fixed;

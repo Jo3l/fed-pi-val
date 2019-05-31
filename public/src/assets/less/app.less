@@ -9,6 +9,17 @@
 @import "keenOverrides";
 
 
+@page {
+    size:A4 portrait;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    margin-bottom: 50px;
+    -webkit-print-color-adjust: exact;
+}
+
+
+
 *, *:before, *:after {
     box-sizing: border-box;
 }
@@ -31,6 +42,9 @@ body {
     &.ui-modal--is-open{
     	//overflow: initial!important;
     }
+    @media print {    
+    	overflow:hidden;
+	}
 }
 
 //br:nth-child(2n + 2) { display: none; };
@@ -173,9 +187,14 @@ hr {
     padding-top: 30px;
     margin-top: -20px;
     padding-bottom: 80px;
-    min-height: ~"calc(100vh - 160px)";
+    //min-height: ~"calc(100vh - 160px)";
+    min-height: ~"calc(100vh - 112px)";
+    overflow: hidden;
 	@media(max-width:@screenTablet) {
 		min-height: ~"calc(100vh - 190px)";
+	}
+	@media print {    
+    	box-shadow: none;
 	}
 }
 
@@ -198,7 +217,7 @@ hr {
     bottom: 0px;
     z-index: 19;
     margin-top: -20px;
-    display: block!important;
+    //display: block!important;
     position: fixed;
     width: 100%;
     svg {
