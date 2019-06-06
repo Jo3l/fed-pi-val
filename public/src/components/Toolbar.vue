@@ -73,6 +73,17 @@
             ></ui-icon-button>
             
             <ui-icon-button
+            	class="cartBasket"
+                color="black"
+                icon="shopping_cart"
+                size="large"
+                type="secondary"
+                @click="visibleCart=!visibleCart"
+            >
+            	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
+            </ui-icon-button>
+            
+            <ui-icon-button
             	has-dropdown
                 color="black"
                 icon="custom"
@@ -91,16 +102,7 @@
 	                ></ui-menu>
             </ui-icon-button>
             
-            <ui-icon-button
-            	class="cartBasket"
-                color="black"
-                icon="shopping_cart"
-                size="large"
-                type="secondary"
-                @click="visibleCart=!visibleCart"
-            >
-            	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
-            </ui-icon-button>
+
                         	
             <!--
             <ui-icon-button

@@ -11,6 +11,7 @@ const SingleNews = function(resolve) {require(['./components/SingleNews.vue'], r
 const Calendar = function(resolve) {require(['./components/Calendar.vue'], resolve)}
 const Products = function(resolve) {require(['./components/shop/Products.vue'], resolve)}
 const Product = function(resolve) {require(['./components/shop/Product.vue'], resolve)}
+const Success = function(resolve) {require(['./components/shop/Success.vue'], resolve)}
 const clubsPublic = function(resolve) {require(['./components/ClubsPublic.vue'], resolve)}
 const clubPublic = function(resolve) {require(['./components/ClubPublic.vue'], resolve)}
 
@@ -170,13 +171,25 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/val/botiga/:slug*',
+	    path: '/val/botiga/comprat/*',
+	    name: 'Comprat',
+	    component: Success, 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/es/tienda/comprado/*',
+	    name: 'Comprado',
+	    component: Success, 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/val/botiga/:slug',
 	    name: 'Producte',
 	    component: Product, 
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/es/tienda/:slug*',
+	    path: '/es/tienda/:slug',
 	    name: 'Producto',
 	    component: Product, 
 	    meta: defaultHead

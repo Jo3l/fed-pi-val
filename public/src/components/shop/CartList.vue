@@ -1,7 +1,6 @@
 <template>
     <transition name="fade">
 					<div class="shopping-cart" >
-						
 					    <div class="shopping-cart-header">
 					      <ui-icon icon="shopping_cart"></ui-icon><span class="badge">{{countCart}}</span>
 					      <div class="shopping-cart-total">
@@ -37,7 +36,7 @@
 				        		<p>{{resultDone}}</p>
 				        		<ui-button @click="eraseCart()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
 				        	</div>
-				        	
+
 							<h3>{{$i18n.t('cart.info')}}:</h3>
 							<p>{{$i18n.t('cart.shippingInfo')}} <a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
 							<div class="clientData">
@@ -104,12 +103,18 @@
 								</div>
 				            </div>
 				            
-				            
 							<div slot="footer" v-if="!resultDone">
 				                <ui-button @click="buy()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
 				                <ui-button @click="closeModal('buyModal')">{{$i18n.t('modal.cancel')}}</ui-button>
 				            </div>
 				        </ui-modal>
+
+    <form ref="tpvform" method="POST">
+          <input ref="version" type="hidden" name="Ds_SignatureVersion" />
+          <input ref="parameters" type="hidden" name="Ds_MerchantParameters" />
+          <input ref="signature" type="hidden" name="Ds_Signature" />
+    </form>
+
 					    
 					 </div>
     </transition>
@@ -186,9 +191,15 @@ export default {
 
 		vm.$http.post('/comprar', vm.order)
 		.then(function (response) {
-				setTimeout(function(){
+				vm.$refs.version.value= response.data.params.Ds_SignatureVersion;
+				vm.$refs.parameters.value= response.data.params.Ds_MerchantParameters;
+				vm.$refs.signature.value= response.data.params.Ds_Signature;
+				vm.$refs.tpvform.action= response.data.url;
+    			vm.$refs.tpvform.submit()
+				
+				/*setTimeout(function(){
 					vm.resultDone = vm.$i18n.t('cart.success');
-				}, 500);
+				}, 500);*/
         })
         .catch(function (error) {
         		vm.resultDone = vm.$i18n.t('cart.fail');

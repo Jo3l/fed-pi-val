@@ -17,7 +17,8 @@
           "app/Generics.php",
           "app/Headers.php",
           "app/config/db.php",
-          "app/config/config.php"
+          "app/config/config.php",
+	  "app/thirdparty/redsys/apiRedsys.php"
         ]
     }
 }

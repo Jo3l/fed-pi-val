@@ -66,6 +66,7 @@ Repassar la forma de cridar les funcions... He de posar \app\Fun:: pq Fun:: no e
 */
 $app->get('/api/authtest', '\app\Auth::authtest');
 
+
 /*
 * @description
 * Test de email existent. Si existeix el email de club i encara no té creada contrasenya, canvia el botó login al vol per un "registrar-se"
@@ -92,6 +93,13 @@ $app->get('/api/test', '\app\Fun::test'); // obtindre un cami
 * En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
 */
 $app->post('/api/comprar', '\app\Fun::comprar');
+
+/*
+* @description
+* Fi de traspas de control a passarel.la de pagament. He de rebre les dades de la transaccio i actuar en consequencia (redirect)
+*/
+$app->get('/api/pagat', '\app\Fun::pagat');
+$app->post('/api/pagat', '\app\Fun::pagat');
 
 /*
 * @description

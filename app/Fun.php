@@ -24,6 +24,8 @@ use \app\Nodes;		// funcions per gestionar la jerarquia de nodes
 use \app\Content;	// funcions per gestionar els blocs de contingut d'un node
 use Mailgun\Mailgun; // funcion d'enviament de correu
 use config;
+use RedsysAPI; // llibreria de Redsys per a la passarel.la de pagaments
+
 
 class Fun
 {
@@ -702,14 +704,140 @@ static public function comprar(Request $request, Response $response, $params) {
 		foreach($elm['fullProduct']['types'] as $tipo) { 
 			if ($tipo['name']==$prod) {
 				$preuprod= $tipo['price']['amount'];
-				$preu+= $preuprod;
+				$preu+= $elm['quantity']*$preuprod;
 			}
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
+	$preu+= config::preuenviament;
+
+	/*
+	https://sis-t.redsys.es:25443/sis/realizarPago
+	Número de comercio (FUC)
+	(Ds_Merchant_MerchantCode)	272095225
+	Número de terminal
+	(Ds_Merchant_Terminal)	001
+	Moneda del terminal
+	(Ds_Merchant_Currency)	000 (978)
+	Clave secreta de encriptación	sq7HjrUOBfKmC576ILgskD5srU870gJ7
+	*/
+	//include 'thirdparty/redsys/apiRedsys.php';
+
+	// Se crea Objeto
+	$miObj = new RedsysAPI;
+
+	// Valores de entrada que no hemos cmbiado para ningun ejemplo
+	$fuc="272095225";
+	$terminal="001";
+	$moneda="978";
+	$trans = "0";
+	$url="https://fedpival.es";
+	$urlOKKO="https://fedpival.es/".(Fun::$idioma).(Fun::$idioma=='es'?'/tienda/comprado':'/botiga/comprat')."/";
+
+	Fun::$db= new db();
+	Fun::$db->sql("select max(codi) as codi from comanda where codi like '".date('y')."%';");
+	$id= Fun::$db->all();
+	$id= $id[0];
+	if (empty($id['codi'])) $id= ["codi"=>date('y').'000000'];
+	$id= $id['codi']+1;
+	Fun::$db->sql("insert into comanda(codi,json,quantitat) values('".$id."','".json_encode($json)."',".$preu.");");
+
+	// Se Rellenan los campos
+	$miObj->setParameter("DS_MERCHANT_AMOUNT",$preu*100);
+	//str_replace('.',',',number_format($preu,2)));
+	$miObj->setParameter("DS_MERCHANT_ORDER",$id);
+	$miObj->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
+	$miObj->setParameter("DS_MERCHANT_CURRENCY",$moneda);
+	$miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
+	$miObj->setParameter("DS_MERCHANT_TERMINAL",$terminal);
+	$miObj->setParameter("DS_MERCHANT_MERCHANTURL",$url);
+	$miObj->setParameter("DS_MERCHANT_URLOK",$urlOKKO);
+	$miObj->setParameter("DS_MERCHANT_URLKO",$urlOKKO);
+
+	//Datos de configuración
+	$version="HMAC_SHA256_V1";
+	$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';//Clave recuperada de CANALES
+	// Se generan los parámetros de la petición
+	$request = "";
+	$params = $miObj->createMerchantParameters();
+	$signature = $miObj->createMerchantSignature($kc);	
+	
+/*<form name="frm" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
+Ds_Merchant_SignatureVersion <input type="text" name="Ds_SignatureVersion" value="<?php echo $version; ?>"/></br>
+Ds_Merchant_MerchantParameters <input type="text" name="Ds_MerchantParameters" value="<?php echo $params; ?>"/></br>
+Ds_Merchant_Signature <input type="text" name="Ds_Signature" value="<?php echo $signature; ?>"/></br>
+*/	
+
+	$fields_string='Ds_SignatureVersion='.$version.'&Ds_MerchantParameters='.$params.'&Ds_Signature='.$signature;
+	
+	return json_encode([ 
+		"url"=> 'https://sis-t.redsys.es:25443/sis/realizarPago', // PROVES
+		//"url"=> 'https://sis.redsys.es/sis/realizarPago', // REAL
+		"params"=> [
+			'Ds_SignatureVersion'=>$version,
+			'Ds_MerchantParameters'=>$params,
+			'Ds_Signature'=>$signature,
+			'id'=>$id
+			],
+		"preu"=>$preu
+		]);
+/*	
+operación Aprobada. Utilice esta tarjeta de prueba:
+Número de tarjeta	4548812049400004
+Caducidad	12/20
+Código CVV2	123
+Código CIP	123456
+
+operación Denegada. Utilice esta tarjeta de prueba:
+Número de tarjeta	1111111111111117
+Caducidad	12/20
+*/
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Fi de traspas de control a passarel.la de pagament. He de rebre les dades de la transaccio i actuar en consequencia (redirect)
+*/
+static public function pagat(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	$version = $json["Ds_SignatureVersion"];
+	$datos = $json["Ds_MerchantParameters"];
+	$signatureRecibida = $json["Ds_Signature"];
+
+	// Se crea Objeto
+	$miObj = new RedsysAPI;
+	
+	$decodec = $miObj->decodeMerchantParameters($datos);
+	$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7'; //Clave recuperada de CANALES
+	$firma = $miObj->createMerchantSignatureNotif($kc,$datos);
+
+	if ($firma === $signatureRecibida){
+	} else {
+		die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
+	}
+
+	$data= json_decode($decodec);
+	/// decodec= {"Ds_Date":"01%2F06%2F2019","Ds_Hour":"19%3A33","Ds_SecurePayment":"1","Ds_Amount":"552","Ds_Currency":"978","Ds_Order":"19060001","Ds_MerchantCode":"272095225","Ds_Terminal":"001","Ds_Response":"0000","Ds_TransactionType":"0","Ds_MerchantData":"","Ds_AuthorisationCode":"047531","Ds_ConsumerLanguage":"1","Ds_Card_Country":"724","Ds_Card_Brand":"1"}
+	/// decodecKO= object(stdClass)#2 (14) {  ["Ds_SecurePayment"]=>  string(1) "0"  ["Ds_Order"]=> string(8) "19060002"  ["Ds_Response"]=>  string(4) "0180"  ["Ds_AuthorisationCode"]=>  string(6) "++++++" }
+	/// url KO = http://vlc.wiki/fedpival-adminer/testredsys/recibe.php?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=eyJEc19EYXRlIjoiMDElMkYwNiUyRjIwMTkiLCJEc19Ib3VyIjoiMTklM0E0MyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiNTUyIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjE5MDYwMDAyIiwiRHNfTWVyY2hhbnRDb2RlIjoiMjcyMDk1MjI1IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6IjAxODAiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSIsIkRzX0NhcmRfQ291bnRyeSI6IjAifQ==&Ds_Signature=IU0fHRTtVStYSHIDMM-_dzRy5gp9TkuJd2K0CbAWm7o=
+	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') die(json_encode(["error"=>'Error en el pago'])); // header reload
+
+	Fun::$db= new db();
+	Fun::$db->sql("update comanda set resultat=".($data->Ds_AuthorisationCode)." where codi='".($data->Ds_Order)."';");
+	Fun::$db->sql("select json,quantitat from comanda where codi='".($data->Ds_Order)."';");
+
+	$row= Fun::$db->all();
+	$json= json_decode($row[0]['json']);
+	$email= $json->email;
+	$json->comanda = $data->Ds_Order;
+	$json->authcode = $data->Ds_AuthorisationCode;
+	$json->preu = $row[0]['quantitat'];
+	echo json_encode($json);
+	
 	$str= sprintf("Nom: %s \nAdreça: %s\n Tel: %s\nEmail comprador: %s\nDespeses d'enviament: 8,90 euros\nTotal: %s euros\n%s\n",
 		$nom, $address, $tel, $email,
-		$preu+8.9,
+		$preu,
 		str_replace(['[',','],"\n[",json_encode($carro))
 	);
 	$str.="\n\nEl termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
@@ -723,31 +851,9 @@ static public function comprar(Request $request, Response $response, $params) {
 		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
 		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
 		Juan, 32 baix B, Valencia, 46015";
-	/*
-	https://sis-t.redsys.es:25443/sis/realizarPago
-	Número de comercio (FUC)
-	(Ds_Merchant_MerchantCode)	272095225
-	Número de terminal
-	(Ds_Merchant_Terminal)	001
-	Moneda del terminal
-	(Ds_Merchant_Currency)	000 (978)
-	Clave secreta de encriptación	sq7HjrUOBfKmC576ILgskD5srU870gJ7
-	*/
-	
-	$ch = curl_init();
-	
-	//set the url, number of POST vars, POST data
-	curl_setopt($ch,CURLOPT_URL, 'https://sis-t.redsys.es:25443/sis/realizarPago');
-	curl_setopt($ch,CURLOPT_POST, true);
-	curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
-	
-	//So that curl_exec returns the contents of the cURL; rather than echoing it
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
-	
-	//execute post
-	$result = curl_exec($ch);
-	
-	return Fun::email('botiga@fedpival.es,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
+	Fun::email('alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
+	Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
+	//return Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
 }
 
 static public function email($to,$sub,$text){
@@ -855,5 +961,6 @@ static public function cache($req,$res = null) {
 	}
 	return false;
 }
+
 
 } // of class Fun

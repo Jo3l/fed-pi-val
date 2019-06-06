@@ -249,7 +249,7 @@ static public function emailpwd(Request $request, Response $response, $params) /
 	$db= new db();
     $sql = "UPDATE ".$tabla." set email='".$email."', pwd='".$hashpwd."', json='{\"pwd\":\"".$pwd."\"}' where id=".$id;
     $res= $db->sql($sql);
-    $text= "S'ha generat una nova contrasenya per al teu compte de la Federació de Pilota en http://fedpival.indiza.com/login :\n\n".$email."\nClau: ".$pwd;
+    $text= "S'ha generat una nova contrasenya per al teu compte de la Federació de Pilota en https://fedpival.es/login :\n\n".$email."\nClau: ".$pwd;
 	Fun::email($email,"Nova contrasenya generada per a fedpival.es",$text);
 	echo '{"result":"ok"}';
 }

@@ -14,7 +14,7 @@ use \app\Node;		// funcions per gestionar la jerarquia de nodes
 
 class Generics {
 
-private static $taules_amb_idioma= array('pagina','jerarquia','producte'); // taules que al fer update o insert, han de fer-ho tmb en idioma
+private static $taules_amb_idioma= array('pagina','jerarquia'); // taules que al fer update o insert, han de fer-ho tmb en idioma. elimine 'producte' perquè hem quedat que es guarda al json
 
 
 //  //  //  //  //  //  //  //
@@ -28,6 +28,11 @@ static public function generic_update(Request $request, Response $response, $par
 	}
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
+	if ($tabla=='producte') {
+		// nom com a camp i slug els trac del nom en valencià
+		$tmp= json_decode( $json['json'] );
+		$json['nom']= $tmp->content->val->name;
+	}
 	if ($tabla=='pagina') { if (empty($json['titol'])) die('{"ERROR": "Sense títol... No s\'ha guardat..."}'); }
 	if ($tabla=='partida') {
 		$delegat= array(
@@ -91,6 +96,12 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$db= new db();
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
+	if ($tabla=='producte') {
+		// nom com a camp i slug els trac del nom en valencià
+		$tmp= json_decode( $json['json'] );
+		$json['nom']= $tmp->content->val->name;
+		$json['slug']= Fun::slugify($json['nom']);
+	}
 	if ($tabla=='pagina') { if (empty($json['titol'])) die('{"ERROR": "Sense títol... No s\'ha guardat..."}'); }
 	$camps= Generics::getFields($tabla);
 	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
@@ -109,7 +120,6 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$keys= implode(',',$filtrekeys);
 	$values= implode(",",$filtrevalues);
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
-
 	try {
 		$db->sql($sql);
 		$sql= "SELECT LAST_INSERT_ID() as id";

@@ -1,5 +1,7 @@
 <?php
  
+die('en exec.php');exit;
+ 
 file_put_contents('adhesiu-verd.json',<<<jsonfile
 {
   "images": [

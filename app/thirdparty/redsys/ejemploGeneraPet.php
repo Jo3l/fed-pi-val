@@ -6,12 +6,12 @@
 	$miObj = new RedsysAPI;
 
 	// Valores de entrada que no hemos cmbiado para ningun ejemplo
-	$fuc="031100027";
+	$fuc="272095225";
 	$terminal="001";
 	$moneda="978";
 	$trans="0";
 	$url="";
-	$urlOKKO="https://www.disfracesenlanube.es/tpvv/API-PRUEBAS/PHP7/ejemploRecepcionaPet.php";
+	$urlOKKO="https://fedpival.es";
 	
 	//estos dos valores los vamos cambiando en cada ejemplo
 	$id='81603484';//el valor que le damos en cada ejemplo 
