@@ -449,6 +449,9 @@ export default {
 		    &.lined{
 		    	border-bottom: 1px solid @fedcolor!important;
 		    }
+		    p > * {
+		    	max-width:100%;
+		    }
 		}
 		&:last-of-type{
 			aside {

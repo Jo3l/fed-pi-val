@@ -95,6 +95,8 @@ export default function(openModal) {
                 result: () => {
                   openModal('uploadModal', {url:''}, '', 'img');
                   window.recoverFocus=document.activeElement.parentNode.nextElementSibling;
+                  VuePellEditor.components.pell.exec('enableObjectResizing')
+                  //document.execCommand( "enableObjectResizing" );
                   //VuePellEditor.components.pell.exec('insertImage', this.selected.url);
                 }
               },
