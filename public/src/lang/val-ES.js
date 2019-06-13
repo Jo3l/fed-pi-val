@@ -33,7 +33,7 @@ export default {
 		technicalData:'Dades tècniques',
 		info:'Informació',
 		customerData:'Dades del client',
-		shippingInfo: 'Ompliga el formulari i rebrà per correu electrònic les instruccions per al pagament del contigut de la cistella. Per a qualsevol pregunta cal posar-se en contacte amb nosaltres al telèfon 963749558 o al correu electrònic botiga@fedpival.es',
+		shippingInfo: 'Ompliga el formulari i rebrà per correu electrònic les instruccions per al pagament del contigut de la cistella. Per a qualsevol pregunta cal posar-se en contacte amb nosaltres al telèfon 963749558 o al correu electrònic botiga@fedpival.es \n\nEl termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior a la recepció del material. Per a qualsevol devolució es imprescindible presentar la factura. Si es canvia l\'adreça d\'enviament una volta s\'ha enviat el producte, s\'hauràn de carregar dos voltes les despesses d\'enviament. \n\nLi recordem que les seues dades consten a un fitxer de titularitat de la FEDERACIÓ DE PILOTA VALENCIANA necesari per a la gestió contable i fiscal de l\'empresa. Pot exercir els drets d\'acces, rectificació, cancelació i oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San Juan, 32 baix B, Valencia, 46015\n\n',
 		success: 'S\'ha realitzat la comanda. A continuació rebrà un correu electrònic amb les opcions de pagament.',
 		fail: 'La comanda ha fallat, per a comandes per telèfon cal cridar al 963749558 o enviar un correu electrònic a botiga@fedpival.es',
 	},

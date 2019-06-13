@@ -260,6 +260,10 @@ export default {
 
 .fileContainer{
 	display:flex;
+	max-height: 600px;
+	@media(max-width:@screenMobile) {
+		max-height: initial;
+	}
 	@media(max-width:@screenDesktop) {
 		flex-direction: column-reverse;
 	    justify-content: center;
@@ -273,13 +277,15 @@ export default {
 		box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 		height: 0%;
     	padding-bottom: 20px;
+    	@media(max-width:@screenMobile) {
+			padding-bottom: 80%;
+		}
 		@media(max-width:@screenDesktop) {
 			width:75%;
 			box-shadow:initial;
 		}
 		img{
 			width:100%;
-
 		}
 		&>hr{
 			display:none;
@@ -307,6 +313,15 @@ export default {
 	    display: flex;
 	    flex-wrap: wrap;
 	    //justify-content: space-between;
+	    height: inherit;
+	    overflow-y: scroll;
+	    margin-right: 25px;
+	    @media(max-width:@screenMobile) {
+			overflow-y: auto;
+			margin-right: 0px;
+			height: 100%;
+		}
+			
 		&.selected {
 			width:75%;
 			@media(max-width:@screenDesktop) {

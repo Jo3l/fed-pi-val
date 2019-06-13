@@ -39,7 +39,7 @@
 				        	</div>
 				        	
 							<h3>{{$i18n.t('cart.info')}}:</h3>
-							<p>{{$i18n.t('cart.shippingInfo')}} <a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
+							<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo')}} <a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
 							<div class="clientData">
 								<div class="form">
 						            <ui-textbox

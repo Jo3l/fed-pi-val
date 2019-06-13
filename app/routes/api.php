@@ -19,6 +19,7 @@ error_reporting(E_ALL);
 
 $app->get('/api/infophp', function(){ phpinfo(); if (!extension_loaded('imagick')) echo 'imagick not installed';exit; });
 
+$app->get('/api/imgoptimes', '\app\Filem::optimize' );
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;

@@ -175,6 +175,44 @@ class Filem
 		return true;
 	}
 	
+	static public function optimize() {
+		function rglob($pattern, $flags = 0) {
+		    $files = glob($pattern, $flags); 
+		    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+		        $files = array_merge($files, rglob($dir.'/'.basename($pattern), $flags));
+		    }
+		    return $files;
+		}
+		function limpianom($rutacomic) {
+		        //fem neteja d'arxius amb caracters xungos
+		    $rutaimg = strtr($rutacomic, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUU
+		UUYaaaaaaceeeeiiiinoooooouuuuyy');
+		        $rutaimg = strtr($rutaimg, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => '
+		oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+		        $rutaimg = preg_replace('/[^a-zA-Z0-9_ \-()\.\/]/s', '', $rutaimg);
+		        $rutaimg = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\/]/'), array('_', '.', ''), $rutaimg);
+		
+		        return $rutaimg;
+		}		
+		echo '<h1>Go fight!</h1>';
+		$file= Filem::prepare( );
+		$folder = '/upload/*.[jJ][pP][gG]';
+		$files= rglob($file.$folder);
+		echo count($files),' arxius trobats...';
+		foreach($files as $kk) {
+			list($ancho, $alto, $tipo, $atributos) = getimagesize($kk);
+			$sz= filesize($kk);
+			if ($ancho>1188) {
+				echo '<li> redimensionant ',$ancho, $kk;
+				if (Filem::resizeImage($kk, $kk.'_.jpg', 1188, "auto", 60)) {
+					unlink($kk);
+					rename($kk.'_.jpg',$kk);
+					echo  ' OK! de ',$sz,' a ',filesize($kk); 
+				}
+			}			
+		}
+	}
+	
 	/**
 	 * Example
 	 * resizeImage('image.jpg', 'resized.jpg', 200, 200);
