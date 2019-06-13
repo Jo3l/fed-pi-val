@@ -17,6 +17,9 @@ error_reporting(E_ALL);
 
 //$app->etag(md5($_SERVER['REQUEST_URI']));
 
+$app->get('/api/infophp', function(){ phpinfo(); if (!extension_loaded('imagick')) echo 'imagick not installed';exit; });
+
+
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
@@ -460,6 +463,8 @@ $app->get('/{path:val/competicions/.+|es/competiciones/.+}', '\app\Headers::head
 * URL: /val/federacio
 */
 $app->get('/{path:val/federacio/.+|es/federacion/.+}', '\app\Headers::headers_federacio');
+
+
 
 /*
 ok /api/pertany/[idjugador] GET per obtindre l’equip al que pertany actualment

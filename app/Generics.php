@@ -83,7 +83,7 @@ public function generic_insert(Request $request, Response $response, $params) {
 	else
 	if (Auth::verifyRol($request,10) && in_array($tabla,array('equip','jugador','partida'))) $autoritzat= true;
 	else if (Auth::verifyRol($request,1)) $autoritzat= true;
-	if (!autoritzat) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}'));
+	if (!$autoritzat) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"NO AUTORITZAT"}'));
 	if ($tabla=='usuari') {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
