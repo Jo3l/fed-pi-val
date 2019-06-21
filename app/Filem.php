@@ -247,7 +247,7 @@ class Filem
 			$name= $file.$fileDestination.'/'.$_FILES['files']['name'];
 		}
 
-		if (file_exists($name)) {
+		if (file_exists($name) && (in_array(pathinfo($name)['extension'],['jpg','JPG','jpeg','JPEG']))) {
 			if (Filem::resizeImage($name, $name.'_.jpg', 1188, "auto", 60)) {
 				unlink($name);
 				rename($name.'_.jpg',$name);

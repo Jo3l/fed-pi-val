@@ -223,16 +223,16 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="element in equip">
+						<tr v-for="(element,index) in equip">
 							<td>{{element.numsoci}}</td>
 							<td>{{element.nom}}</td>
-							<th>
+							<td>
 								<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element.id)"></ui-icon-button>
-							</th>
+							</td>
 						</tr>
 					</tbody>
 				</table>
-				
+
 				<ui-alert type="warning" v-show="equip.length<minimjugadors">
 	                Falt{{ ((minimjugadors-(equip?equip.length:0))==1?'a':'en') }} {{minimjugadors-(equip?equip.length:0)}} jugador{{ ((minimjugadors-(equip?equip.length:0))==1?'':'s') }} per a completar l'inscripció.
 	            </ui-alert>
@@ -256,9 +256,70 @@
                     @click="addPlayer(insertaJugador)"
                 >Afegir jugador</ui-button>
 
-
+				<br>
+				
+				<ui-textbox
+					required
+				    floating-label
+		            autocomplete="off"
+		            error="Camp de text requerit"
+		            label="Delegat"
+					type="text"
+		            v-model="delegat"
+		            :invalid="delegat.length === 0"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+				    floating-label
+		            autocomplete="off"
+		            error="Camp de text requerit"
+		            label="Telèfon delegat"
+					type="text"
+		            v-model="telefon"
+		            :invalid="telefon.length === 0"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+				    floating-label
+		            autocomplete="off"
+		            error="Camp de text requerit"
+		            label="Lloc"
+					type="text"
+		            v-model="lloc"
+		            :invalid="lloc.length === 0"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+				    floating-label
+		            autocomplete="off"
+		            error="Camp de text requerit"
+		            label="Dia de la setmana"
+					type="text"
+		            v-model="diasem"
+		            :invalid="diasem.length === 0"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+				    floating-label
+		            autocomplete="off"
+		            error="Camp de text requerit"
+		            label="Hora"
+					type="text"
+		            v-model="hora"
+		            :invalid="hora.length === 0"
+		        ></ui-textbox>
+		        
 				<div class="buttonGroupRight">
-					<ui-button size="small" :disabled="equip.length<minimjugadors" @click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
+					
+					<ui-button 
+					size="small" 
+					:disabled="equip.length<minimjugadors || hora=='' || diasem=='' || lloc=='' || telefon=='' || delegat==''" 
+					@click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
+					
 					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
 				</div>
 				
@@ -444,6 +505,11 @@ export default {
 		    buscadorJugador:[],
 		    insertaJugador:'',
 		    minimjugadors:0,
+		    hora:'', 
+		    diasem:'', 
+		    lloc:'', 
+		    telefon:'', 
+		    delegat:'',
 		    columnsInscripcions:[
 	            {
 	                label: 'Competició',
@@ -627,16 +693,22 @@ export default {
 	    },
 	    modSubscribe:function(champ){
 			var vm=this;
-			vm.currChamp=champ.competicio;
-			vm.minimjugadors=champ.minimjugadors;
+			vm.currChamp= champ.competicio;
+			vm.minimjugadors= champ.minimjugadors;
 			vm.subscribeName = champ.nom;
 			vm.subscribeId = champ.id;
+			vm.delegat= champ.delegat || '';
+			vm.telefon= champ.telefon || '';
+			vm.lloc= champ.lloc || '';
+			vm.diasem= champ.diasem || '';
+			vm.hora= champ.hora || '';
 			vm.getJugadorsEquip(champ.id);
 			vm.$refs.updateEquip.open()
 	    },
 		subscribe: function(champ){
 			var vm=this;
 			vm.currChamp=champ.id;
+			vm.equip= []
 			vm.minimjugadors=champ.minimjugadors;
 			console.log(champ);
 			vm.$refs.updateEquip.open();
@@ -644,7 +716,7 @@ export default {
 		},
 		doModSubscribe:function(id){
 			var vm=this;
-			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null)})
+			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null), "hora":vm.hora, "diasem":vm.diasem, "lloc":vm.lloc, "telefon":vm.telefon, "delegat":vm.delegat } )
 			.then( function(response) {
 				
 				if(response.data.exception){

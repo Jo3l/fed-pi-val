@@ -136,8 +136,8 @@ static public function equipsdeclub(Request $request, Response $response, $param
     $db = new db();
 	$club= $params['club'];
 	$options= array();
-	$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
-	$sql= "SELECT equip.id,nom,competicio,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
+	//$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
+	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
 	$db->sql($sql);
