@@ -462,7 +462,10 @@ export default {
 	    transition: max-height 1.5s ease;
 	    cursor:zoom-in;
         @media print {    
-	    	max-height: 200px;
+	    	//max-height: 200px;
+	    	//background-size:auto 100%;
+	    	//background-position:center;
+	    	//background-repeat:no-repeat;
 		}
 	    & > div > div {
 	    	background-position: 50% 33%!important;
