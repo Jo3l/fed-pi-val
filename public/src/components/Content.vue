@@ -795,13 +795,23 @@ export default {
 
 			var vm=this;
 
-			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
-	        .then(function (response) {
-	            vm.nodeContent = response.data;
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
+
+			var r = confirm("Confirma acció d'esborrar");
+			if (r == true) {
+				
+	  			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
+		        .then(function (response) {
+		            vm.nodeContent = response.data;
+		        })
+		        .catch(function (error) {
+		            console.log(error);
+		        });
+		        
+			} else {
+			  
+			}
+
+
 	        
 	        
 		},
