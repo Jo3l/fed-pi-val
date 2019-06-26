@@ -7,7 +7,7 @@
 				</svg>
 			</div>
 			<swiper :options="swiperOption" class="teaserPicture">
-				<swiper-slide v-for="(noticia, index) in newsTeasers" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true&&index<=5">
+				<swiper-slide v-for="(noticia, index) in newsTeasers">
 					<aside>
 							<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }"><h2>{{ noticia.titol }}</h2></router-link>
 					</aside>

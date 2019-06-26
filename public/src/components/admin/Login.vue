@@ -24,10 +24,14 @@
 				            autocomplete="off"
 				            error="Camp obligatori"
 				            label="Password"
-							type="password"
+							:type="veurepass?'text':'password'"
 				            v-model="user.clau"
 				            @keyup.enter.native="login(user)"
 				        ></ui-textbox>
+				        
+				        <label for="veure">
+				        	<input type="checkbox" id="veure" v-model="veurepass" /> Veure password <ui-icon icon="visibility"></ui-icon>
+				        </label>
 				        
 				        
 				    	<ui-button v-if="!existingClubEmail" color="saveForm" icon="save" size="small" type="secondary" @click="login(user)">Accedir</ui-button>
@@ -63,7 +67,8 @@ export default {
 				email:'',
 				clau:'',
 			},
-			existingClubEmail:false
+			existingClubEmail:false,
+			veurepass: false
 		}
 	},
 	methods: {

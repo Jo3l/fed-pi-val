@@ -84,9 +84,18 @@
 				<article v-for="event in todayEvent">
 					
 					<aside v-if="$store.getters.isAuthenticatedWithRole(0)" class="nodeContentElement lined">
-					<h4>{{parseTime(event.publicacio)}}</h4>
-					<i class="remove" @click="removeContent(event, todayEvent)"></i>
-
+						
+						<h4>{{parseTime(event.publicacio)}}</h4>
+						<i class="remove" @click="removeContent(event, todayEvent)"></i>
+						
+						<h4>Codi de color:</h4>
+						
+						<ui-icon-button color="primary" :icon="colorSelected=='primary'?'done':''" size="small" @click="colorSelected='primary'"></ui-icon-button>
+						<ui-icon-button color="accent" :icon="colorSelected=='accent'?'done':''"size="small" @click="colorSelected='accent'"></ui-icon-button>
+						<ui-icon-button color="orange" :icon="colorSelected=='orange'?'done':''"size="small" @click="colorSelected='orange'"></ui-icon-button>
+						<ui-icon-button color="red" :icon="colorSelected=='red'?'done':''"size="small" @click="colorSelected='red'"></ui-icon-button>
+						<ui-icon-button color="green" :icon="colorSelected=='green'?'done':''"size="small" @click="colorSelected='green'"></ui-icon-button>
+						
 							<ui-textbox
 							    floating-label
 				                autocomplete="off"
@@ -105,7 +114,7 @@
 						    />
 							
 							<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(event)">{{$i18n.t('common.save')}}</ui-button>
-
+							<ui-button color="blueButtonToRight" icon="delete" size="small" type="secondary" @click="removeContent(event, todayEvent)">{{$i18n.t('common.delete')}}</ui-button>
 					</aside>
 					
 					<aside v-if="!$store.getters.isAuthenticatedWithRole(1) && event.id">
@@ -150,6 +159,7 @@ export default {
 	},
 	data: function(){ 
 		return {
+			colorSelected:'',
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
 			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
 			increment: 0,
@@ -196,7 +206,7 @@ export default {
 		},
 		removeContent: function(event, todayEvent) {
 			var vm=this;
-			console.log(todayEvent);
+			console.log(event,todayEvent);
 			vm.$http.delete('/acte/'+event.id)
 	        .then(function (response) {
 	        	
@@ -322,6 +332,9 @@ export default {
 							if( Object.keys(eventsInDay).length > 0 ) {
 								clase = 'event';
 							}
+							
+							//afegir clase color a mes de clase event
+							
 							if( Date.today().getDate()==dateOfMonth && Date.today().getMonth() == month && (Date.today().getYear()+1900) == year) {
 								clase = 'today';
 							}
@@ -570,13 +583,27 @@ export default {
 			height: 	32px;
 			width: 32px;
 		  	&.today {
-			    background-color: yellow;
-			    border: 2px dotted yellow;
+			    border: 2px dotted rgba(0,0,0,0.5);
 			    color:black;
 			}
 		  	&.event {
 				background-color: #ffeef0;
-    			border: 1px dashed #d46b78;
+    			border: 1px solid white;
+    			&.primary {
+    				background-color: #2196f3;
+    			}
+    			&.accent {
+    				background-color: #a100bc;
+    			}
+    			&.orange {
+    				background-color: #c27400;
+    			}
+    			&.red {
+    				background-color: #e11b0c;
+    			}
+    			&.green {
+    				background-color: #39843c;
+    			}
 			}
 		}
 		
