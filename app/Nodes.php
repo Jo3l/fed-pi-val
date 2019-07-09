@@ -63,7 +63,7 @@ static public function delete_node(Request $request, Response $response, $params
     $db->sql(" DELETE FROM jerarquia WHERE id=".$id);
     $db->sql(" COMMIT;");
     */
-    $db->sql(" UPDATE jerarquia SET baixa='".date('Ymd')."' where id=".$id);
+    $db->sql(" UPDATE jerarquia SET baixa='".date('YmdHis')."' where id=".$id);
     return Fun::render(Nodes::jerarquia($params['tipus']), true);
 }
 
@@ -101,7 +101,7 @@ static public function delete_element(Request $request, Response $response, $par
     $db->sql(" COMMIT;");
     */
     $db->sql("UPDATE partida SET baixa='".date('Ymd')."' where registreid=".$id);
-    $db->sql("UPDATE pagina SET baixa='".date('Ymd')."' where id=".$id);
+    $db->sql("UPDATE pagina SET baixa='".date('YmdHis')."' where id=".$id);
     return Fun::render(Nodes::contingutnode($pare), true);
 }
 
@@ -146,7 +146,7 @@ static public function list_nodes(Request $request, Response $response, $params)
 */
 static public function jerarquia($fill='competicions') {
     $db = new db();
-	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.jerarquia=_jerarquia.id) as elements, inici,fi,minimjugadors,puntspartida,puntstanteig from _jerarquia order by id asc;");
+	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.baixa is null and pagina.jerarquia=_jerarquia.id) as elements, inici,fi,baixa,minimjugadors,puntspartida,puntstanteig from _jerarquia order by id asc;");
 	$result= $db->getResult();
 	$resultids= array();
 	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
@@ -165,7 +165,7 @@ static public function jerarquia($fill='competicions') {
 	    unset($last['pare']);
 	    array_push($resultids[$pareid]['children'], $last);
 	    //echo '<hr/><pre>',count($resultids),'-',$last[id],'-resultids:',implode(',',array_keys($resultids)),'</pre>';
-	    if ($antilock--<0) die('antilock');
+	    if ($antilock--<0) die('{"error":"antilock Nodes:168"}');
 	}
 	$estructura= array_pop($resultids);
     unset($estructura['nom_es']);
@@ -177,6 +177,7 @@ static public function jerarquia($fill='competicions') {
     }
     function walk(&$node,$slug) {
         if (empty($node)) return;
+    	if ($node['baixa']) return;
         $node['fullSlug']= $slug.$node['slug'];
         if (!empty($node['children'])) {
             for ($a=0;$a<count($node['children']);$a++) {
@@ -254,7 +255,7 @@ static private function editaelement($id) {
 static public function contingutnode($id) {
     $db= new db();
     Fun::$order= " order by ordre";
-	$sql= "SELECT * FROM _element_".Fun::$idioma." WHERE jerarquia=".$id;
+	$sql= "SELECT * FROM _element_".Fun::$idioma." WHERE baixa is null and jerarquia=".$id;
 	//echo $sql;exit;
 	if (!empty(Fun::$wheres)) $sql.= " and ".implode(' and ',Fun::$wheres);
 	$sql.= Fun::$order;
