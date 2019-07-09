@@ -282,6 +282,14 @@ $app->post('/api/inscripcions/genera', '\app\Fun::generaPartides'); // buscar
 */
 $app->post('/api/participa/{partida:[0-9]+}', '\app\Fun::participa'); 
 
+
+/*
+* @description
+* Demana donar d'alta un nou jugador
+* URL: /api/jugador/registre POST {nom: null, cognoms: null, dni: null, naixement: null, dir: null, cp: null, poblacio: null, tel: null, email: null}
+*/
+$app->post('/api/jugador/registre', '\app\Fun::demanajugador'); 
+
 /*
 * @description
 * Obté els jugadors d'una partida
