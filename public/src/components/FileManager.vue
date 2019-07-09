@@ -48,10 +48,16 @@
 			  
 			  <ui-switch v-if="tipo=='img'" v-model="imgCrop" color="fedpival" switch-position="left">{{$i18n.t('image.cutImages')}}</ui-switch>
 			</div>
-			<hr>
-			<span class="relativePath">{{actualRelativePath}}</span>
+			
+			<div style="text-align:center;" v-if="!enableFileManager">
+				<br>
+				<ui-button color="fedpival" raised icon="delete" size="small" @click="enableFileManager=true">{{$i18n.t('common.enableFileManager')}}</ui-button></em>
+			</div>
+			
+			<hr v-if="enableFileManager">
+			<span class="relativePath" v-if="enableFileManager">{{actualRelativePath}}</span>
 
-			<div class="fileContainer">
+			<div class="fileContainer" v-if="enableFileManager">
 				<div v-bind:class="['fileMain', { selected: selected.selected }]">
 					
 					<div class="element" v-if="showBack">
@@ -125,6 +131,7 @@ export default {
 			selected:{},
 			imgCrop:true,
 			tipo:'img',
+			enableFileManager: false,
 		}
 	},
 	methods: {

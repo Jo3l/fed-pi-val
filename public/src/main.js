@@ -39,5 +39,23 @@ new Vue({
 	store,
 	components: { Toolbar, Cookie, Alert },
 	data: {
-	}
+	},
+	methods:{
+	    userinteraction: function(uiElement){
+	      if (typeof dataLayer !== 'undefined') {
+	        dataLayer.push( Object.assign({ event: 'userinteraction' }, uiElement) );
+	      }
+	    },
+	    pageview: function(route){
+	      if (typeof dataLayer !== 'undefined') {
+	        dataLayer.push( Object.assign({ event: 'pageview' }, route) );
+	      }
+	    },
+	  },
+    mounted: function() {
+	    var vm=this;
+		    vm.$eventHub.$on('userinteraction', this.userinteraction);
+		    vm.$eventHub.$on('pageview', this.pageview);
+	  }
+
 })

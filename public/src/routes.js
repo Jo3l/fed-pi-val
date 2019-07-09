@@ -13,7 +13,7 @@ const Products = function(resolve) {require(['./components/shop/Products.vue'], 
 const Product = function(resolve) {require(['./components/shop/Product.vue'], resolve)}
 const clubsPublic = function(resolve) {require(['./components/ClubsPublic.vue'], resolve)}
 const clubPublic = function(resolve) {require(['./components/ClubPublic.vue'], resolve)}
-
+const instalacioPublic = function(resolve) {require(['./components/InstalacioPublic.vue'], resolve)}
 //cms
 const SubRoutes = function(resolve) {require(['./components/SubRoutes.vue'], resolve)}
 
@@ -218,6 +218,26 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
+	    path: '/val/federacio/instalacions-esportives',
+	    component: instalacioPublic,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/es/federacion/instalaciones-deportivas',
+	    component: instalacioPublic,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/val/federacio/instalacions-esportives/:instalacioId',
+	    component: instalacioPublic,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/es/federacion/instalaciones-deportivas/:instalacioId',
+	    component: instalacioPublic,
+	    meta: defaultHead
+	  },
+	  {
 	    path: '/val/federacio',
 	    props: {propDisable:'competicions'},
 	    name: 'Federació',
@@ -367,20 +387,12 @@ const router = new Router({
 });
 
 
-/*
-router.beforeEach( function(to, from, next) {
-	  console.log('router', to.meta)
-	  next()
+router.afterEach(function (to, from) {
+
+  Vue.prototype.$eventHub.$emit('pageview', {from:from.path, path:to.path});
+
 })
-*/
 
-ga('set', 'page', router.currentRoute.path);
-ga('send', 'pageview');
-
-router.afterEach(function(to, from) {
-  ga('set', 'page', to.path);
-  ga('send', 'pageview');
-});
 
 
 export default router;

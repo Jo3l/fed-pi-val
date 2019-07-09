@@ -18,6 +18,11 @@
     -webkit-print-color-adjust: exact;
 }
 
+@media print {    
+	button, hr {
+		visibility:hidden;
+	}
+}
 
 
 *, *:before, *:after {
@@ -122,6 +127,12 @@ h1 {
 
 
 //generic clases
+
+.no-print {
+	@media print {    
+    	visibility: hidden;
+	}
+}
 
 .ui-button--color-saveForm {
 	margin: 20px auto;

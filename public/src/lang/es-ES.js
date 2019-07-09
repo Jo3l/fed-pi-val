@@ -38,6 +38,8 @@ export default {
 		fail: 'El pedido ha fallado, para pedidos por teléfono por favor llame al teléfono 963749558 o dirijase a nosotros al correo electrónico botiga@fedpival.es',
 	},
 	common : {
+		sportPlace:'Instal·lacions Esportives',
+		enableFileManager:'Habilitar administrador de archivos',
 		oldweb:'Si quieres acceder a la web antigua haz click en',
 		login:'Acceder',
 		thisLocation:'Usar localización actual',
