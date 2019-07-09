@@ -139,7 +139,8 @@ static public function equipsdeclub(Request $request, Response $response, $param
 	//$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
 	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
-	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
+	if (!isset($params['o'])) $params['o']='id-';
+	$sql.= " order by ".str_replace('-',' desc',$params['o']);
 	$db->sql($sql);
 	$data= $db->all();
 	foreach($data as $id=>$elm) {
@@ -609,6 +610,17 @@ static public function producte_query(Request $request, Response $response, $par
 	Fun::render($data);
 }
 
+/*
+* @description
+* Demana donar d'alta un nou jugador
+* URL: /api/jugador/registre POST {nom: null, cognoms: null, dni: null, naixement: null, dir: null, cp: null, poblacio: null, tel: null, email: null}
+*/
+static public function demanajugador(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	$base= base64_encode($json);
+	Fun::email('alsanan@gmail.com','Nou jugador proposat','https://fedpival.es/admin/jugador?'.$base);
+	return Fun::render('{"result":"ok"}');
+}
 
 
 //  //  //  //  //  //  //  //
