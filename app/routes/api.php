@@ -326,7 +326,7 @@ ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_id');
 
 /*
 * @description
@@ -334,7 +334,7 @@ $app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jer
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_delete');
+$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_delete');
 
 /*
 * @description
@@ -342,7 +342,7 @@ $app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarqu
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_update');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_update');
 
 /*
 * @description
@@ -351,7 +351,7 @@ $app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Generics::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}[/]', '\app\Generics::generic_insert');
 
 /*
 * @description
