@@ -37,8 +37,8 @@
 								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
-								<td>{{element.resultatlocal}}</td>
-								<td>{{element.resultatvisitant}}</td>
+								<td><span class="no-print">{{element.resultatlocal}}</span></td>
+								<td><span class="no-print">{{element.resultatvisitant}}</span></td>
 								<td>{{element.visitant.nom}}</td>
 							</tr>
 						</tbody>
@@ -126,8 +126,8 @@
 									
 									<td>{{element.local.nom}}</td>
 									<td>{{element.resultatlocal}}</td>
-									<td>{{element.resultatvisitant}}</td>
-									<td>{{element.visitant.nom}}</td>
+									<td><span class="no-print">{{element.resultatvisitant}}</span></td>
+									<td><span class="no-print">{{element.visitant.nom}}</span></td>
 									<td>{{element.lloc.nom}}</td>
 									<th>
 										<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>
@@ -1054,17 +1054,20 @@ export default {
 	}
 
 	.nodeContentElement{
-		padding: 10px;
-	    margin-left: -10px;
-	    position: relative;
-	    align-items: center;
-	    box-sizing: border-box;
-	    margin: 10px 0;
-	    border: 1px solid @fedcolor;
-	    &.autenticated {
-		margin:20px 0;
-		border:none;
-		padding:0;
+			padding: 10px;
+		    margin-left: -10px;
+		    position: relative;
+		    align-items: center;
+		    box-sizing: border-box;
+		    margin: 10px 0;
+		    border: 1px solid @fedcolor;
+			@media print {    
+		    	border:0;
+			}
+		    &.autenticated {
+			margin:20px 0;
+			border:none;
+			padding:0;
 		}
 		&.floating {
 		    border: 2px dashed #87212e;
@@ -1159,6 +1162,9 @@ export default {
 	    border: 1px solid #87212e;
 	    position:absolute;
 	    top: -1px;
+    	@media print {    
+	    	visibility:hidden;
+		}
 	    &:hover{
 	    	border: 2px solid #87212e;
 	    }
@@ -1170,6 +1176,9 @@ export default {
 	    margin-right: 10px;
 	    margin-left: -40px;
 	    position: absolute;
+    	@media print {    
+	    	visibility:hidden;
+		}
 	    top: -1px;
 		&:hover {
 		    &:before, &:after {	width: 2px; }
