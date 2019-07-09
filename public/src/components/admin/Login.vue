@@ -19,7 +19,7 @@
 				        ></ui-textbox>
 
 						<ui-textbox
-							v-if="!existingClubEmail"
+							v-if="!existingClubEmail && !desactivapass"
 						    floating-label
 				            autocomplete="off"
 				            error="Camp obligatori"
@@ -28,8 +28,8 @@
 				            v-model="user.clau"
 				            @keyup.enter.native="login(user)"
 				        ></ui-textbox>
-				        
-				        <label for="veure">
+
+				        <label for="veure" v-if="!desactivapass">
 				        	<input type="checkbox" id="veure" v-model="veurepass" /> Veure password <ui-icon icon="visibility"></ui-icon>
 				        </label>
 				        
@@ -68,7 +68,8 @@ export default {
 				clau:'',
 			},
 			existingClubEmail:false,
-			veurepass: false
+			veurepass: false,
+			desactivapass: false
 		}
 	},
 	methods: {
@@ -123,10 +124,31 @@ export default {
 	    checkExistingClubEmail: function(user) { 
 	    	//user.email
 	    	return;
-	    }
+	    },
+		decipher: function(salt) {
+		    let textToChars = text => text.split('').map(c => c.charCodeAt(0))
+		    let saltChars = textToChars(salt)
+		    let applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code)
+		    return encoded => encoded.match(/.{1,2}/g)
+		        .map(hex => parseInt(hex, 16))
+		        .map(applySaltToChar)
+		        .map(charCode => String.fromCharCode(charCode))
+		        .join('')
+		}	    
 	},
 	mounted: function () {
 		var vm=this;
+		if (location.hash) {
+			var data= location.hash.substr(1);
+			var dt= (new Date()).toISOString().replace(/[-\.TZ:]/g,'').substr(0,11);
+			let myDecipher = vm.decipher(dt);
+			data= myDecipher(data).split('|');
+			if (data.length==2) {
+				vm.user.email= data[0];
+				vm.user.clau= data[1];
+				vm.desactivapass= true;
+			} else alert('Accés ràpid caducat. Tanca aquesta finestra i prova de nou des de l\'anterior...')
+		}
 
 	},
 	created: function() {
