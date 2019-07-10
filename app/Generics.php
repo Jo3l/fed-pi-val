@@ -157,13 +157,12 @@ static public function generic_query(Request $request, Response $response, $para
 	}
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= array( 'limit'=>Fun::$itemsPerPage );
+	if (in_array($tabla,['trinquet','producte'])) $options['limit']=PHP_INT_MAX; // canvie el limit per defecte si és trinquet (modificable per paràmetres a continuació)
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	if (in_array('p3',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
 	if (in_array('p4',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
-	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
-	if ($tabla=='producte') $options['limit']=PHP_INT_MAX;
     $db = new db();
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);

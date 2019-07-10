@@ -1,113 +1,54 @@
 <template>
     <transition name="fade">
 	    <div>
-	    	
+
 			<div style="position: absolute;right: 20px;margin-top: -15px;"><ui-fab color="normal" icon="keyboard_backspace" @click="goBack()" size="small"></ui-fab></div>
-			
-			<h1>{{$i18n.t('common.sportPlace')}}</h1>
 
-			<div class="vuetableContainer">
+			<h1 style="margin-bottom:0;">{{trinquet.nom}}</h1>
+			
+			<div class="contentFlex formulari">
 				
-				<div class="searchFilter">
-				 <ui-textbox
-				    floating-label
-	                autocomplete="off"
-	                :label="$t('common.search')"
-					type="text"
-	                v-model="filterText"
-                	@keydown-enter="getData('trinquet')"
-	            ></ui-textbox>
-	            <ui-icon-button color="default" icon="search" type="secondary" @click="getData('trinquet')"></ui-icon-button>
-	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText=''"></ui-icon-button>
+				<div class="left50">
+					<p><strong>{{$i18n.t('common.place')}}:</strong> {{trinquet.pob}}</p>
+					<p><strong>{{$i18n.t('common.address')}}:</strong> {{trinquet.dir}}</p>
+					<p><strong>{{$i18n.t('common.phone')}}:</strong> {{trinquet.tel}}</p>
 				</div>
-
-				<tablerone :tableList="list" :tableColumns="columns">
-					<th slot="headActions"></th>
-					<template slot="actions" scope="props">
-						<td class="actions">
-							<router-link :to="{ path: current+'/'+props.row.id }"><ui-button color="default" icon="visibility" icon-position="left" size="small" type="secondary">Info</ui-button></router-link>
-						</td>
-					</template>
-				</tablerone>
-				<paginate
-				    :page-count="Math.ceil(list.total / list.per_page)"
-					:clickHandler="clickCallback"
-					:page-range="2"
-    				:margin-pages="0"
-				    :prev-text="$i18n.t('common.prev')"
-				    :next-text="$i18n.t('common.next')"
-				    :container-class="'pagination'"
-				    :page-class="'page-item'">
-				</paginate>
-  
-  
+				
+				<iframe class="map" :src="'/map.html?'+ trinquet.gps"></iframe>
+				
 			</div>
-			
+
 	    </div>
     </transition>
 </template>
 
 <script>
 
-import Table from './custom/Table.vue';
-import Paginate from 'vuejs-paginate'
-
 export default {
-  	components: {'tablerone':Table, 'paginate': Paginate},
+  	components: { },
 	data () {
 		return {
-		    list:{},
-		    current:window.location.pathname.replace(/\/$/, ""),
-		    columns:[
-	            {
-	                label: 'Nom',
-	                field: 'nom',
-	                html: false,    
-	            },
-	            {
-	                label: 'Població',
-	                field: 'poblacio',
-	                html: false,    
-	            }
-	            
-	        ],
-		    filterText:'',
+			trinquet:{
+				cp: "",
+				dir: "",
+				gps: "",
+				id: "",
+				nom: "",
+				pob: "",
+				tel: ""
+			}
 		}
 	},
 	methods: {
 		goBack:function(){
     		window.history.back();
 		},
-	  	edit:function(row) {
-	    	this.$router.push({ path: `/admin/trinquet/`+row.id });
-	    },
-	  	remove:function(row) {
-			var vm=this;
-
-			vm.$http.post('/trinquet/', {'delete_id': row.id})
-	        .then(function (response) {
-	        	
-	            vm.getData('trinquet');
-	
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
-	    },
-	    clickCallback: function(pageNum) {
-	    	console.log(pageNum);
-	    	var vm=this;
-	    	vm.getData('trinquet', pageNum);
-	    },
-		getData: function(listName, page){
+		getData: function(){
 	        var vm = this;
-	        
-	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
-	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
 	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
-	        vm.$http.get(listName+searchFilter+searchPage, { cache: auth })
+	        vm.$http.get('/trinquet/'+vm.$route.params.instalacioId, { cache: auth })
 	        .then(function (response) {
-	            vm.list = response.data;
+	            vm.trinquet = response.data[0];
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -116,7 +57,7 @@ export default {
 	},
 	mounted: function () {
 		var vm=this;
-		vm.getData('trinquet');
+		vm.getData();
 	},
 	created: function() {
 
@@ -126,6 +67,10 @@ export default {
 
 <style lang="less">
 
-
+.map{
+	border:0;
+	width:100%;
+	height:400px;
+}
 
 </style>

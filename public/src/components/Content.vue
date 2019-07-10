@@ -116,7 +116,7 @@
 									<th>Res. Local</th>
 									<th>Res. Visitant</th>
 									<th>Visitant</th>
-									<th>Lloc</th>
+									<!--<th>Lloc</th>-->
 									<th></th>
 								</tr>
 							</thead>
@@ -125,10 +125,10 @@
 									<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 									
 									<td>{{element.local.nom}}</td>
-									<td>{{element.resultatlocal}}</td>
+									<td><span class="no-print">{{element.resultatlocal}}</span></td>
 									<td><span class="no-print">{{element.resultatvisitant}}</span></td>
-									<td><span class="no-print">{{element.visitant.nom}}</span></td>
-									<td>{{element.lloc.nom}}</td>
+									<td>{{element.visitant.nom}}</td>
+									<!--<td>{{element.lloc.nom}}</td>-->
 									<th>
 										<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>
 										<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>

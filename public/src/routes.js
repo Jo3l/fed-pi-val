@@ -13,6 +13,7 @@ const Products = function(resolve) {require(['./components/shop/Products.vue'], 
 const Product = function(resolve) {require(['./components/shop/Product.vue'], resolve)}
 const clubsPublic = function(resolve) {require(['./components/ClubsPublic.vue'], resolve)}
 const clubPublic = function(resolve) {require(['./components/ClubPublic.vue'], resolve)}
+const instalacionsPublic = function(resolve) {require(['./components/InstalacionsPublic.vue'], resolve)}
 const instalacioPublic = function(resolve) {require(['./components/InstalacioPublic.vue'], resolve)}
 //cms
 const SubRoutes = function(resolve) {require(['./components/SubRoutes.vue'], resolve)}
@@ -218,17 +219,17 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/val/federacio/instalacions-esportives',
-	    component: instalacioPublic,
+	    path: '/val/federacio/installacions-esportives',
+	    component: instalacionsPublic,
 	    meta: defaultHead
 	  },
 	  {
 	    path: '/es/federacion/instalaciones-deportivas',
-	    component: instalacioPublic,
+	    component: instalacionsPublic,
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/val/federacio/instalacions-esportives/:instalacioId',
+	    path: '/val/federacio/installacions-esportives/:instalacioId',
 	    component: instalacioPublic,
 	    meta: defaultHead
 	  },
