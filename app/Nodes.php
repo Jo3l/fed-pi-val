@@ -9,7 +9,7 @@ use db;
 use \app\Auth;		// funcions d'autenticació i gestió de sessió
 use \app\Fun;		// funcions de la api
 
-
+                          
 class Nodes {
 	
 //  //  //  //  //  //  //  //
@@ -272,7 +272,7 @@ static public function contingutnode($id) {
 		}
 	if (count($ids_elements_partides)>0) {
 		$sql= "SELECT *, (select id from FROM partida WHERE registreid in (".implode(',',$ids_elements_partides).");";
-		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and registreid in (".implode(',',$ids_elements_partides).");";
+		$sql= "SELECT p.*, lo.nomlocal, vi.nomvisitant, IFNULL((select nom from trinquet where trinquet.id=p.lloc), '') as nomlloc from  (select id as idlocal, nom as nomlocal from equip) lo inner join (select id as idvisitant, nom as nomvisitant from equip) vi inner join partida p on p.local=lo.idlocal and p.visitant=vi.idvisitant and registreid in (".implode(',',$ids_elements_partides).") and baixa is null;";
 		//die($sql);
 		$db->sql( $sql );
 		$result2= $db->getResult();

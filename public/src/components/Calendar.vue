@@ -90,11 +90,21 @@
 						
 						<h4>Codi de color:</h4>
 						
+						{{event.json}}
 						<ui-icon-button color="primary" :icon="colorSelected=='primary'?'done':''" size="small" @click="colorSelected='primary'"></ui-icon-button>
-						<ui-icon-button color="accent" :icon="colorSelected=='accent'?'done':''"size="small" @click="colorSelected='accent'"></ui-icon-button>
+						<ui-icon-button color="accent"  :icon="colorSelected=='accent'?'done':''"size="small" @click="colorSelected='accent'"></ui-icon-button>
 						<ui-icon-button color="orange" :icon="colorSelected=='orange'?'done':''"size="small" @click="colorSelected='orange'"></ui-icon-button>
 						<ui-icon-button color="red" :icon="colorSelected=='red'?'done':''"size="small" @click="colorSelected='red'"></ui-icon-button>
 						<ui-icon-button color="green" :icon="colorSelected=='green'?'done':''"size="small" @click="colorSelected='green'"></ui-icon-button>
+            <ui-radio-group
+                error="has de triar un color"
+                help="tria un color"
+                name="group4"
+                :options="['primary','accent','red','orange','green']"
+                :invalid="event !== 'rod'"
+                v-model="event.color"
+            >Color</ui-radio-group>
+
 						
 							<ui-textbox
 							    floating-label
@@ -201,7 +211,7 @@ export default {
 				publicacio:Date.parse(this.selected.year+'/'+(this.selected.month+1)+'/'+this.selected.day).toString('yyyyMMddHHmmss'),
 				titol:"",
 				contingut:"",
-				
+				color:""
 			});
 		},
 		removeContent: function(event, todayEvent) {
@@ -228,6 +238,13 @@ export default {
 			
 			var vm = this;
 			var bloc = block.id ? block.id : '';
+			block.json= block.json ? block.json : {};
+			
+			try {
+				var json= JSON.parse(block.json);
+				json.color= vm.colorSelected;
+				block.json= JSON.stringify(json);
+			} catch(e) { console.log(e,block.json); }
 
 	        vm.$http.post('/acte/'+bloc, block)
 	        .then(function (response) {

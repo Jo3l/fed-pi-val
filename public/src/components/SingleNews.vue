@@ -30,6 +30,14 @@
 	            >Data Publicació:</ui-datepicker>
 				            
 				<br>
+				
+				<strong>Idioma actual: {{$i18n.t('common.label')}}</strong><br>
+			    <ui-button v-for="(lang, i) in localesArray" :key="`Lang${i}`" @click="setLocale(lang.icon)">{{lang.label}}</ui-button> 
+
+			    
+				<br><br>
+				
+				
 				<label>Titular:</label>
 				<ui-textbox
 				    floating-label
@@ -50,7 +58,7 @@
 			    
 			    
 			    <div class="filterButtons">
-			    	<p><strong>Sel·lecciona les paraules clau.</strong></p>
+			    	<p><strong>{{$i18n.t('common.keywords')}}</strong></p>
 		    		<ui-checkbox-group :options="tags" v-model="selectedTags"></ui-checkbox-group>
 				</div> 
 				
@@ -138,6 +146,7 @@ export default {
   	components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram, 'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager,'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
+			localesArray:[],
 			viewTags:false,
 		    tags:[],
 		    selectedTags:[],
@@ -179,6 +188,9 @@ export default {
 		}    
 	},
 	methods: {
+		setLocale: function(locale){
+			this.$i18n.locale = locale;	
+		},
 		getTags: function() {
 	
 	        var vm = this;
@@ -248,7 +260,8 @@ export default {
 				}	
 			).then(function (response) {
 				vm.news = response.data[0];
-	             window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('common.newss');
+	            alert('Noticia guardada');
+	            //window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('common.newss');
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -295,6 +308,22 @@ export default {
 		            else clearInterval(scrollInterval); 
 		        }, 15 );
 		}
+	},
+	beforeMount: function() {
+		//esta funcio es per a automatitzar el selector de llenguatges a partir del objecte $i18n
+		var vm = this;
+		var messages = vm.$i18n.messages;
+		
+		for (var key in messages) {
+		   if (messages.hasOwnProperty(key)) {
+		   		vm.localesArray.push({
+					label: messages[key].common.label,
+					url: messages[key].common.url,
+					icon: messages[key].common.short,
+		   		});
+		   }
+		}
+		
 	},
 	mounted: function () {
 		if(this.$route.params.slug) {

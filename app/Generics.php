@@ -92,6 +92,11 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$tabla= Fun::tables($params['tabla'],'modify');
 	$json = Fun::getPost($tabla);
 	if ($tabla=='pagina') { if (empty($json['titol'])) die('{"ERROR": "Sense títol... No s\'ha guardat..."}'); }
+	if ($tabla=='jugador') {
+		$db->sql("select count(*) as c from jugador where dni='".$json['dni']."';");
+		$all= $db->all();
+		if ($all[0]['c']>0) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"ERROR":"Ya existe ese DNI"}'));
+	}
 	$camps= Generics::getFields($tabla);
 	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$filtrekeys= array();

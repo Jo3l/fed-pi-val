@@ -3,7 +3,7 @@
 	    <div>
 
 			<h1>Jugador</h1>
-			
+
 			<div class="contentFlex formulari">
 			
 				<div class="left50">
@@ -39,13 +39,13 @@
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
-			            error="Camp de text no correcte"
+			            error="Format incorrecte"
 			            label="Dni"
 						type="text"
 			            v-model="jugador.dni"
 			            :invalid="$store.getters.validate({string:jugador.dni,type:'dni'})"
 			        ></ui-textbox>
-			       
+
 			        <ui-radio-group
 		                name="sexe"
 		                error="Sel·lecció necesària"
@@ -194,6 +194,21 @@ export default {
 		}
 	},
 	methods: {
+		chkDNI: function() {
+			// comprovació que siga jugador nou i que el dni no existisca ja
+			var vm= this;
+			
+			vm.$http.get('/jugador/search/'+vm.jugador.dni)
+			.then( (r)=> {
+				var inexistent= ( !r.data || r.data.length==0 );
+				console.log(r.data.length,inexistent)
+				if (!inexistent) r= r.data[0].id+': '+r.data[0].nom+' '+r.data[0].cognoms+' ('+r.data[0].dni+') Soci:'+r.data[0].numsoci;
+				if (!inexistent) alert("S'ha trobat un altre jugador existent amb el mateix DNI\n"+r);
+				return Promise.resolve(inexistent)
+				//return inexistent;
+			})
+			return Promise.reject();
+		},
 		setPoblacio:function(){
 			var vm = this;
 			var poblacio = vm.jugador.cp.split(" - ");
@@ -224,7 +239,7 @@ export default {
 	        });
             
         },
-		saveForm: function() {
+		saveForm: async function() {
 			
 			if(document.querySelectorAll('.is-invalid:not(.is-disabled)').length>0) {
 				document.querySelector('.is-invalid:not(.is-disabled) input').focus()
@@ -233,8 +248,18 @@ export default {
 		
 			var vm=this;
 			vm.jugador.naixement = vm.jugador.naixement.toString('yyyyMMddHHmmss');
-	        vm.$http.post('/jugador/'+ (vm.$route.params.jugadorId?vm.$route.params.jugadorId :'') , vm.jugador)
+			var editant= vm.$route.params.jugadorId?true:false;
+			/*console.log(editant?'editant':'noedit');
+			if (!editant) { // o siga, que és nou
+				var inexistent= await this.chkDNI();
+				console.log(inexistent?'nota':'jatava')
+				if (!inexistent) return false; // o siga que ja existeix
+			}*/
+	        vm.$http.post('/jugador/'+ (editant?vm.$route.params.jugadorId :'') , vm.jugador)
 	        .then(function (response) {
+	        	if (response.status==200) return alert('Error, DNI existent');
+	        	console.log(response);
+	        	return;
 	            //vm.jugador = response.data[0];
 	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
 	            vm.$router.push({ path: `/admin/jugadors/`});
@@ -289,6 +314,21 @@ export default {
 	mounted: function () {
 		var vm=this;
 		if(vm.$route.params.jugadorId >= 0) vm.getData();
+		var predefined= location.search.substring(1);
+		if (predefined) {
+			var data= JSON.parse(atob(unescape(predefined)));
+			vm.jugador.nom= data.nom;
+			vm.jugador.cognoms= data.cognoms;
+			vm.jugador.naixement= data.naixement;
+			vm.jugador.email= data.email;
+			vm.jugador.telefon= data.telefon;
+			vm.jugador.dir= data.dir;
+			vm.jugador.cp= data.cp;
+			vm.jugador.poblacio= data.poblacio;
+			vm.jugador.dni= data.dni;
+			vm.jugador.sexe= data.sexe;
+			vm.jugador.foto= data.foto;
+		}
 	},
 	created: function() {
 	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {

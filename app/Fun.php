@@ -169,7 +169,7 @@ static public function inscripcionsdecompeticio(Request $request, Response $resp
     $db = new db();
 	$node= $params['node'];
 	$options= array();
-	$sql= "SELECT equip.id,nom,json,club, (select club.nom from club where club.id=equip.club) as nomclub FROM equip WHERE competicio=".$node;
+	$sql= "SELECT equip.id,nom,json,club, (select club.nom from club where club.id=equip.club) as nomclub FROM equip WHERE baixa is null and competicio=".$node;
 	$db->sql($sql);
 	$data= $db->all();
     echo json_encode($data);
@@ -285,12 +285,13 @@ static public function generaPartides(Request $request, Response $response, $par
 	$sql='';
 	foreach($json as $jornada) {
 		foreach($jornada['enfrontaments'] as $partida)
-			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant)values(%d,%d,'%s',%d,%d);",
+			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant,grup)values(%d,%d,'%s',%d,%d,'%s');",
 				$request->getQueryParam('node'),
 				$request->getQueryParam('bloc'),
-				$jornada['data'],
+				$jornada['datacurta'],
 				$partida[0]['id'],	
-				$partida[1]['id']
+				$partida[1]['id'],
+				$jornada['grup']
 			);
 	}
     //echo $sql;
@@ -386,6 +387,18 @@ static public function inscripcions($request,$response,$params) {
     return Fun::render($result);
 }	
 
+/*
+* @description
+* Elimina les partides i l'equip
+* URL: DELETE /api/eliminaequip/12
+*/
+static public function eliminaequip(Request $request, Response $response, $params) {
+	$id= $params['equip'];
+	$db = new db();
+	$db->sql("update partida set baixa='".date('YmdHis')."' where local='".$params['equip']."' or visitant=".$params['equip']);
+	$db->sql("update equip set baixa='".date('YmdHis')."' where id=".$params['equip']);
+	return '{"result":"ok"}';
+}
 
 //  //  //  //  //  //  //  //
 /*
@@ -617,8 +630,14 @@ static public function producte_query(Request $request, Response $response, $par
 */
 static public function demanajugador(Request $request, Response $response, $params) {
 	$json= json_decode(file_get_contents("php://input"),true);
-	$base= base64_encode($json);
-	Fun::email('alsanan@gmail.com','Nou jugador proposat','https://fedpival.es/admin/jugador?'.$base);
+	//{"nom":"test","cognoms":"test2","dni":"12312412z","sexe":"h","naixement":"","dir":"","cp":"","poblacio":"","tel":null,"email":"a@a.a","imatge":null,"club":"1"}
+    $db = new db();
+    $db->sql("select * from club where id=".$json['club']);
+    $f= $db->all()[0];
+    $club= $f['nom'];
+    $nom= $json['nom'].' '.$json['cognoms'];
+	$base= base64_encode(file_get_contents("php://input"));
+	Fun::email('campionats@fedpival.es','Nou jugador "'.$nom.'" proposat pel club "'.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
 	return Fun::render('{"result":"ok"}');
 }
 

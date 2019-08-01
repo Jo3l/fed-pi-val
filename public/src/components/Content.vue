@@ -24,16 +24,18 @@
 					<table class="table results">
 						<thead>
 							<tr>
-								<th>Data</th>
-								<th>Lloc</th>
-								<th>Local</th>
-								<th>Res. Local</th>
-								<th>Res. Visitant</th>
-								<th>Visitant</th>
+								<th>{{$i18n.t('common.group')}}</th>
+								<th>{{$i18n.t('common.date')}}</th>
+								<th>{{$i18n.t('common.place')}}</th>
+								<th>{{$i18n.t('common.local')}}</th>
+								<th>Res. {{$i18n.t('common.local')}}</th>
+								<th>Res. {{$i18n.t('common.visitor')}}</th>
+								<th>{{$i18n.t('common.visitor')}}</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0">
+							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[(element.grup%2)?'odd':'even']">
+								<td>{{ String.fromCharCode(65+parseInt(element.grup)) }}</td>
 								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
@@ -111,26 +113,29 @@
 						<table class="table results">
 							<thead>
 								<tr>
-									<th>Data</th>
-									<th>Local</th>
-									<th>Res. Local</th>
-									<th>Res. Visitant</th>
-									<th>Visitant</th>
-									<!--<th>Lloc</th>-->
+									<th>{{$i18n.t('common.group')}}</th>
+									<th>{{$i18n.t('common.date')}}</th>
+									<th>{{$i18n.t('common.place')}}</th>
+									<th>{{$i18n.t('common.local')}}</th>
+									<th>Res. {{$i18n.t('common.local')}}</th>
+									<th>Res. {{$i18n.t('common.visitor')}}</th>
+									<th>{{$i18n.t('common.visitor')}}</th>
 									<th></th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" v-bind:class="{ 'selected':element.selected }">
+								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+
+									<td>{{ String.fromCharCode(65+parseInt(element.grup)) }}</td>
 									<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
-									
+									<td>{{element.lloc.nom}}</td>
 									<td>{{element.local.nom}}</td>
 									<td><span class="no-print">{{element.resultatlocal}}</span></td>
 									<td><span class="no-print">{{element.resultatvisitant}}</span></td>
 									<td>{{element.visitant.nom}}</td>
-									<!--<td>{{element.lloc.nom}}</td>-->
+
 									<th>
-										<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>
+										<!--<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>-->
 										<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>
 									</th>
 								</tr>
@@ -1214,5 +1219,12 @@ export default {
 
 }
 
+.results tr.odd {
+	background-color: #ececec;
+	@media print {
+		-webkit-print-color-adjust: exact; 
+	}
+}
 
 </style>
+

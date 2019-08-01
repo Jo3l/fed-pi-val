@@ -203,6 +203,13 @@ $app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\F
 
 /*
 * @description
+* Elimina les partides i l'equip
+* URL: DELETE /api/eliminaequip/12
+*/
+$app->delete('/api/eliminaequip/{equip:[0-9]+}', '\app\Fun::eliminaequip');
+
+/*
+* @description
 * Obtindre els equips d'una competicio 
 * URL: /api/inscripcionsdecompeticio/12
 */

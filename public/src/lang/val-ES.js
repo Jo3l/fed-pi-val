@@ -38,6 +38,11 @@ export default {
 		fail: 'La comanda ha fallat, per a comandes per telèfon cal cridar al 963749558 o enviar un correu electrònic a botiga@fedpival.es',
 	},
 	common : {
+		keywords:'Sel·lecciona les paraules clau',
+		group: 'Grup', 
+		date: 'Data', 
+		local: 'Local', 
+		visitor: 'Visitant', 
 		phone: 'Telèfon',
 		address:'Adreça',
 		sportPlace:'Instal·lacions Esportives',
