@@ -338,6 +338,7 @@
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentMap" tooltip="Insertar Mapa" size="small" icon="map" type="secondary"></ui-icon-button>
                 <ui-icon-button v-if="disable && !gameOn" @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>
+                <ui-icon-button v-if="" @click="taula_inscripcions" tooltip="Ver tabla d'inscripcions per club" size="small" icon="view_module" type="secondary"></ui-icon-button>
         </div>
         
         <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
@@ -896,6 +897,11 @@ export default {
 	    setMap:function(map){
 	    	var vm=this;
 	    	vm.dataMap = map.lat+','+map.lng;
+	    },
+	    taula_inscripcions:function() {
+	    	var vm= this;
+	    	window.kk=vm
+	    	window.open('/api/resumnode/'+vm.nodeContent[0].jerarquia)
 	    }
 		
 	},
@@ -913,6 +919,7 @@ export default {
       	nodeId: function(newVal, oldVal) {
           this.getNode();
           this.setOrder(true);
+          this.generator=false;
         },
         authOn: function(){
         	if(this.$store.getters.isAuthenticatedWithRole(0)) {

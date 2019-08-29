@@ -41,7 +41,8 @@
 						<td>{{equip.nomclub}}</td>
 						<td>{{equip.nom}}</td>
 						<th>
-							 <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
+							 <ui-icon-button icon="delete" size="small" type="secondary" title="Elimina equip" @click="borraEquip(equip,key)"></ui-icon-button>
+							 <ui-icon-button icon="subdirectory_arrow_right" size="small" title="Canvia equip de categoria" type="secondary" @click="reubicaEquip(equip)"></ui-icon-button>
 						</th>
 					</tr>
 				</draggable>
@@ -52,7 +53,7 @@
 		<ui-button color="fedpival" icon="done_all" @click="afegirSeparador">Afegir un separador de grup</ui-button>
 			
 			<div v-if="false" v-for="(equip,key) in equips" class="ui-button ui-button--type-secondary ui-button--color-red ui-button--icon-position-left ui-button--size-small">  
-			{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
+			{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary @click="borraEquip(equip,key)"></ui-icon-button>
 			</div>
 
 			<br><br>
@@ -91,7 +92,30 @@
 	
 			<ui-button v-if="jornades.length>0 && jornades[0]" color="fedpival" icon="done_all" @click="enviar">Generar aquestes partides</ui-button>
 
+		<ui-modal ref="reubicaModal" size="normal">
+            <div slot="header">
+            	Tria la nova categoria per a aquest equip
+            </div>
+			<ui-select
+			    has-search
+			    floating-label
+			    placeholder="Tria la categoria"
+				search-placeholder="Escriu el nom de la categoria"
+			    label="categoria"
+			    :keys="{ label: 'nom'}"
+			    v-model="categoriaSeleccionada"
+			    :options="categories"
+			    error="Camp obligatori"
+			></ui-select>
+			<div slot="footer">
+                <ui-button @click="acceptModal('')" color="fedpival">Canviar</ui-button>
+                <ui-button @click="$refs['reubicaModal'].close()">{{$i18n.t('modal.cancel')}}</ui-button>
+            </div>
+		</ui-modal>
+
+
 	    </div>
+	    
     </transition>
 </template>
 
@@ -207,6 +231,9 @@ export default {
 			tornades:true,
 			acabat:false,
 			eixida: '',
+			categoriaSeleccionada: '',
+			categories: [],
+			equipCanvi:null,
 		    columnsEquips:[
 		    	{
 	                label: 'Club',
@@ -245,6 +272,21 @@ export default {
 				} )
 				vm.equipssel.push(e);				
 				this.genera();
+			})
+			.catch(function (error) {
+			    console.log(error);
+			});
+		},
+		reubicaEquip: function(e) {
+			var vm= this;
+			var node= vm.nodeId
+			//e.id e.club
+			vm.equipCanvi= e.id;
+			vm.$http.get('/germans/'+node)
+			.then(function (response) {
+				console.log(response)
+				vm.categories= response.data;
+				vm.openModal();
 			})
 			.catch(function (error) {
 			    console.log(error);
@@ -449,11 +491,31 @@ export default {
 	            console.log(error);
 	        });
 
-        }
+        },
+		openModal: function() {
+			console.log(window.kk= this)
+            this.$refs.reubicaModal.open();
+        },
+        acceptModal:function(ref) {
+        	var id=this.categoriaSeleccionada.id;
+        	var vm= this;
+        	vm.$http.post('/canvicateg', JSON.stringify({"idnode":id,"idequip":vm.equipCanvi} ))
+	        .then(function (response) {
+	        	vm.equips.forEach( (e,a)=>{
+	        		console.log([e,a])
+	        		if (e.id==vm.equipCanvi) vm.equips.splice(a, 1);
+	        	} )
+	        	alert('ok')
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            this.$refs.reubicaModal.close();
+        },
         
     },
 	watch: {
-		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; }
+		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; },
 	},
 	mounted: function () {
 		this.getEquips();

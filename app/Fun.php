@@ -666,6 +666,78 @@ static public function modalitats(Request $request, Response $response, $params)
 	Fun::render($data);
 }
 
+//  //  //  //  //  //  //  //
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obté una taula amb les inscripcions per equip d'un node de competició indicat
+* URL: /api/resumnode/17
+*/
+static public function resum_competicio(Request $request, Response $response, $params) {
+	$node= $params['id'];
+	$db = new db();
+	$db->sql("select id,pare,nom from _jerarquia_val");
+	$data= $db->all();
+	$llistanodes[$node]= 'arrel';
+	for ($i=5; $i>0; $i--)
+		foreach($data as $elm) {
+			if (in_array($elm['pare'],array_keys($llistanodes)))
+				if (!in_array($elm['id'],array_keys($llistanodes)))
+					$llistanodes[$elm['id']]= $elm['nom'];
+		}
+	$ids= array_keys($llistanodes);
+	$sql= "select id,nom,club,(select club.nom from club where club.id=equip.club) as nomclub, competicio from equip where baixa is null and competicio in (".implode(',',$ids).") order by nomclub;";
+	$db->sql($sql);
+	$data= $db->all();
+	$clubs=[];
+	$modalitats=[];
+	foreach($data as $cada) {
+		$clubs[$cada['nomclub']]= 1;
+		$modalitats[$cada['competicio']]= $llistanodes[$cada['competicio']];
+	}
+	ksort($modalitats);
+	//echo '<pre>',print_r($clubs),'<hr/>',print_r($modalitats);exit;
+	echo '<table><thead><td></td><td>',implode('</td><td>',$modalitats),'</td></thead>';
+	foreach($clubs as $club=>$fem) {
+		echo '<tr><td>',$club,'</td>';
+		foreach($modalitats as $moda=>$nommoda) {
+			$suma=0;
+			foreach($data as $insc) { 
+				if ($insc['nomclub']==$club && $insc['competicio']==$moda) $suma++; 
+			}
+			echo '<td>',($suma?:''),'</td>';
+		}
+		echo '</tr>';
+	}
+	echo '</table>';
+	?><style>td{border:1px solid black;}</style><?php
+	//Fun::render($data);
+}
+
+/*
+* @description
+* Obté els ids dels nodes germans de l'actual per a fer una reubicació
+* URL: /api/germans/17
+*/
+static public function germans(Request $request, Response $response, $params) {
+	$db= new db();
+	$db->sql("select id,nom from _jerarquia_val where id<>".$params['id']." and pare=(select pare from _jerarquia_val where id=".$params['id'].");");
+	$data= $db->all();
+	Fun::render($data);
+}
+
+/*
+* @description
+* Canvia el node d'un equip (reubica)
+* URL: /api/canvicateg/[idequip]/[idnode]
+* URL: /api/canvicateg/4634/17
+*/
+static public function canvi_categ(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	$db= new db();
+	$db->sql("update equip set competicio= ".$json['idnode']." where id=".$json['idequip'].";");
+	return true;
+}
 
 //  //  //  //  //  //  //  //
 //  //  //  //  //  //  //  //
@@ -728,12 +800,14 @@ static public function comprar(Request $request, Response $response, $params) {
 	$address= $json['address'].' '.$json['cp'];
 	$tel= $json['tel'];
 	$email= $json['email'];
+	$html='';
 	foreach($json['cart'] as $elm) {
 		$prod= $elm['name'];
 		foreach($elm['fullProduct']['types'] as $tipo) { 
 			if ($tipo['name']==$prod) {
 				$preuprod= $tipo['price']['amount'];
-				$preu+= $preuprod;
+				$preu+= $preuprod*$elm['quantity'];
+				$html.= '<tr><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td>'.($preuprod*$elm['quantity']).'&euro;</td></tr>';
 			}
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
@@ -777,6 +851,17 @@ static public function comprar(Request $request, Response $response, $params) {
 	
 	//execute post
 	$result = curl_exec($ch);
+	$mg = Mailgun::create(config::mailgundata['secretkey']);
+	$domain = config::mailgundata['domain'];
+	$result = $mg->messages()->send($domain, [
+	  'from'    => config::mailgundata['from'],
+	  'to'      => 'alsanan@gmail.com',
+	  'subject' => 'nova compra test '.date('YmdHis'),
+	  'html'    => $str.'<table>'.$html.'</html>'
+	]);
+	# You can see a record of this email in your logs: https://app.mailgun.com/app/logs
+	# Next, you should add your own domain so you can send 10,000 emails/month for free.
+	return '{"result":'.json_encode($result).'}';
 	
 	return Fun::email('botiga@fedpival.es,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
 }

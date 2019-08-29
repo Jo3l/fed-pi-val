@@ -90,22 +90,12 @@
 						
 						<h4>Codi de color:</h4>
 						
-						{{event.json}}
-						<ui-icon-button color="primary" :icon="colorSelected=='primary'?'done':''" size="small" @click="colorSelected='primary'"></ui-icon-button>
-						<ui-icon-button color="accent"  :icon="colorSelected=='accent'?'done':''"size="small" @click="colorSelected='accent'"></ui-icon-button>
-						<ui-icon-button color="orange" :icon="colorSelected=='orange'?'done':''"size="small" @click="colorSelected='orange'"></ui-icon-button>
-						<ui-icon-button color="red" :icon="colorSelected=='red'?'done':''"size="small" @click="colorSelected='red'"></ui-icon-button>
-						<ui-icon-button color="green" :icon="colorSelected=='green'?'done':''"size="small" @click="colorSelected='green'"></ui-icon-button>
-            <ui-radio-group
-                error="has de triar un color"
-                help="tria un color"
-                name="group4"
-                :options="['primary','accent','red','orange','green']"
-                :invalid="event !== 'rod'"
-                v-model="event.color"
-            >Color</ui-radio-group>
+						<ui-icon-button color="primary" :icon="event.color=='primary'?'done':''" size="small" @click="event.color='primary'"></ui-icon-button>
+						<ui-icon-button color="accent"  :icon="event.color=='accent'?'done':''"size="small" @click="event.color='accent'"></ui-icon-button>
+						<ui-icon-button color="orange" :icon="event.color=='orange'?'done':''"size="small" @click="event.color='orange'"></ui-icon-button>
+						<ui-icon-button color="red" :icon="event.color=='red'?'done':''"size="small" @click="event.color='red'"></ui-icon-button>
+						<ui-icon-button color="green" :icon="event.color=='green'?'done':''"size="small" @click="event.color='green'"></ui-icon-button>
 
-						
 							<ui-textbox
 							    floating-label
 				                autocomplete="off"
@@ -199,7 +189,6 @@ export default {
 		}
 	},
 	methods: {
-
 		createBlock: function() {
 			console.log(this.selected);
 			this.todayEvent.push({
@@ -211,7 +200,8 @@ export default {
 				publicacio:Date.parse(this.selected.year+'/'+(this.selected.month+1)+'/'+this.selected.day).toString('yyyyMMddHHmmss'),
 				titol:"",
 				contingut:"",
-				color:""
+				color:"",
+				json: null
 			});
 		},
 		removeContent: function(event, todayEvent) {
@@ -237,16 +227,16 @@ export default {
 		saveBlock: function(block){
 			
 			var vm = this;
-			var bloc = block.id ? block.id : '';
-			block.json= block.json ? block.json : {};
-			
+			var blocid = block.id ? block.id : '';
+			block.json= block.json ? block.json : '';
 			try {
 				var json= JSON.parse(block.json);
-				json.color= vm.colorSelected;
-				block.json= JSON.stringify(json);
-			} catch(e) { console.log(e,block.json); }
+				json.color= block.color;
+				delete block.color;
+				block.json=  JSON.stringify(json);
+			} catch(e) { console.log(e); console.log(block.json); }
 
-	        vm.$http.post('/acte/'+bloc, block)
+	        vm.$http.post('/acte/'+blocid, block)
 	        .then(function (response) {
 	        	
 				//no cal fer res.
@@ -340,6 +330,8 @@ export default {
 							
 							var eventsInDay=[];
 							for (var event in res.data) {
+								var json= JSON.parse(res.data[event].json);
+								res.data[event].color= ( (json && json.color) ? json.color : 'primary');
 								if(res.data[event].publicacio && res.data[event].publicacio == year+''+("0" + (month + 1)).slice(-2)+''+("0" + (dateOfMonth)).slice(-2)) {
 									eventsInDay.push(res.data[event]);
 	        					}

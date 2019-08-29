@@ -164,6 +164,27 @@ $app->get('/api/node/{id:[0-9]+}', '\app\Nodes::list_elements'); // obtindre ele
 
 /*
 * @description
+* Obté una taula amb les inscripcions per equip d'un node de competició indicat
+* URL: /api/resumnode/17
+*/
+$app->get('/api/resumnode/{id:[0-9]+}', '\app\Fun::resum_competicio');
+
+/*
+* @description
+* Obté els ids dels nodes germans de l'actual per a fer una reubicació
+* URL: /api/germans/17
+*/
+$app->get('/api/germans/{id:[0-9]+}', '\app\Fun::germans');
+
+/*
+* @description
+* Canvia el node d'un equip (reubica)
+* Exemple de paràmetre: {"idnode":"19039","idequip":1234}
+*/
+$app->post('/api/canvicateg', '\app\Fun::canvi_categ');
+
+/*
+* @description
 * Crea un nou element dins d'un node
 * Exemple de paràmetre: {"id":"19039","tipus":"H","jerarquia":"122","ordre":"0","titol":"Política de Cookies","contingut":"<p>Se comunica a los usuarios...</p>","url":"","json":null,"alta":"20180515202918","modificacio":null,"publicacio":null,"baixa":null}
 * URL: /api/node/122

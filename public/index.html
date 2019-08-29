@@ -94,6 +94,38 @@
         
     </div>
 
+	<div id="patrocinadors">
+		<h1> <span class="ui-icon material-icons">flag</span> Patrocinadors:</h1>
+		<div>
+		<a href="http://pilotaescola.es" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola" loading="lazy"></a>
+		<a href="http://www.ceice.gva.es/ca/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/gva.jpg" alt="Conselleria d'Educació, Investigació, Cultura i Esport" title="Conselleria d'Educació, Investigació, Cultura i Esport" loading="lazy"></a>
+		<a href="http://www.sempreteua.gva.es/ca/elements-promocionals" target="_blank"><img src="/static/img/footer/sempreteua.jpg" alt="Sempre Teua" title="Sempre Teua" loading="lazy"></a>
+		<a href="http://www.dival.es/" target="_blank"><img src="/static/img/footer/diputacioval.jpg" alt="Diputació de València" title="Diputació de València" loading="lazy"></a>
+		<a href="http://www.diputacionalicante.es" target="_blank"><img src="/static/img/footer/alacant.gif" alt="Diputació d'Alacant" title="Diputació d'Alacant" loading="lazy"></a>
+		<a href="http://www.dipcas.es" target="_blank"><img src="/static/img/footer/castello.jpg" alt="Diputació de Castelló" title="Diputació de Castelló" loading="lazy"></a>
+		<a href="http://www.valencia.es" target="_blank"><img src="/static/img/footer/valencia.jpg" alt="Ajuntament de València" title="Ajuntament de València" loading="lazy"></a>
+		<a href="http://www.deportevalencia.com" target="_blank"><img src="/static/img/footer/fdm.jpg" alt="Fundació Esportiva Municipal" title="Fundació Esportiva Municipal" loading="lazy"></a>
+		<a href="http://www.elcorteingles.es" target="_blank"><img src="/static/img/footer/eci.jpg" alt="El Corte Inglés" title="El Corte Inglés" loading="lazy"></a>
+		<a href="http://lacaixa.es/" target="_blank"><img src="/static/img/footer/lacaixa.jpg" alt="La Caixa" title="La Caixa" loading="lazy"></a>
+		<a href="http://www.edicom.es" target="_blank"><img src="/static/img/footer/edicom.jpg" alt="Edicom" title="Edicom" loading="lazy"></a>
+		<a href="http://www.caixapopular.es" target="_blank"><img src="/static/img/footer/caixapopular.jpg" alt="Caixa Popular" title="Caixa Popular" loading="lazy"></a>
+		<a href="http://www.bankia.es" target="_blank"><img src="/static/img/footer/bankia.jpg" alt="Bankia" title="Bankia" loading="lazy"></a>
+		<a href="http://www.intersport.es/" target="_blank"><img src="/static/img/footer/intersport.jpg" alt="Intersport" title="Intersport" loading="lazy"></a>
+		<a href="http://www.acerbis.com/" target="_blank"><img src="/static/img/footer/acerbis.jpg" alt="Acerbis" title="Acerbis" loading="lazy"></a>
+		<!--img src="/static/img/footer/iso.jpg" alt="ISO 9001" title="ISO 9001" loading="lazy">
+		<a href="http://twitter.com/fedpival" target="_blank"><img src="/static/img/footer/tw.png" alt="Twitter" title="Twitter" loading="lazy"></a>
+		<a href="http://facebook.com/fedpival" target="_blank"><img src="/static/img/footer/fb.png" alt="Facebook" title="Facebook" loading="lazy"></a>
+		<a href="http://www.ceice.gva.es/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/tv.png" alt="Partides" title="Partides" loading="lazy"></a-->
+		</div>
+	</div>
+	
+	<style>
+		#patrocinadors { display:none; }
+		#patrocinadors div { padding-left:100px; }
+		#patrocinadors img { width:64px !important; height:64px !important; }
+	</style>
+
+		
 	<footer class="footer" style="display:none;">
 		<div class="waveHorizontals">
 			<svg id="waveHorizontal1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 350 20" preserveAspectRatio="none" enable-background="new 0 0 350 20" xml:space="preserve">
@@ -106,7 +138,8 @@
 				<path d="M0,17.1C29.9,17.1,57.8,0,87.5,0c30.2,0,58.1,17.1,87.1,17.1c29.9,0,57.8-17.1,87.7-17.1	c29.9,0,57.8,17.1,87.7,17.1V20H0V17.1z" fill="rgba(255,255,255,0.5)" />
 			</svg>
 		</div>
-		<div class="footerSpacer">
+		
+		<!--div class="footerSpacer">
 				<a href="http://pilotaescola.es" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola"></a>
 				<a href="http://www.ceice.gva.es/ca/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/gva.jpg" alt="Conselleria d'Educació, Investigació, Cultura i Esport" title="Conselleria d'Educació, Investigació, Cultura i Esport"></a>
 				<a href="http://www.sempreteua.gva.es/ca/elements-promocionals" target="_blank"><img src="/static/img/footer/sempreteua.jpg" alt="Sempre Teua" title="Sempre Teua"></a>
@@ -127,7 +160,7 @@
 				<a href="http://facebook.com/fedpival" target="_blank"><img src="/static/img/footer/fb.png" alt="Facebook" title="Facebook"></a>
 				<a href="http://www.ceice.gva.es/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/tv.png" alt="Partides" title="Partides"></a>		
 			
-		</div>
+		</div-->
 	</footer>
 
 	<script>
@@ -136,9 +169,11 @@
 	  gtag('js', new Date());
 	
 	  gtag('config', 'UA-143200930-1');
+	  
+	  setTimeout(()=>{ document.querySelector('#patrocinadors').style.display='block';},3000);
 	</script>
 	
-	    <script src="/dist/build.js?74c4c660330ddc7c6b85"></script>
+	    <script src="/dist/build.js?7bc28d21253075a22d9d"></script>
 	
   </body>
 </html>
