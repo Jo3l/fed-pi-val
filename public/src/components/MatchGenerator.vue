@@ -120,6 +120,8 @@
 </template>
 
 <script>
+// veure també https://www.phpclasses.org/package/11346-PHP-Organize-the-matches-of-teams-in-a-tournament.html
+
 import draggable from 'vuedraggable'
 
 export default {
@@ -515,7 +517,7 @@ export default {
         
     },
 	watch: {
-		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; },
+		esTrofeu: function(n) { document.querySelector('#trofeu .ui-switch__label-text').innerHTML= n?'Trofeu':'Lliga'; }
 	},
 	mounted: function () {
 		this.getEquips();

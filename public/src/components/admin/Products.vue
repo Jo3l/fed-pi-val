@@ -60,7 +60,7 @@ export default {
 	            },
 	            {
 	                label: 'Nom',
-	                field: 'nom',
+	                field: 'json.content.val.name',
 	                html: false,    
 	            }
 	        ],
@@ -72,7 +72,7 @@ export default {
 	    	this.$router.push({ path: `/admin/producte/` });
 	    },
 	  	edit:function(row) {
-	    	this.$router.push({ path: `/admin/producte/`+row.slug });
+	    	this.$router.push({ path: `/admin/producte/`+row.json.content.es.slug });
 	    },
 	  	remove:function(row) {
 			var vm=this;

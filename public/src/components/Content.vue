@@ -35,7 +35,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[(element.grup%2)?'odd':'even']">
-								<td>{{ String.fromCharCode(65+parseInt(element.grup)) }}</td>
+								<td>{{ element.grup?String.fromCharCode(65+parseInt(element.grup)):'' }}</td>
 								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
