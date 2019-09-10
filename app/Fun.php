@@ -614,7 +614,7 @@ static public function noticia_query(Request $request, Response $response, $para
 static public function producte_query(Request $request, Response $response, $params) {
 	$slug= $params['slug'];
     $db = new db();
-    $db->sql("select * from producte where slug='".$slug."';");
+    $db->sql("select * from producte where JSON_EXTRACT(json, '$.content.es.slug') ='".$slug."' OR JSON_EXTRACT(json, '$.content.val.slug') ='".$slug."';");
     //$db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
     $data = $db->all();
 	$a= $data[0]['json']; 
@@ -697,6 +697,7 @@ static public function resum_competicio(Request $request, Response $response, $p
 	}
 	ksort($modalitats);
 	//echo '<pre>',print_r($clubs),'<hr/>',print_r($modalitats);exit;
+	echo '<link rel="stylesheet" type="text/css" href="/static/table.css">';
 	echo '<table><thead><td></td><td>',implode('</td><td>',$modalitats),'</td></thead>';
 	foreach($clubs as $club=>$fem) {
 		echo '<tr><td>',$club,'</td>';
@@ -801,6 +802,8 @@ static public function comprar(Request $request, Response $response, $params) {
 	$tel= $json['tel'];
 	$email= $json['email'];
 	$html='';
+	$min= [];
+	
 	foreach($json['cart'] as $elm) {
 		$prod= $elm['name'];
 		foreach($elm['fullProduct']['types'] as $tipo) { 
@@ -812,12 +815,14 @@ static public function comprar(Request $request, Response $response, $params) {
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
-	$str= sprintf("Nom: %s \nAdreça: %s\n Tel: %s\nEmail comprador: %s\nDespeses d'enviament: 8,90 euros\nTotal: %s euros\n%s\n",
-		$nom, $address, $tel, $email,
-		$preu+8.9,
-		str_replace(['[',','],"\n[",json_encode($carro))
+	$html= '<h2>Comanda:</h2><table>'.$html.'</table>';
+	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
+		date('d-m-Y H:i:s'),
+		$name, $address, $tel, $email, $email,
+		$preu+8.9
+		//,str_replace(['[',','],"\n[",json_encode($carro))
 	);
-	$str.="\n\nEl termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
+	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
 		a la recepció del material.\n
 		Per a qualsevol devolució es imprescindible presentar la factura.\n
 		Si es canvia l'adreça d'enviament una volta s'ha enviat el producte,\n
@@ -838,8 +843,51 @@ static public function comprar(Request $request, Response $response, $params) {
 	(Ds_Merchant_Currency)	000 (978)
 	Clave secreta de encriptación	sq7HjrUOBfKmC576ILgskD5srU870gJ7
 	*/
+	$db= new db();
+	$db->sql("select substr(max(codi),5) as id from comanda where codi like '".date('Y')."%';");
+	$last= $db->all()[0]['id'];
+	//if (empty($last)) $last='0';
+	$last++;
+	$db->sql("insert into comanda (codi,json,quantitat) values ('".date('Y').str_pad($last,4,'0',STR_PAD_LEFT)."','".json_encode($carro)."',".$preu.");"); 
+	//.$json['idnode']." where id=".$json['idequip'].";");
+	$db->sql("SELECT LAST_INSERT_ID() as id");
+	$comanda = $db->all();
 	
 	$ch = curl_init();
+	
+	//execute post
+	$result = curl_exec($ch);
+	$mg = Mailgun::create(config::mailgundata['secretkey']);
+	$domain = config::mailgundata['domain'];
+	$result = $mg->messages()->send($domain, [
+	  'from'    => config::mailgundata['from'],
+	  'to'      => 'alsanan@gmail.com',
+	  'subject' => 'nova compra en fedpival.es',
+	  'html'    => $str.$html.$legal
+	]);
+	# You can see a record of this email in your logs: https://app.mailgun.com/app/logs
+	# Next, you should add your own domain so you can send 10,000 emails/month for free.
+	return '{"result":'.json_encode($result).'}';
+	
+	Fun::email('botiga@fedpival.es,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
+
+	// Se incluye la librería
+	include 'apiRedsys.php';
+	// Se crea Objeto
+	$miObj = new RedsysAPI;
+
+	// Valores de entrada que no hemos cmbiado para ningun ejemplo
+	$fuc="272095225";
+	$terminal="001";
+	$moneda="978";
+	$trans="0";
+	$url="";
+	$urlOKKO="http://fedpival.es/api/redsysok";
+	
+	//estos dos valores los vamos cambiando en cada ejemplo
+	//$id='81603485';//el valor que le damos en cada ejemplo 
+	$id=date('ymdHi');//el valor que le damos en cada ejemplo 
+	$amount=220;//el valor que le damos en cada ejemplo
 	
 	//set the url, number of POST vars, POST data
 	curl_setopt($ch,CURLOPT_URL, 'https://sis-t.redsys.es:25443/sis/realizarPago');
@@ -849,21 +897,27 @@ static public function comprar(Request $request, Response $response, $params) {
 	//So that curl_exec returns the contents of the cURL; rather than echoing it
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER, true); 
 	
-	//execute post
-	$result = curl_exec($ch);
-	$mg = Mailgun::create(config::mailgundata['secretkey']);
-	$domain = config::mailgundata['domain'];
-	$result = $mg->messages()->send($domain, [
-	  'from'    => config::mailgundata['from'],
-	  'to'      => 'alsanan@gmail.com',
-	  'subject' => 'nova compra test '.date('YmdHis'),
-	  'html'    => $str.'<table>'.$html.'</html>'
-	]);
-	# You can see a record of this email in your logs: https://app.mailgun.com/app/logs
-	# Next, you should add your own domain so you can send 10,000 emails/month for free.
-	return '{"result":'.json_encode($result).'}';
 	
-	return Fun::email('botiga@fedpival.es,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
+	
+	// Se Rellenan los campos
+	$miObj->setParameter("DS_MERCHANT_AMOUNT",$amount);
+	$miObj->setParameter("DS_MERCHANT_ORDER",$id);
+	$miObj->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
+	$miObj->setParameter("DS_MERCHANT_CURRENCY",$moneda);
+	$miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
+	$miObj->setParameter("DS_MERCHANT_TERMINAL",$terminal);
+	$miObj->setParameter("DS_MERCHANT_MERCHANTURL",$url);
+	$miObj->setParameter("DS_MERCHANT_URLOK",$urlOKKO);
+	$miObj->setParameter("DS_MERCHANT_URLKO",$urlOKKO);
+
+	//Datos de configuración
+	$version="HMAC_SHA256_V1";
+	$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';//Clave recuperada de CANALES
+	// Se generan los parámetros de la petición
+	$request = "";
+	$params = $miObj->createMerchantParameters();
+	$signature = $miObj->createMerchantSignature($kc);
+	
 }
 
 static public function email($to,$sub,$text){

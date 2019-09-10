@@ -97,6 +97,12 @@ public function generic_insert(Request $request, Response $response, $params) {
 		$all= $db->all();
 		if ($all[0]['c']>0) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"ERROR":"Ya existe ese DNI"}'));
 	}
+	if ($tabla=='producte') {
+		$jsonobj= json_decode($json['json'],true);
+		$jsonobj['content']['es']['slug']= Fun::slugify($jsonobj['content']['es']['name']);
+		$jsonobj['content']['val']['slug']= Fun::slugify($jsonobj['content']['val']['name']);
+		$json['json']= json_encode($jsonobj);
+	}
 	$camps= Generics::getFields($tabla);
 	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$filtrekeys= array();
