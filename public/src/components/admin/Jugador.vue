@@ -239,7 +239,7 @@ export default {
 	        });
             
         },
-		saveForm: async function() {
+		saveForm: function() {
 			
 			if(document.querySelectorAll('.is-invalid:not(.is-disabled)').length>0) {
 				document.querySelector('.is-invalid:not(.is-disabled) input').focus()
@@ -249,12 +249,14 @@ export default {
 			var vm=this;
 			vm.jugador.naixement = vm.jugador.naixement.toString('yyyyMMddHHmmss');
 			var editant= vm.$route.params.jugadorId?true:false;
+			
 			/*console.log(editant?'editant':'noedit');
-			if (!editant) { // o siga, que és nou
+			if (!editant) { // o siga, que es nou
 				var inexistent= await this.chkDNI();
 				console.log(inexistent?'nota':'jatava')
 				if (!inexistent) return false; // o siga que ja existeix
 			}*/
+			
 	        vm.$http.post('/jugador/'+ (editant?vm.$route.params.jugadorId :'') , vm.jugador)
 	        .then(function (response) {
 	        	if (response.status==200) return alert('Error, DNI existent');
