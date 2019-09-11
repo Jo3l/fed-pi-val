@@ -89,13 +89,13 @@
 						<i class="remove" @click="removeContent(event, todayEvent)"></i>
 						
 						<h4>Codi de color:</h4>
-						
+						<!--
 						<ui-icon-button color="primary" :icon="event.color=='primary'?'done':''" size="small" @click="event.color='primary'"></ui-icon-button>
 						<ui-icon-button color="accent"  :icon="event.color=='accent'?'done':''"size="small" @click="event.color='accent'"></ui-icon-button>
 						<ui-icon-button color="orange" :icon="event.color=='orange'?'done':''"size="small" @click="event.color='orange'"></ui-icon-button>
 						<ui-icon-button color="red" :icon="event.color=='red'?'done':''"size="small" @click="event.color='red'"></ui-icon-button>
 						<ui-icon-button color="green" :icon="event.color=='green'?'done':''"size="small" @click="event.color='green'"></ui-icon-button>
-
+						-->
 							<ui-textbox
 							    floating-label
 				                autocomplete="off"
@@ -231,8 +231,8 @@ export default {
 			block.json= block.json ? block.json : '';
 			try {
 				var json= JSON.parse(block.json);
-				json.color= block.color;
-				delete block.color;
+				//json.color= block.color;
+				//delete block.color;
 				block.json=  JSON.stringify(json);
 			} catch(e) { console.log(e); console.log(block.json); }
 
@@ -330,8 +330,8 @@ export default {
 							
 							var eventsInDay=[];
 							for (var event in res.data) {
-								var json= JSON.parse(res.data[event].json);
-								res.data[event].color= ( (json && json.color) ? json.color : 'primary');
+								//var json= JSON.parse(res.data[event].json);
+								//res.data[event].color= ( (json && json.color) ? json.color : 'primary');
 								if(res.data[event].publicacio && res.data[event].publicacio == year+''+("0" + (month + 1)).slice(-2)+''+("0" + (dateOfMonth)).slice(-2)) {
 									eventsInDay.push(res.data[event]);
 	        					}
