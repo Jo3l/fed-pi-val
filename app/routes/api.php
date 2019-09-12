@@ -17,6 +17,10 @@ error_reporting(E_ALL);
 
 //$app->etag(md5($_SERVER['REQUEST_URI']));
 
+$app->get('/api/infophp', function(){ phpinfo(); if (!extension_loaded('imagick')) echo 'imagick not installed';exit; });
+
+$app->get('/api/imgoptimes', '\app\Filem::optimize' );
+
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
 });
@@ -168,6 +172,27 @@ $app->get('/api/node/{id:[0-9]+}', '\app\Nodes::list_elements'); // obtindre ele
 
 /*
 * @description
+* Obté una taula amb les inscripcions per equip d'un node de competició indicat
+* URL: /api/resumnode/17
+*/
+$app->get('/api/resumnode/{id:[0-9]+}', '\app\Fun::resum_competicio');
+
+/*
+* @description
+* Obté els ids dels nodes germans de l'actual per a fer una reubicació
+* URL: /api/germans/17
+*/
+$app->get('/api/germans/{id:[0-9]+}', '\app\Fun::germans');
+
+/*
+* @description
+* Canvia el node d'un equip (reubica)
+* Exemple de paràmetre: {"idnode":"19039","idequip":1234}
+*/
+$app->post('/api/canvicateg', '\app\Fun::canvi_categ');
+
+/*
+* @description
 * Crea un nou element dins d'un node
 * Exemple de paràmetre: {"id":"19039","tipus":"H","jerarquia":"122","ordre":"0","titol":"Política de Cookies","contingut":"<p>Se comunica a los usuarios...</p>","url":"","json":null,"alta":"20180515202918","modificacio":null,"publicacio":null,"baixa":null}
 * URL: /api/node/122
@@ -204,6 +229,13 @@ $app->get('/api/inscripcions', '\app\Fun::inscripcions');
 * URL: /api/equipsdeclub/12
 */
 $app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\Fun::equipsdeclub'); // buscar
+
+/*
+* @description
+* Elimina les partides i l'equip
+* URL: DELETE /api/eliminaequip/12
+*/
+$app->delete('/api/eliminaequip/{equip:[0-9]+}', '\app\Fun::eliminaequip');
 
 /*
 * @description
@@ -286,6 +318,14 @@ $app->post('/api/inscripcions/genera', '\app\Fun::generaPartides'); // buscar
 */
 $app->post('/api/participa/{partida:[0-9]+}', '\app\Fun::participa'); 
 
+
+/*
+* @description
+* Demana donar d'alta un nou jugador
+* URL: /api/jugador/registre POST {nom: null, cognoms: null, dni: null, naixement: null, dir: null, cp: null, poblacio: null, tel: null, email: null}
+*/
+$app->post('/api/jugador/registre', '\app\Fun::demanajugador'); 
+
 /*
 * @description
 * Obté els jugadors d'una partida
@@ -322,7 +362,7 @@ ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_id');
 
 /*
 * @description
@@ -330,7 +370,7 @@ $app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jer
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_delete');
+$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_delete');
 
 /*
 * @description
@@ -338,7 +378,7 @@ $app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarqu
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}/{id:[0-9]+}', '\app\Generics::generic_update');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_update');
 
 /*
 * @description
@@ -347,7 +387,7 @@ $app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari}[/]', '\app\Generics::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}[/]', '\app\Generics::generic_insert');
 
 /*
 * @description
@@ -468,6 +508,8 @@ $app->get('/{path:val/competicions/.+|es/competiciones/.+}', '\app\Headers::head
 * URL: /val/federacio
 */
 $app->get('/{path:val/federacio/.+|es/federacion/.+}', '\app\Headers::headers_federacio');
+
+
 
 /*
 ok /api/pertany/[idjugador] GET per obtindre l’equip al que pertany actualment

@@ -4,8 +4,7 @@
 
 			<h1 style="margin-bottom:0;">Club</h1>
 			
-            <ui-tabs type="text">
-
+            <ui-tabs type="text" ref="tabs">
 
                 <ui-tab title="Competicions obertes">
 					<br>
@@ -28,7 +27,8 @@
 							<th slot="headActions"></th>
 							<template slot="actions" scope="props">
 								<td class="actions">
-									<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi">Modificar</ui-button>
+									<ui-button color="saveForm" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi" style="margin:0">Modificar</ui-button>
+									<ui-button color="default" icon="print" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row,true)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'>props.row.fi">Imprimir</ui-button>
 								</td>
 							</template>
 						</tablerone>
@@ -55,135 +55,16 @@
 				
                 <ui-tab title="Dades Club">
                     
-					<div class="contentFlex formulari">
-						<div class="left50">
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            :error="$i18n.t('common.wrong')"
-					            label="Nom"
-								type="text"
-					            v-model="club.nom"
-					        ></ui-textbox>
-					        
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            error="This field is required"
-					            label="President"
-								type="text"
-					            v-model="club.president"
-					        ></ui-textbox>
-					        
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            error="This field is required"
-					            label="Secretari"
-								type="text"
-					            v-model="club.secretari"
-					        ></ui-textbox>
-					        
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            :error="$i18n.t('common.wrong')"
-					            label="Cif"
-								type="text"
-					            v-model="club.cif"
-					            :invalid="$store.getters.validate({string:club.cif,type:'cif'})"
-					        ></ui-textbox>
-				        	
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            error="This field is required"
-					            label="Correu Electrònic"
-								type="email"
-					            v-model="club.email"
-					        ></ui-textbox>
-				        	
-
-							<ui-datepicker
-				                placeholder="$i18n.t('calendar.dateTip')"
-				                :start-of-week="datePickerOptions.dow"
-				                v-model="club.fundacio"
-				                v-if="typeof club.fundacio === 'object'"
-				                :lang="datePickerOptions"
-				            >Data Fundació</ui-datepicker>
-				        
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            error="This field is required"
-					            label="Telèfon"
-								type="number"
-					            v-model="club.telefon"
-					        ></ui-textbox>
-					        
-							<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            error="This field is required"
-					            label="Adreça"
-								type="text"
-					            v-model="club.dir"
-					        ></ui-textbox>
-					        
-					        <ui-select
-				                disable-filter
-				                has-search
-				                label="Codi Postal"
-				                placeholder="Busca la població a partir del codi postal"
-				                search-placeholder="Escriu el codi postal"
-								@dropdown-close="setPoblacio"
-				                :loading="loading"
-				                :no-results="noResults"
-				                :options="poblacions"
-				                @query-change="onQueryChange"
-				                v-model="club.cp"
-				            ></ui-select>
-            
-							<ui-textbox
-							    floating-label
-							    disabled
-					            autocomplete="off"
-					            error="This field is required"
-					            label="Població"
-								type="text"
-					            v-model="club.poblacio"
-					        ></ui-textbox>
-					        
-							<!--<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
-							<progressive-img v-else  :src="mapa" fallback="/static/img/mapsPlaceholder.jpg" />-->
-					        
-					        </div>
-					        <div class="left50">
-					        
-							<img v-if="club.imatge==null" class="jugador" src="/static/img/shield.png" style="opacity: 0.15;">
-							<progressive-img v-else class="jugador" :src="club.imatge" fallback="/static/img/shield.png"/>
-							
-							<vue-core-image-upload
-							    :text="$i18n.t('image.uploadAndCut')"
-							    class="uploader"
-								crop="local"
-								cropRatio="1:1"
-								compress="50"
-							    url="/api/static/uploadimgjugador"
-								@imageuploaded="getPhoto"
-							    :data="{do:'uploadimgjugador'}"
-							    extensions="jpg,jpeg"
-							    inputAccept	="image/jpg,image/jpeg"
-							>
-							</vue-core-image-upload>
-							
-						</div>
-						
-						<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
-		
-					</div>
+					<club-editar></club-editar>
                     
                 </ui-tab>
+                
+                <ui-tab title="Demanar registre jugador" id="nou">
+                    
+					<club-nou-jugador></club-nou-jugador>
+                    
+                </ui-tab>
+                                
             </ui-tabs>
 			
 			
@@ -202,16 +83,20 @@
         </ui-modal>
 	
 	
-  		<ui-modal ref="updateEquip" size="large" title="Inscripció - Insertar Jugadors" dismissOn="close-button">
+  		<ui-modal ref="updateEquip" size="large" :title="'Inscripció'+(readonly===false ? ' - Insertar Jugadors':'')" dismissOn="close-button">
 			<div class="ui-autocomplete__content">
 
 				<section class="overflow-hidden">
 					<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            label="Nom del equip a inscriure"
-								type="text"
-					            v-model="subscribeName"
+						required
+						:invalid="subscribeName.length === 0"
+						error="Camp de text requerit"
+					    floating-label
+			            autocomplete="off"
+			            label="Nom del equip a inscriure"
+						type="text"
+			            v-model="subscribeName"
+			            :disabled="readonly === true"
 					 ></ui-textbox>
 				</section>
 			    <table class="table results">
@@ -223,30 +108,30 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="element in equip">
+						<tr v-for="(element,index) in equip">
 							<td>{{element.numsoci}}</td>
 							<td>{{element.nom}}</td>
-							<th>
-								<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element.id)"></ui-icon-button>
-							</th>
+							<td>
+								<ui-icon-button v-if="readonly === false" icon="delete" size="small" type="secondary" @click="deletePlayer(element.id)"></ui-icon-button>
+							</td>
 						</tr>
 					</tbody>
 				</table>
-				
+
 				<ui-alert type="warning" v-show="equip.length<minimjugadors">
 	                Falt{{ ((minimjugadors-(equip?equip.length:0))==1?'a':'en') }} {{minimjugadors-(equip?equip.length:0)}} jugador{{ ((minimjugadors-(equip?equip.length:0))==1?'':'s') }} per a completar l'inscripció.
 	            </ui-alert>
 	            
 				<section class="overflow-hidden">
 					<ui-textbox
-							    floating-label
-					            autocomplete="off"
-					            label="Nº de Llicència a inscriure"
-								type="number"
-					            v-model="insertaJugador"
+					    floating-label
+			            autocomplete="off"
+			            label="Nº de Llicència a inscriure"
+						type="number"
+			            v-model="insertaJugador"
+			            v-if="readonly === false"
 					 ></ui-textbox>
 				</section>
-
 
 				<ui-button
                     color="fedpival"
@@ -254,11 +139,87 @@
 					:disabled="insertaJugador.length==0"
                     size="small"
                     @click="addPlayer(insertaJugador)"
+			        v-if="readonly === false"
                 >Afegir jugador</ui-button>
 
+				<ui-button
+                    color="fedpival"
+                    icon="person_add"
+                    size="small"
+                    @click="askPlayer()"
+		            v-if="readonly === false"
+                >Demanar registre jugador nou</ui-button>
 
+				<br>
+				
+				<ui-textbox
+					required
+		            error="Camp de text requerit"
+		            :invalid="delegat.length === 0"
+				    floating-label
+		            autocomplete="off"
+		            label="Delegat"
+					type="text"
+		            v-model="delegat"
+		            :disabled="readonly === true"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+		            error="Camp de text requerit"
+		            :invalid="telefon.length === 0"
+				    floating-label
+		            autocomplete="off"
+		            label="Telèfon delegat"
+					type="text"
+		            v-model="telefon"
+		            :disabled="readonly === true"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+		            error="Camp de text requerit"
+		            :invalid="lloc.length === 0"
+				    floating-label
+		            autocomplete="off"
+		            label="Lloc"
+					type="text"
+		            v-model="lloc"
+		            :disabled="readonly === true"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+		            :invalid="diasem.length === 0"
+		            error="Camp de text requerit"
+				    floating-label
+		            autocomplete="off"
+		            label="Dia de la setmana"
+					type="text"
+		            v-model="diasem"
+		            :disabled="readonly === true"
+		        ></ui-textbox>
+		        
+		        <ui-textbox
+		        	required
+		            error="Camp de text requerit"
+		            :invalid="hora.length === 0"
+				    floating-label
+		            autocomplete="off"
+		            label="Hora"
+					type="text"
+		            v-model="hora"
+		            :disabled="readonly === true"
+		        ></ui-textbox>
+		        
 				<div class="buttonGroupRight">
-					<ui-button size="small" :disabled="equip.length<minimjugadors" @click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
+					
+					<ui-button 
+					size="small" 
+		            v-if="readonly === false"
+					:disabled="subscribeName=='' || equip.length<minimjugadors || hora=='' || diasem=='' || lloc=='' || telefon=='' || delegat==''" 
+					@click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
+					
 					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
 				</div>
 				
@@ -425,9 +386,12 @@ import VuePellEditor from 'vue-pell-editor'
 import VuePellEditorConfig from '../../config/pelleditor'
 import Table from '../custom/Table.vue';
 import Paginate from 'vuejs-paginate'
+import ClubEditar from './ClubEditar.vue';
+import ClubNouJugador from './ClubNouJugador.vue';
+
 
 export default {
-  	components: { VuePellEditor, 'vue-core-image-upload': VueCoreImageUpload, 'tablerone':Table, 'paginate': Paginate},
+  	components: { VuePellEditor, 'vue-core-image-upload': VueCoreImageUpload, 'tablerone':Table, 'paginate': Paginate, ClubEditar, ClubNouJugador },
 	data () {
 		return {
 			error:{},
@@ -436,6 +400,7 @@ export default {
 		    equips:[],
 		    subscribeName:'',
 		    subscribeId:'',
+		    readonly:false,
 		    currChamp:'',
 		    partida: {},
 		    equip:[],
@@ -444,6 +409,11 @@ export default {
 		    buscadorJugador:[],
 		    insertaJugador:'',
 		    minimjugadors:0,
+		    hora:'', 
+		    diasem:'', 
+		    lloc:'', 
+		    telefon:'', 
+		    delegat:'',
 		    columnsInscripcions:[
 	            {
 	                label: 'Competició',
@@ -504,7 +474,7 @@ export default {
 		    noResults:false,
 			poblacions: [],
 			mapa: null,
-		    club:{
+		    /*club:{
 			      nom: null,
 			      fundacio: new Date(),
 			      cif: null,
@@ -517,7 +487,7 @@ export default {
 			      imatge: null,
 				  president:null,
 				  secretari:null
-		    },
+		    },*/
 		    datePickerOptions: {
 			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
 			  months: {
@@ -575,6 +545,11 @@ export default {
 		    */
 
 		},
+		askPlayer: function(e) {
+			this.closeAllModals();
+			this.$refs.tabs.setActiveTab('nou')
+			console.log(e);
+		},
 		deletePlayer: function(player){
 			var vm = this;
 			for(var i = 0; i < vm.equip.length; i++) {
@@ -617,7 +592,7 @@ export default {
 	    closeAllModals: function() {
 	    	var vm=this;
 		    for (var key in vm.$refs) {
-	        	vm.$refs[key].close();
+	        	if (vm.$refs[key].close) vm.$refs[key].close();
 	        }
 	    },
 	    modResultats:function(partida){
@@ -625,18 +600,25 @@ export default {
 			vm.getInfoPartida(partida.id);
 			vm.$refs.updateResultats.open()
 	    },
-	    modSubscribe:function(champ){
+	    modSubscribe:function(champ, readonly=false){
 			var vm=this;
-			vm.currChamp=champ.competicio;
-			vm.minimjugadors=champ.minimjugadors;
+			vm.readonly= readonly;
+			vm.currChamp= champ.competicio;
+			vm.minimjugadors= champ.minimjugadors;
 			vm.subscribeName = champ.nom;
 			vm.subscribeId = champ.id;
+			vm.delegat= champ.delegat || '';
+			vm.telefon= champ.telefon || '';
+			vm.lloc= champ.lloc || '';
+			vm.diasem= champ.diasem || '';
+			vm.hora= champ.hora || '';
 			vm.getJugadorsEquip(champ.id);
 			vm.$refs.updateEquip.open()
 	    },
 		subscribe: function(champ){
 			var vm=this;
 			vm.currChamp=champ.id;
+			vm.equip= []
 			vm.minimjugadors=champ.minimjugadors;
 			console.log(champ);
 			vm.$refs.updateEquip.open();
@@ -644,7 +626,7 @@ export default {
 		},
 		doModSubscribe:function(id){
 			var vm=this;
-			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null)})
+			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null), "hora":vm.hora, "diasem":vm.diasem, "lloc":vm.lloc, "telefon":vm.telefon, "delegat":vm.delegat } )
 			.then( function(response) {
 				
 				if(response.data.exception){
@@ -703,70 +685,19 @@ export default {
 				console.log(error);
 			} );
 		},
-		setPoblacio:function(){
+		/*setPoblacio:function(){
 			var vm = this;
 			var poblacio = vm.club.cp.split(" - ");
 			vm.club.cp = poblacio[0];
 			vm.club.poblacio = poblacio[1];
-			vm.getGeo();
-		},
-		onQueryChange: function(query) {
-            if (query.length < 3) {
-                return;
-            }
-            
-        	var vm = this;
-	        vm.loading=true;
-	        
-	        
-	        vm.$http.get('/postal/search/'+query, { cache: false })
-	        .then(function (response) {
-	        	var pob = [];
-	        	
-	        	for (var key = 0; key < response.data.length; key++){
-				  pob.push(response.data[key].codipostal+" - "+response.data[key].poblacio);
-				}
-	            vm.poblacions = pob;
-	            vm.loading=false;
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
-            
-        },
-		saveForm: function() {
-			
-			if(document.querySelectorAll('.is-invalid:not(.is-disabled)').length>0) {
-				document.querySelector('.is-invalid:not(.is-disabled) input').focus()
-				return false;
-			}
-			
-			var vm=this;
-			vm.club.fundacio = vm.club.fundacio.toString('yyyy');
-	        vm.$http.post('/club/'+ vm.$store.getters.userId , vm.club)
-	        .then(function (response) {
-	            vm.club.fundacio = vm.parseTime(vm.club.fundacio);
-	            vm.$router.push({ path: `/gestio/club`});
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
-		},
-		emailValid: function(email) {
-			return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
-		},
-
-		getPhoto:function(res) {
-			var vm=this;
-			vm.club.imatge = '/static'+res.file;
-		},
+		},*/
 		getData: function(){
 	        var vm = this;
 	        
 	        vm.$http.get('/club/'+vm.$store.getters.userId, { cache: false })
 	        .then(function (response) {
-	            vm.club = response.data[0];
-	            vm.club.fundacio = vm.parseTime(response.data[0].fundacio);
+	            //vm.club = response.data[0];
+	            //vm.club.fundacio = vm.parseTime(response.data[0].fundacio);
 	            vm.getEquips(vm.$store.getters.userId);
 	            vm.getResultats(vm.$store.getters.userId);
 	            vm.getInscripcions();
@@ -935,7 +866,6 @@ export default {
 	mounted: function () {
 		var vm=this;
 		if(vm.$store.getters.isAuthenticated) vm.getData();
-		if(vm.club.cp!='' || vm.club.poblacio!='') vm.getGeo();
 		
 	},
 	created: function() {

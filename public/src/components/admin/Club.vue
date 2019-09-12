@@ -166,6 +166,19 @@
 					</div>
                 </ui-tab>
 
+                <ui-tab title="Accés com a club">
+                	
+					
+						<br>
+						<p style="text-align:center;">
+							Per a accedir al panel d'administració com a club, cal fer click amb el botó de la dreta del ratolí sobre el botó i obrir l'enllaç a <u>una finestra d'incògnit</u> i així no perdre la sessió d'administració.
+							<br><br>
+							<a target="_blank" :href="'/login#'+tempPwd()"><ui-button icon="vpn_key" icon-position="left" size="big">Accedir club</ui-button></a>
+						</p>
+						
+
+                </ui-tab>
+
             </ui-tabs>
 			
 	    </div>
@@ -209,7 +222,8 @@ export default {
 			      poblacio: null,
 			      imatge: null,
 				  president:null,
-				  secretari:null
+				  secretari:null,
+				  json:null
 		    },
 		    datePickerOptions: {
 			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
@@ -316,6 +330,24 @@ export default {
 			vm.$http.post('/pwd/',{"club":vm.club.id,"email":vm.club.email})
 			.then( (response)=> { if(response.data.result=='ok') alert("correu enviat"); else alert("error enviant nova clau"); } )
 			.catch( (error) => { console.log(error); } );
+		},
+		cipher: function (salt) {
+		    let textToChars = text => text.split('').map(c => c.charCodeAt(0))
+		    let byteHex = n => ("0" + Number(n).toString(16)).substr(-2)
+		    let applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code)    
+		    return text => text.split('')
+		        .map(textToChars)
+		        .map(applySaltToChar)
+		        .map(byteHex)
+		        .join('')
+		},
+		tempPwd: function() {
+			var vm= this;
+			var pwd= JSON.parse(vm.club.json).pwd;
+			var email= vm.club.email;
+			var dt= (new Date()).toISOString().replace(/[-\.TZ:]/g,'').substr(0,11);
+			let myCipher = vm.cipher(dt)
+			return myCipher(email+'|'+pwd)
 		},
 		parseTime: function(time) {
 			

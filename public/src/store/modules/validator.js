@@ -10,7 +10,7 @@ const getters = {
 			var NIE_REGEX = /^[XYZ]\d{7,8}[A-Z]$/;
 			var EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			
-			if(n.string==null||n.string=='') return true;
+			if(n.type!='emailnull' && (n.string==null||n.string=='')) return true;
 			
 			if(n.type=='cif') {
 				return CIF_REGEX.test(n.string.toUpperCase())==false;
@@ -20,6 +20,13 @@ const getters = {
 			}
 			else if(n.type=='email') {
 				return EMAIL_REGEX.test(n.string.toUpperCase())==false;
+			}
+			else if(n.type=='emailnull') {
+				var res= false;
+				try{
+					res=EMAIL_REGEX.test(n.string.toUpperCase());
+				}catch(e){console.log(e);}
+				return n.string!='' && res==false;
 			}
 			else if(n.type=='not-null') {
 				return !n.string.length>0;

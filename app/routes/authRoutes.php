@@ -3,7 +3,7 @@
 use Slim\App;
 use Slim\Middleware\TokenAuthentication;
 use \app\Auth;
-use config;
+///use config;
 
 
 function rol_auth($request, TokenAuthentication $tokenAuth, $rol) {

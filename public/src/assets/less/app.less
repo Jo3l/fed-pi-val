@@ -18,6 +18,11 @@
     -webkit-print-color-adjust: exact;
 }
 
+@media print {    
+	button, hr {
+		visibility:hidden;
+	}
+}
 
 
 *, *:before, *:after {
@@ -123,6 +128,12 @@ h1 {
 
 //generic clases
 
+.no-print {
+	@media print {    
+    	visibility: hidden;
+	}
+}
+
 .ui-button--color-saveForm {
 	margin: 20px auto;
     display: block;
@@ -182,14 +193,17 @@ hr {
     position: relative;
     //overflow: hidden;
     box-shadow: 0px 0px 40px #dedede;
-    box-sizing: content-box;
+    box-sizing: border-box;
     background-color:white;
     padding-top: 30px;
     margin-top: -20px;
-    padding-bottom: 80px;
+    //padding-bottom: 80px;
     //min-height: ~"calc(100vh - 160px)";
-    min-height: ~"calc(100vh - 112px)";
+    min-height: 100vh;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
 	@media(max-width:@screenTablet) {
 		min-height: ~"calc(100vh - 190px)";
 	}

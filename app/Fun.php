@@ -138,10 +138,11 @@ static public function equipsdeclub(Request $request, Response $response, $param
     $db = new db();
 	$club= $params['club'];
 	$options= array();
-	$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
-	$sql= "SELECT equip.id,nom,competicio,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
+	//$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
+	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
-	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
+	if (!isset($params['o'])) $params['o']='id-';
+	$sql.= " order by ".str_replace('-',' desc',$params['o']);
 	$db->sql($sql);
 	$data= $db->all();
 	foreach($data as $id=>$elm) {
@@ -170,7 +171,7 @@ static public function inscripcionsdecompeticio(Request $request, Response $resp
     $db = new db();
 	$node= $params['node'];
 	$options= array();
-	$sql= "SELECT equip.id,nom,json,club, (select club.nom from club where club.id=equip.club) as nomclub FROM equip WHERE competicio=".$node;
+	$sql= "SELECT equip.id,nom,json,club, (select club.nom from club where club.id=equip.club) as nomclub FROM equip WHERE baixa is null and competicio=".$node;
 	$db->sql($sql);
 	$data= $db->all();
     echo json_encode($data);
@@ -286,12 +287,13 @@ static public function generaPartides(Request $request, Response $response, $par
 	$sql='';
 	foreach($json as $jornada) {
 		foreach($jornada['enfrontaments'] as $partida)
-			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant)values(%d,%d,'%s',%d,%d);",
+			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant,grup)values(%d,%d,'%s',%d,%d,'%s');",
 				$request->getQueryParam('node'),
 				$request->getQueryParam('bloc'),
-				$jornada['data'],
+				$jornada['datacurta'],
 				$partida[0]['id'],	
-				$partida[1]['id']
+				$partida[1]['id'],
+				$jornada['grup']
 			);
 	}
     //echo $sql;
@@ -387,6 +389,18 @@ static public function inscripcions($request,$response,$params) {
     return Fun::render($result);
 }	
 
+/*
+* @description
+* Elimina les partides i l'equip
+* URL: DELETE /api/eliminaequip/12
+*/
+static public function eliminaequip(Request $request, Response $response, $params) {
+	$id= $params['equip'];
+	$db = new db();
+	$db->sql("update partida set baixa='".date('YmdHis')."' where local='".$params['equip']."' or visitant=".$params['equip']);
+	$db->sql("update equip set baixa='".date('YmdHis')."' where id=".$params['equip']);
+	return '{"result":"ok"}';
+}
 
 //  //  //  //  //  //  //  //
 /*
@@ -602,7 +616,8 @@ static public function noticia_query(Request $request, Response $response, $para
 static public function producte_query(Request $request, Response $response, $params) {
 	$slug= $params['slug'];
     $db = new db();
-    $db->sql("select * from producte where slug='".$slug."';");
+    // OJO JSON_EXTRACT NO disponible en occentus : $db->sql("select * from producte where JSON_EXTRACT(json, '$.content.es.slug') ='".$slug."' OR JSON_EXTRACT(json, '$.content.val.slug') ='".$slug."';");
+    $db->sql("select * from producte where POSITION( '\"slug\":\"".$slug."' IN json)>0;");
     //$db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
     $data = $db->all();
 	$a= $data[0]['json']; 
@@ -611,6 +626,23 @@ static public function producte_query(Request $request, Response $response, $par
 	Fun::render($data);
 }
 
+/*
+* @description
+* Demana donar d'alta un nou jugador
+* URL: /api/jugador/registre POST {nom: null, cognoms: null, dni: null, naixement: null, dir: null, cp: null, poblacio: null, tel: null, email: null}
+*/
+static public function demanajugador(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	//{"nom":"test","cognoms":"test2","dni":"12312412z","sexe":"h","naixement":"","dir":"","cp":"","poblacio":"","tel":null,"email":"a@a.a","imatge":null,"club":"1"}
+    $db = new db();
+    $db->sql("select * from club where id=".$json['club']);
+    $f= $db->all()[0];
+    $club= $f['nom'];
+    $nom= $json['nom'].' '.$json['cognoms'];
+	$base= base64_encode(file_get_contents("php://input"));
+	Fun::email('campionats@fedpival.es','Nou jugador "'.$nom.'" proposat pel club "'.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
+	return Fun::render('{"result":"ok"}');
+}
 
 
 //  //  //  //  //  //  //  //
@@ -637,6 +669,79 @@ static public function modalitats(Request $request, Response $response, $params)
 	Fun::render($data);
 }
 
+//  //  //  //  //  //  //  //
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obté una taula amb les inscripcions per equip d'un node de competició indicat
+* URL: /api/resumnode/17
+*/
+static public function resum_competicio(Request $request, Response $response, $params) {
+	$node= $params['id'];
+	$db = new db();
+	$db->sql("select id,pare,nom from _jerarquia_val");
+	$data= $db->all();
+	$llistanodes[$node]= 'arrel';
+	for ($i=5; $i>0; $i--)
+		foreach($data as $elm) {
+			if (in_array($elm['pare'],array_keys($llistanodes)))
+				if (!in_array($elm['id'],array_keys($llistanodes)))
+					$llistanodes[$elm['id']]= $elm['nom'];
+		}
+	$ids= array_keys($llistanodes);
+	$sql= "select id,nom,club,(select club.nom from club where club.id=equip.club) as nomclub, competicio from equip where baixa is null and competicio in (".implode(',',$ids).") order by nomclub;";
+	$db->sql($sql);
+	$data= $db->all();
+	$clubs=[];
+	$modalitats=[];
+	foreach($data as $cada) {
+		$clubs[$cada['nomclub']]= 1;
+		$modalitats[$cada['competicio']]= $llistanodes[$cada['competicio']];
+	}
+	ksort($modalitats);
+	//echo '<pre>',print_r($clubs),'<hr/>',print_r($modalitats);exit;
+	echo '<link rel="stylesheet" type="text/css" href="/static/table.css">';
+	echo '<table><thead><td></td><td>',implode('</td><td>',$modalitats),'</td></thead>';
+	foreach($clubs as $club=>$fem) {
+		echo '<tr><td>',$club,'</td>';
+		foreach($modalitats as $moda=>$nommoda) {
+			$suma=0;
+			foreach($data as $insc) { 
+				if ($insc['nomclub']==$club && $insc['competicio']==$moda) $suma++; 
+			}
+			echo '<td>',($suma?:''),'</td>';
+		}
+		echo '</tr>';
+	}
+	echo '</table>';
+	?><style>td{border:1px solid black;}</style><?php
+	//Fun::render($data);
+}
+
+/*
+* @description
+* Obté els ids dels nodes germans de l'actual per a fer una reubicació
+* URL: /api/germans/17
+*/
+static public function germans(Request $request, Response $response, $params) {
+	$db= new db();
+	$db->sql("select id,nom from _jerarquia_val where id<>".$params['id']." and pare=(select pare from _jerarquia_val where id=".$params['id'].");");
+	$data= $db->all();
+	Fun::render($data);
+}
+
+/*
+* @description
+* Canvia el node d'un equip (reubica)
+* URL: /api/canvicateg/[idequip]/[idnode]
+* URL: /api/canvicateg/4634/17
+*/
+static public function canvi_categ(Request $request, Response $response, $params) {
+	$json= json_decode(file_get_contents("php://input"),true);
+	$db= new db();
+	$db->sql("update equip set competicio= ".$json['idnode']." where id=".$json['idequip'].";");
+	return true;
+}
 
 //  //  //  //  //  //  //  //
 //  //  //  //  //  //  //  //
@@ -684,9 +789,15 @@ static public function slugify($string, $id=null) {
 }
 
 
+
+
+
+
+
+
 //  //  //  //  //  //  //  //
 /*
-* @descriptionPetició de comanda de compra.
+* @description Petició de comanda de compra.
 * En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
 */
 static public function comprar(Request $request, Response $response, $params) {
@@ -699,18 +810,44 @@ static public function comprar(Request $request, Response $response, $params) {
 	$address= $json['address'].' '.$json['cp'];
 	$tel= $json['tel'];
 	$email= $json['email'];
+	$html='';
+	$min= [];
+	
 	foreach($json['cart'] as $elm) {
 		$prod= $elm['name'];
 		foreach($elm['fullProduct']['types'] as $tipo) { 
 			if ($tipo['name']==$prod) {
 				$preuprod= $tipo['price']['amount'];
-				$preu+= $elm['quantity']*$preuprod;
+				$preu+= $preuprod*$elm['quantity'];
+				$html.= '<tr><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td>'.($preuprod*$elm['quantity']).'&euro;</td></tr>';
 			}
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
+
+
+
 	$preu+= config::preuenviament;
 
+	$html= '<h2>Comanda:</h2><table>'.$html.'</table>';
+	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
+		date('d-m-Y H:i:s'),
+		$name, $address, $tel, $email, $email,
+		$preu+8.9
+		//,str_replace(['[',','],"\n[",json_encode($carro))
+	);
+	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
+		a la recepció del material.\n
+		Per a qualsevol devolució es imprescindible presentar la factura.\n
+		Si es canvia l'adreça d'enviament una volta s'ha enviat el producte,\n
+		s'hauràn de carregar dos voltes les despesses d'enviament.\n
+		Li recordem que les seues dades consten a un fitxer de titularitat de la\n
+		FEDERACIÓ DE PILOTA VALENCIANA necesari per a la gestió contable i fiscal\n
+		de l'empresa. Pot exercir els drets d'acces, rectificació, cancelació i\n
+		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
+		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
+		Juan, 32 baix B, Valencia, 46015";
+	
 	/*
 	https://sis-t.redsys.es:25443/sis/realizarPago
 	Número de comercio (FUC)
@@ -761,6 +898,9 @@ static public function comprar(Request $request, Response $response, $params) {
 	$request = "";
 	$params = $miObj->createMerchantParameters();
 	$signature = $miObj->createMerchantSignature($kc);	
+
+
+
 	
 /*<form name="frm" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
 Ds_Merchant_SignatureVersion <input type="text" name="Ds_SignatureVersion" value="<?php echo $version; ?>"/></br>
@@ -791,8 +931,17 @@ Código CIP	123456
 operación Denegada. Utilice esta tarjeta de prueba:
 Número de tarjeta	1111111111111117
 Caducidad	12/20
+
+resultat ok: https://fedpival.es/val/botiga/comprat/?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=eyJEc19EYXRlIjoiMTIlMkYwOSUyRjIwMTkiLCJEc19Ib3VyIjoiMTglM0EzMiIsIkRzX1NlY3VyZVBheW1lbnQiOiIxIiwiRHNfQW1vdW50IjoiMjU4MCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIxOTAwMDAwNSIsIkRzX01lcmNoYW50Q29kZSI6IjI3MjA5NTIyNSIsIkRzX1Rlcm1pbmFsIjoiMDAxIiwiRHNfUmVzcG9uc2UiOiIwMDAwIiwiRHNfVHJhbnNhY3Rpb25UeXBlIjoiMCIsIkRzX01lcmNoYW50RGF0YSI6IiIsIkRzX0F1dGhvcmlzYXRpb25Db2RlIjoiMTUxMTc1IiwiRHNfQ29uc3VtZXJMYW5ndWFnZSI6IjEiLCJEc19DYXJkX0NvdW50cnkiOiI3MjQiLCJEc19DYXJkX0JyYW5kIjoiMSJ9&Ds_Signature=uhAeMCq4TgKjDdRjSMSlxyFPCCg28q2IEFiLUolQgtA%3D
 */
+
 }
+
+
+
+
+
+
 
 //  //  //  //  //  //  //  //
 /*
@@ -818,9 +967,7 @@ static public function pagat(Request $request, Response $response, $params) {
 	}
 
 	$data= json_decode($decodec);
-	/// decodec= {"Ds_Date":"01%2F06%2F2019","Ds_Hour":"19%3A33","Ds_SecurePayment":"1","Ds_Amount":"552","Ds_Currency":"978","Ds_Order":"19060001","Ds_MerchantCode":"272095225","Ds_Terminal":"001","Ds_Response":"0000","Ds_TransactionType":"0","Ds_MerchantData":"","Ds_AuthorisationCode":"047531","Ds_ConsumerLanguage":"1","Ds_Card_Country":"724","Ds_Card_Brand":"1"}
-	/// decodecKO= object(stdClass)#2 (14) {  ["Ds_SecurePayment"]=>  string(1) "0"  ["Ds_Order"]=> string(8) "19060002"  ["Ds_Response"]=>  string(4) "0180"  ["Ds_AuthorisationCode"]=>  string(6) "++++++" }
-	/// url KO = http://vlc.wiki/fedpival-adminer/testredsys/recibe.php?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=eyJEc19EYXRlIjoiMDElMkYwNiUyRjIwMTkiLCJEc19Ib3VyIjoiMTklM0E0MyIsIkRzX1NlY3VyZVBheW1lbnQiOiIwIiwiRHNfQW1vdW50IjoiNTUyIiwiRHNfQ3VycmVuY3kiOiI5NzgiLCJEc19PcmRlciI6IjE5MDYwMDAyIiwiRHNfTWVyY2hhbnRDb2RlIjoiMjcyMDk1MjI1IiwiRHNfVGVybWluYWwiOiIwMDEiLCJEc19SZXNwb25zZSI6IjAxODAiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfTWVyY2hhbnREYXRhIjoiIiwiRHNfQXV0aG9yaXNhdGlvbkNvZGUiOiIrKysrKysiLCJEc19Db25zdW1lckxhbmd1YWdlIjoiMSIsIkRzX0NhcmRfQ291bnRyeSI6IjAifQ==&Ds_Signature=IU0fHRTtVStYSHIDMM-_dzRy5gp9TkuJd2K0CbAWm7o=
+
 	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') die(json_encode(["error"=>'Error en el pago'])); // header reload
 
 	Fun::$db= new db();
@@ -834,13 +981,16 @@ static public function pagat(Request $request, Response $response, $params) {
 	$json->authcode = $data->Ds_AuthorisationCode;
 	$json->preu = $row[0]['quantitat'];
 	echo json_encode($json);
-	
-	$str= sprintf("Nom: %s \nAdreça: %s\n Tel: %s\nEmail comprador: %s\nDespeses d'enviament: 8,90 euros\nTotal: %s euros\n%s\n",
-		$nom, $address, $tel, $email,
-		$preu,
-		str_replace(['[',','],"\n[",json_encode($carro))
+
+// PAGAT. enviament mail comanda
+	$html= '<h2>Comanda:</h2><table>'.$html.'</table>';
+	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
+		date('d-m-Y H:i:s'),
+		$name, $address, $tel, $email, $email,
+		$preu+8.9
+		//,str_replace(['[',','],"\n[",json_encode($carro))
 	);
-	$str.="\n\nEl termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
+	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
 		a la recepció del material.\n
 		Per a qualsevol devolució es imprescindible presentar la factura.\n
 		Si es canvia l'adreça d'enviament una volta s'ha enviat el producte,\n
@@ -851,10 +1001,13 @@ static public function pagat(Request $request, Response $response, $params) {
 		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
 		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
 		Juan, 32 baix B, Valencia, 46015";
+
 	Fun::email('alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
 	Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
-	//return Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
+
 }
+
+
 
 static public function email($to,$sub,$text){
 	# Include the Autoloader (see "Libraries" for install instructions)

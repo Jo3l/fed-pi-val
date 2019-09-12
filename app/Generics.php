@@ -88,7 +88,7 @@ public function generic_insert(Request $request, Response $response, $params) {
 	else
 	if (Auth::verifyRol($request,10) && in_array($tabla,array('equip','jugador','partida'))) $autoritzat= true;
 	else if (Auth::verifyRol($request,1)) $autoritzat= true;
-	if (!autoritzat) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}'));
+	//if (!$autoritzat) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"NO AUTORITZAT"}'));
 	if ($tabla=='usuari') {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
@@ -103,6 +103,17 @@ public function generic_insert(Request $request, Response $response, $params) {
 		$json['slug']= Fun::slugify($json['nom']);
 	}
 	if ($tabla=='pagina') { if (empty($json['titol'])) die('{"ERROR": "Sense títol... No s\'ha guardat..."}'); }
+	if ($tabla=='jugador') {
+		$db->sql("select count(*) as c from jugador where dni='".$json['dni']."';");
+		$all= $db->all();
+		if ($all[0]['c']>0) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"ERROR":"Ya existe ese DNI"}'));
+	}
+	if ($tabla=='producte') {
+		$jsonobj= json_decode($json['json'],true);
+		$jsonobj['content']['es']['slug']= Fun::slugify($jsonobj['content']['es']['name']);
+		$jsonobj['content']['val']['slug']= Fun::slugify($jsonobj['content']['val']['name']);
+		$json['json']= json_encode($jsonobj);
+	}
 	$camps= Generics::getFields($tabla);
 	if (isset($json['idioma'])) Fun::$idioma= $json['idioma'];
 	$filtrekeys= array();
@@ -167,13 +178,12 @@ static public function generic_query(Request $request, Response $response, $para
 	}
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= array( 'limit'=>Fun::$itemsPerPage );
+	if (in_array($tabla,['trinquet','producte'])) $options['limit']=PHP_INT_MAX; // canvie el limit per defecte si és trinquet (modificable per paràmetres a continuació)
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	if (in_array('p3',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
 	if (in_array('p4',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
-	if ($tabla=='trinquet') $options['limit']=PHP_INT_MAX;
-	if ($tabla=='producte') $options['limit']=PHP_INT_MAX;
     $db = new db();
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);

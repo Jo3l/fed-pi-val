@@ -18,6 +18,7 @@ namespace app;
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+use Imagick;
 
 class Filem
 {
@@ -153,7 +154,7 @@ class Filem
 	}
 
 	/**
-	 * Resize image - preserve ratio of width and height.
+	 * Resize image with GD - preserve ratio of width and height.
 	 * @param string $sourceImage path to source JPEG image
 	 * @param string $targetImage path to final JPEG image file
 	 * @param int $maxWidth maximum width of final image (value 0 - width is optional)
@@ -163,46 +164,53 @@ class Filem
 	 */
 	static public function resizeImage($sourceImage, $targetImage, $maxWidth, $maxHeight, $quality = 60)
 	{
-	    // Obtain image from given source file.
-	    if (!$image = @imagecreatefromjpeg($sourceImage))
-	    {
-	        return false;
-	    }
+		if(!file_exists($sourceImage)){ return false; }
+		$image = new Imagick($sourceImage);
+		$image->resizeImage($maxWidth, ($maxHeight=="auto"?null:$maxHeight), Imagick::FILTER_LANCZOS, 1);
+		$image->setImageFormat("jpg");
+		$image->setImageCompression(\Imagick::COMPRESSION_UNDEFINED);
+		$image->setImageCompressionQuality($quality);
+		$image->stripImage();
+		$image->writeimage($targetImage);
+		return true;
+	}
 	
-	    // Get dimensions of source image.
-	    list($origWidth, $origHeight) = getimagesize($sourceImage);
-	
-	    if ($maxWidth == 0)
-	    {
-	        $maxWidth  = $origWidth;
-	    }
-	
-	    if ($maxHeight == 0)
-	    {
-	        $maxHeight = $origHeight;
-	    }
-	
-	    // Calculate ratio of desired maximum sizes and original sizes.
-	    $widthRatio = $maxWidth / $origWidth;
-	    $heightRatio = $maxHeight / $origHeight;
-	
-	    // Ratio used for calculating new image dimensions.
-	    $ratio = min($widthRatio, $heightRatio);
-	
-	    // Calculate new image dimensions.
-	    $newWidth  = (int)$origWidth  * $ratio;
-	    $newHeight = (int)$origHeight * $ratio;
-	
-	    // Create final image with new dimensions.
-	    $newImage = imagecreatetruecolor($newWidth, $newHeight);
-	    imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
-	    imagejpeg($newImage, $targetImage, $quality);
-	
-	    // Free up the memory.
-	    imagedestroy($image);
-	    imagedestroy($newImage);
-	
-	    return true;
+	static public function optimize() {
+		function rglob($pattern, $flags = 0) {
+		    $files = glob($pattern, $flags); 
+		    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+		        $files = array_merge($files, rglob($dir.'/'.basename($pattern), $flags));
+		    }
+		    return $files;
+		}
+		function limpianom($rutacomic) {
+		        //fem neteja d'arxius amb caracters xungos
+		    $rutaimg = strtr($rutacomic, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUU
+		UUYaaaaaaceeeeiiiinoooooouuuuyy');
+		        $rutaimg = strtr($rutaimg, array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => '
+		oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+		        $rutaimg = preg_replace('/[^a-zA-Z0-9_ \-()\.\/]/s', '', $rutaimg);
+		        $rutaimg = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\/]/'), array('_', '.', ''), $rutaimg);
+		
+		        return $rutaimg;
+		}		
+		echo '<h1>Go fight!</h1>';
+		$file= Filem::prepare( );
+		$folder = '/upload/*.[jJ][pP][gG]';
+		$files= rglob($file.$folder);
+		echo count($files),' arxius trobats...';
+		foreach($files as $kk) {
+			list($ancho, $alto, $tipo, $atributos) = getimagesize($kk);
+			$sz= filesize($kk);
+			if ($ancho>1188) {
+				echo '<li> redimensionant ',$ancho, $kk;
+				if (Filem::resizeImage($kk, $kk.'_.jpg', 1188, "auto", 60)) {
+					unlink($kk);
+					rename($kk.'_.jpg',$kk);
+					echo  ' OK! de ',$sz,' a ',filesize($kk); 
+				}
+			}			
+		}
 	}
 	
 	/**
@@ -232,17 +240,18 @@ class Filem
 			$tmpRand = rand(00,99);
 			move_uploaded_file($_FILES['files']['tmp_name'], $file.$fileDestination.'/'.$tmpRand."_".$_FILES['files']['name']);
 			echo json_encode(['what'=>$what,'success' => true, 'file' =>  $fileDestination.'/'.$tmpRand."_".$_FILES['files']['name'] ]);
-			$name= $fileDestination.'/'.$tmpRand."_".$_FILES['files']['name'];
+			$name= $file.$fileDestination.'/'.$tmpRand."_".$_FILES['files']['name'];
 		} else {
 			move_uploaded_file($_FILES['files']['tmp_name'], $file.$fileDestination.'/'.$_FILES['files']['name']);
 			echo json_encode(['what'=>$what,'success' => true, 'file' => $fileDestination.'/'.$_FILES['files']['name'] ]);
-			$name= $fileDestination.'/'.$_FILES['files']['name'];
+			$name= $file.$fileDestination.'/'.$_FILES['files']['name'];
 		}
 
-		if(file_exists($name)) {
-			rename($name,$name.'_.jpg');
-			if (!Filem::resizeImage($name.'_.jpg', $name, 1188, 1188, 60)) rename($name.'_.jpg',$name);
-			else unlink($name.'_.jpg');
+		if (file_exists($name) && (in_array(pathinfo($name)['extension'],['jpg','JPG','jpeg','JPEG']))) {
+			if (Filem::resizeImage($name, $name.'_.jpg', 1188, "auto", 60)) {
+				unlink($name);
+				rename($name.'_.jpg',$name);
+			}
 		}
 
 		exit;
@@ -256,12 +265,4 @@ class Filem
 
 	static public function uploadpdf(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'pdf'); }
 	
-	static public function get_tinified_url($file_path,$TinyPNG_API_KEY){
-    $tiny_curl = curl_init();
-    $Opts = array(CURLOPT_RETURNTRANSFER => 1,CURLOPT_URL => 'https://api.tinify.com/shrink',CURLOPT_POST => 1,CURLOPT_USERPWD => 'api:' . $TinyPNG_API_KEY,CURLOPT_BINARYTRANSFER => 1,CURLOPT_POSTFIELDS => file_get_contents($file_path));
-    curl_setopt_array($tiny_curl, $Opts);
-    $result = json_decode(curl_exec($tiny_curl),true);
-    return($result['output']['url']);
-}
-
 }

@@ -7,15 +7,19 @@
 				</svg>
 			</div>
 			<swiper :options="swiperOption" class="teaserPicture">
-				<swiper-slide v-for="(noticia, index) in newsTeasers" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==true&&index<=5">
+				<swiper-slide v-for="(noticia, index) in newsTeasers">
 					<aside>
 							<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }"><h2>{{ noticia.titol }}</h2></router-link>
 					</aside>
 					<progressive-background v-if="noticia.url" :src="noticia.url" class="picture">
 					</progressive-background>
 				</swiper-slide>
+				<ui-icon-button icon="chevron_left" type="primary" class="swiper-button-prev nuws" slot="button-prev"></ui-icon-button>
+				<ui-icon-button icon="chevron_right" type="primary" class="swiper-button-next nuws" slot="button-next"></ui-icon-button>
 			</swiper>
 
+
+			  
 			<div class="three-quarters-loader"> </div>
 			
 			<div v-bind:class="{ competicions:true, active: newsTeasers!='' }">
@@ -59,7 +63,16 @@ export default {
 		        autoplay: {
 	            	delay: 4500,
 	            	disableOnInteraction: false
-	        	}
+	        	},
+		        navigation: {
+		          nextEl: '.swiper-button-next.nuws',
+		          prevEl: '.swiper-button-prev.nuws'
+		        },
+		        pagination: {
+		          el: '.swiper-pagination.nuws',
+		          type: 'bullets',
+		          clickable: true
+		        }
 		    },
 		}
 	},

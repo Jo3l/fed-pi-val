@@ -5,7 +5,7 @@
 	    	
 			<swiper :options="swiperOption" class="newsCarousel">
 	
-			  <swiper-slide v-for="(noticia, index) in newsCarousel" v-if="noticia.idioma==$i18n.locale&&noticia.destacada==false">
+			  <swiper-slide v-for="(noticia, index) in newsCarousel" v-if="noticia.idioma==$i18n.locale">
 			    <div class="articleP">
 			    	
 			    	<img v-if="index>10" :data-src="noticia.url" class="swiper-lazy"/>

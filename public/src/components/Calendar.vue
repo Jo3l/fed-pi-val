@@ -84,9 +84,18 @@
 				<article v-for="event in todayEvent">
 					
 					<aside v-if="$store.getters.isAuthenticatedWithRole(0)" class="nodeContentElement lined">
-					<h4>{{parseTime(event.publicacio)}}</h4>
-					<i class="remove" @click="removeContent(event, todayEvent)"></i>
-
+						
+						<h4>{{parseTime(event.publicacio)}}</h4>
+						<i class="remove" @click="removeContent(event, todayEvent)"></i>
+						
+						<h4>Codi de color:</h4>
+						<!--
+						<ui-icon-button color="primary" :icon="event.color=='primary'?'done':''" size="small" @click="event.color='primary'"></ui-icon-button>
+						<ui-icon-button color="accent"  :icon="event.color=='accent'?'done':''"size="small" @click="event.color='accent'"></ui-icon-button>
+						<ui-icon-button color="orange" :icon="event.color=='orange'?'done':''"size="small" @click="event.color='orange'"></ui-icon-button>
+						<ui-icon-button color="red" :icon="event.color=='red'?'done':''"size="small" @click="event.color='red'"></ui-icon-button>
+						<ui-icon-button color="green" :icon="event.color=='green'?'done':''"size="small" @click="event.color='green'"></ui-icon-button>
+						-->
 							<ui-textbox
 							    floating-label
 				                autocomplete="off"
@@ -105,7 +114,7 @@
 						    />
 							
 							<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveBlock(event)">{{$i18n.t('common.save')}}</ui-button>
-
+							<ui-button color="blueButtonToRight" icon="delete" size="small" type="secondary" @click="removeContent(event, todayEvent)">{{$i18n.t('common.delete')}}</ui-button>
 					</aside>
 					
 					<aside v-if="!$store.getters.isAuthenticatedWithRole(1) && event.id">
@@ -150,6 +159,7 @@ export default {
 	},
 	data: function(){ 
 		return {
+			colorSelected:'',
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
 			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
 			increment: 0,
@@ -179,7 +189,6 @@ export default {
 		}
 	},
 	methods: {
-
 		createBlock: function() {
 			console.log(this.selected);
 			this.todayEvent.push({
@@ -191,12 +200,13 @@ export default {
 				publicacio:Date.parse(this.selected.year+'/'+(this.selected.month+1)+'/'+this.selected.day).toString('yyyyMMddHHmmss'),
 				titol:"",
 				contingut:"",
-				
+				color:"",
+				json: null
 			});
 		},
 		removeContent: function(event, todayEvent) {
 			var vm=this;
-			console.log(todayEvent);
+			console.log(event,todayEvent);
 			vm.$http.delete('/acte/'+event.id)
 	        .then(function (response) {
 	        	
@@ -217,9 +227,16 @@ export default {
 		saveBlock: function(block){
 			
 			var vm = this;
-			var bloc = block.id ? block.id : '';
+			var blocid = block.id ? block.id : '';
+			block.json= block.json ? block.json : '';
+			try {
+				var json= JSON.parse(block.json);
+				//json.color= block.color;
+				//delete block.color;
+				block.json=  JSON.stringify(json);
+			} catch(e) { console.log(e); console.log(block.json); }
 
-	        vm.$http.post('/acte/'+bloc, block)
+	        vm.$http.post('/acte/'+blocid, block)
 	        .then(function (response) {
 	        	
 				//no cal fer res.
@@ -313,6 +330,8 @@ export default {
 							
 							var eventsInDay=[];
 							for (var event in res.data) {
+								//var json= JSON.parse(res.data[event].json);
+								//res.data[event].color= ( (json && json.color) ? json.color : 'primary');
 								if(res.data[event].publicacio && res.data[event].publicacio == year+''+("0" + (month + 1)).slice(-2)+''+("0" + (dateOfMonth)).slice(-2)) {
 									eventsInDay.push(res.data[event]);
 	        					}
@@ -322,6 +341,9 @@ export default {
 							if( Object.keys(eventsInDay).length > 0 ) {
 								clase = 'event';
 							}
+							
+							//afegir clase color a mes de clase event
+							
 							if( Date.today().getDate()==dateOfMonth && Date.today().getMonth() == month && (Date.today().getYear()+1900) == year) {
 								clase = 'today';
 							}
@@ -449,6 +471,9 @@ export default {
 		    &.lined{
 		    	border-bottom: 1px solid @fedcolor!important;
 		    }
+		    p > * {
+		    	max-width:100%;
+		    }
 		}
 		&:last-of-type{
 			aside {
@@ -567,13 +592,27 @@ export default {
 			height: 	32px;
 			width: 32px;
 		  	&.today {
-			    background-color: yellow;
-			    border: 2px dotted yellow;
+			    border: 2px dotted rgba(0,0,0,0.5);
 			    color:black;
 			}
 		  	&.event {
 				background-color: #ffeef0;
-    			border: 1px dashed #d46b78;
+    			border: 1px solid white;
+    			&.primary {
+    				background-color: #2196f3;
+    			}
+    			&.accent {
+    				background-color: #a100bc;
+    			}
+    			&.orange {
+    				background-color: #c27400;
+    			}
+    			&.red {
+    				background-color: #e11b0c;
+    			}
+    			&.green {
+    				background-color: #39843c;
+    			}
 			}
 		}
 		

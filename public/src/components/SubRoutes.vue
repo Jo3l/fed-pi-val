@@ -504,7 +504,10 @@ export default {
 		border-radius: 30px;
 		text-transform: capitalize;
 		cursor: pointer;
-
+		@media print {    
+	    	border:0;
+		}
+		
 		&:hover {
 			color: #fff;
 			background-color: #87212e;
@@ -512,15 +515,18 @@ export default {
 	}
 
 	.breadcrumb-separator {
-    border-color: #87212e;
-    border-style: solid;
-    border-width: 2px 2px 0 0;
-		font-size: 11px;
-    margin: 0 8px 0 5px;
-    width: 7px;
-    height: 7px;
-    display: inline-block;
-    transform: rotate(41deg);
+	    border-color: #87212e;
+	    border-style: solid;
+	    border-width: 2px 2px 0 0;
+			font-size: 11px;
+	    margin: 0 8px 0 5px;
+	    width: 7px;
+	    height: 7px;
+	    display: inline-block;
+	    transform: rotate(41deg);
+	    @media print {    
+	    	display:none;
+		}
 	}
 
   li { 
@@ -546,6 +552,9 @@ export default {
 	.vertical-menu {
 		height: 15px;
 		display: initial;
+		@media print {    
+	    	display:none;
+		}
 		&>div{
 			//display:flex;
 			//flex-wrap: wrap;

@@ -1,6 +1,6 @@
-var path = require('path')
-var webpack = require('webpack')
-
+const path = require('path')
+const webpack = require('webpack')
+const fs = require('fs');
 
 
 module.exports = {
@@ -85,14 +85,35 @@ if (process.env.NODE_ENV === 'production') {
     }),
     new webpack.LoaderOptionsPlugin({
       minimize: true
-    })
+    }),
+	function () {
+	    this.plugin("done", function (stats) {
+	    	console.log('build hash replace');
+	        var replaceInFile = function (filePath, toReplace, replacement) {
+	            var replacer = function (match) {
+	                console.log('Replacing in %s: %s => %s', filePath, match, replacement);
+	                return replacement
+	            };
+	            var str = fs.readFileSync(filePath, 'utf8');
+	            var out = str.replace(new RegExp(toReplace, 'g'), replacer);
+	            fs.writeFileSync(filePath, out);
+	        };
+	
+	        var hash = stats.hash; // Build's hash, found in `stats` since build lifecycle is done.
+		
+	        replaceInFile(path.join(path.resolve(__dirname, '.'), 'index.html'),
+	            'build\.js\?.*"',
+	            'build.js?' + hash + '"'
+	        );
+	    });
+	}
   ])
 }
 
 
 
 plugins: [
-  new webpack.ProvidePlugin({
-    mapboxgl: 'mapbox-gl'
-  })
+	new webpack.ProvidePlugin({
+		mapboxgl: 'mapbox-gl'
+	})
 ]

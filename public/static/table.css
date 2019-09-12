@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css?family=Yantramanav');
+
+body{margin:0;padding;font-family: 'Yantramanav', arial, cursive;color: #232323;}
+
+table {
+  border: 3px solid #87212E;
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+table td, table th {
+  border: 1px solid #87212E;
+  padding: 5px 4px;
+}
+
+table tr:nth-child(even) {
+  background: #f3e7e9;
+}
+
+table tbody td {
+  font-size: 13px;
+}
+
+table tbody td:first-of-type {
+    background: #87212e;
+    color: white;
+}
+
+table thead {
+  background: #87212E;
+  border-bottom: 3px solid #87212E;
+}
+table thead td {
+  font-size: 15px;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-align: left;
+}
+table tfoot {
+  font-size: 14px;
+  font-weight: bold;
+  color: #000000;
+  border-top: 3px solid #87212E;
+}
+table tfoot td {
+  font-size: 14px;
+}

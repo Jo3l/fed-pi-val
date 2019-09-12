@@ -143,6 +143,11 @@
     margin-right: 0;
     margin-top:10px;
 }
+
+.ui-button {
+	cursor:pointer;
+}
+
 .ui-button--color-blueButtonToRight {
 	color:#87212e;
     margin-left: auto;
@@ -311,6 +316,15 @@
     border-bottom-color:@fedcolor;
 }
 
-.ui-modal.has-footer .ui-modal__body {
-    max-height: 80vh;
+.ui-modal__body {
+    max-height: 80vh!important;
 }
+
+.ui-modal__body {
+    overflow-x: hidden;
+}
+
+.ui-modal:not(.has-footer) .ui-modal__body {
+    padding: 1rem 2rem 2.5rem 2rem;
+}
+

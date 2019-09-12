@@ -20,6 +20,7 @@ Vue.use(VueProgressiveImage)
 Vue.prototype.$http = axios;
 
 import Toolbar from './components/Toolbar.vue'
+import Patrocinadors from './components/Patrocinadors.vue'
 import Cookie from './components/custom/Cookie.vue'
 import Alert from './components/custom/Alert.vue'
 
@@ -37,7 +38,25 @@ new Vue({
 	i18n,
 	router,
 	store,
-	components: { Toolbar, Cookie, Alert },
+	components: { Toolbar, Cookie, Alert, Patrocinadors },
 	data: {
-	}
+	},
+	methods:{
+	    userinteraction: function(uiElement){
+	      if (typeof dataLayer !== 'undefined') {
+	        dataLayer.push( Object.assign({ event: 'userinteraction' }, uiElement) );
+	      }
+	    },
+	    pageview: function(route){
+	      if (typeof dataLayer !== 'undefined') {
+	        dataLayer.push( Object.assign({ event: 'pageview' }, route) );
+	      }
+	    },
+	  },
+    mounted: function() {
+	    var vm=this;
+		    vm.$eventHub.$on('userinteraction', this.userinteraction);
+		    vm.$eventHub.$on('pageview', this.pageview);
+	  }
+
 })

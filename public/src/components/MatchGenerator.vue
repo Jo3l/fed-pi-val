@@ -5,9 +5,9 @@
 			<h3>Generador de partides</h3>
 		
 			
-			<ui-switch id="trofeu" v-model="esTrofeu" @change="genera()">Lliga</ui-switch>
+			<ui-switch id="trofeu" v-model="esTrofeu" @change="genera()"> {{esTrofeu?'Trofeu':'Lliga'}}</ui-switch>
 			
-			<ui-switch id="tornades" v-model="tornades" @change="genera()">Generar tornades</ui-switch>
+			<ui-switch id="tornades" v-model="tornades" @change="genera()"> Generar tornades</ui-switch>
 			
 			<ui-select
 			    has-search
@@ -21,7 +21,7 @@
 			    error="Camp obligatori"
 				@query-change="onQueryChangeEquip"
 				@select="afegirEquip"
-				v-if="false"
+				v-if="true"
 			></ui-select>
 			
 			<table class="equips">
@@ -36,30 +36,36 @@
 				</thead>
 				<tbody>
 				<draggable style="display:contents" v-model="equips" @end="genera()">
-					<tr v-for="(equip,key) in equips">
+					<tr v-for="(equip,key) in equips" :class="!equip.nom?'sepa':''">
 						<td><ui-icon icon="unfold_more"></ui-icon></td>
 						<td>{{equip.nomclub}}</td>
 						<td>{{equip.nom}}</td>
 						<th>
-							 <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
+							 <ui-icon-button icon="delete" size="small" type="secondary" title="Elimina equip" @click="borraEquip(equip,key)"></ui-icon-button>
+							 <ui-icon-button icon="subdirectory_arrow_right" size="small" title="Canvia equip de categoria" type="secondary" @click="reubicaEquip(equip)"></ui-icon-button>
 						</th>
 					</tr>
 				</draggable>
 				</tbody>
 			</table>
+
+		<br/>
+		<ui-button color="fedpival" icon="done_all" @click="afegirSeparador">Afegir un separador de grup</ui-button>
 			
 			<div v-if="false" v-for="(equip,key) in equips" class="ui-button ui-button--type-secondary ui-button--color-red ui-button--icon-position-left ui-button--size-small">  
-			{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary" @click="borraEquip(equip,key)"></ui-icon-button>
+			{{equip.nom}} <ui-icon-button icon="delete" size="small" type="secondary @click="borraEquip(equip,key)"></ui-icon-button>
 			</div>
 
 			<br><br>
-			<h2 v-if="esTrofeu && equips.length==16">Octaus de final</h2>
+			<!--h2 v-if="esTrofeu && equips.length==16">Octaus de final</h2>
 			<h2 v-if="esTrofeu && equips.length==8">Quarts de final</h2>
 			<h2 v-if="esTrofeu && equips.length==4">Semifinals</h2>
-			<h2 v-if="esTrofeu && equips.length==2">Final</h2>
-			<h2 v-if="!esTrofeu">Lliga</h2>
-			
+			<h2 v-if="esTrofeu && equips.length==2">Final</h2-->
+			<h2 v-if="esTrofeu">Trofeu</h2>
+			<h2 v-else>Lliga</h2>
+			<h3 v-if="esTrofeu && ![2,4,8,16,32,64].includes(equips.length)"><ui-icon icon="sentiment_dissatisfied"></ui-icon> El número actual d'equips no permet emparellaments per a un trofeu</h3> 
 			<div id="lesdates">
+				
 				<div v-if="jornades && jornades.length" v-for="(jor,index) in jornades" class="jornada">
 					
 					<ui-datepicker
@@ -79,18 +85,43 @@
 					</div>
 					
 				</div>
+				
 			</div>
 			
 			<br/><br/>
 	
 			<ui-button v-if="jornades.length>0 && jornades[0]" color="fedpival" icon="done_all" @click="enviar">Generar aquestes partides</ui-button>
 
+		<ui-modal ref="reubicaModal" size="normal">
+            <div slot="header">
+            	Tria la nova categoria per a aquest equip
+            </div>
+			<ui-select
+			    has-search
+			    floating-label
+			    placeholder="Tria la categoria"
+				search-placeholder="Escriu el nom de la categoria"
+			    label="categoria"
+			    :keys="{ label: 'nom'}"
+			    v-model="categoriaSeleccionada"
+			    :options="categories"
+			    error="Camp obligatori"
+			></ui-select>
+			<div slot="footer">
+                <ui-button @click="acceptModal('')" color="fedpival">Canviar</ui-button>
+                <ui-button @click="$refs['reubicaModal'].close()">{{$i18n.t('modal.cancel')}}</ui-button>
+            </div>
+		</ui-modal>
+
 
 	    </div>
+	    
     </transition>
 </template>
 
 <script>
+// veure també https://www.phpclasses.org/package/11346-PHP-Organize-the-matches-of-teams-in-a-tournament.html
+
 import draggable from 'vuedraggable'
 
 export default {
@@ -202,6 +233,9 @@ export default {
 			tornades:true,
 			acabat:false,
 			eixida: '',
+			categoriaSeleccionada: '',
+			categories: [],
+			equipCanvi:null,
 		    columnsEquips:[
 		    	{
 	                label: 'Club',
@@ -230,13 +264,40 @@ export default {
 	},
 	methods: {
 		borraEquip: function(e,k) { 
+			if (!confirm('Se eliminarà aquest equip d\'aquesta competició. OK?')) return;
 			var vm= this;
-			vm.equips= vm.equips.filter( (elm) => { return (elm.id!=e.id); } );
-			vm.equipsnosel.forEach( (a,b)=>{ 
-				if (a.id==e.id) vm.equipsnosel.splice(b,1); 
-			} )
-			vm.equipssel.push(e);				
-			this.genera();
+			vm.$http.delete('/eliminaequip/'+e.id, { cache: false })
+			.then(function (response) {
+				vm.equips= vm.equips.filter( (elm) => { return (elm.id!=e.id); } );
+				vm.equipsnosel.forEach( (a,b)=>{ 
+					if (a.id==e.id) vm.equipsnosel.splice(b,1); 
+				} )
+				vm.equipssel.push(e);				
+				this.genera();
+			})
+			.catch(function (error) {
+			    console.log(error);
+			});
+		},
+		reubicaEquip: function(e) {
+			var vm= this;
+			var node= vm.nodeId
+			//e.id e.club
+			vm.equipCanvi= e.id;
+			vm.$http.get('/germans/'+node)
+			.then(function (response) {
+				console.log(response)
+				vm.categories= response.data;
+				vm.openModal();
+			})
+			.catch(function (error) {
+			    console.log(error);
+			});
+		},
+		afegirSeparador: function() {
+			var vm= this;
+			vm.equips.push(0);
+			this.genera();			
 		},
 		afegirEquip: function(){
 			var vm= this;
@@ -269,58 +330,92 @@ export default {
 				pls = nextLayer(pls);
 			}
 			return pls;
-		},		
-		genera: function() {
+		},
+		trofeu: function(eqs) {
+			// casuistica: 2-16 equips. cas de potències de dos està clar.
 			var vm= this;
-			var l= vm.equips.length;
+			var l= eqs.length;
+			var grup= eqs[0].grup;
+			var enfrontaments= this.seeding(l)
+			if (enfrontaments.length!=l) return console.error('num equips incorrecte ',l,'<>',enfrontaments.length);
+			var jornada= vm.jornades.length;
+			var jorobj= { data: new Date(), enfrontaments: [] }
+			var tornades= [];
+			while (enfrontaments.length) {
+				var a= enfrontaments.pop();
+				var b= enfrontaments.pop();
+				jorobj.enfrontaments.push( [ eqs[a-1], eqs[b-1] ] );
+				if (vm.tornades) tornades.push( [ eqs[b-1], eqs[a-1] ] ); // si hem d'afegir les tornades...
+			}
+			jorobj.grup= grup;
+			vm.jornades[jornada]= jorobj;
+			jornada++;
+			if (vm.tornades) vm.jornades[jornada] = { data: new Date(), enfrontaments: tornades, grup: grup };
+		},
+		lliga: function(eqs) {
+			// generació de partides de lliga (tots contra tots, anada i tornada) amb taula pregenerada :
+			var vm= this;
+			var grup= eqs[0].grup;
+			var l= eqs.length;
 			var rr= vm.roundrobin[l];
-			var html='';
-			vm.jornades= [];
-			vm.ultimagenera= new Date();
-			if (vm.esTrofeu) {
-				// casuistica: 2-16 equips. cas de potències de dos està clar.
-				var eqs= vm.equips;
-				var enfrontaments= this.seeding(l)
-				if (enfrontaments.length!=l) return;
-				var jornada=0;
-				var jorobj= { data: new Date(), enfrontaments: [] }
-				var tornades= [];
-				while(enfrontaments.length) {
-					var a= enfrontaments.pop();
-					var b= enfrontaments.pop();
-					jorobj.enfrontaments.push( [ vm.equips[a-1], vm.equips[b-1] ] );
-					if (vm.tornades) tornades.push( [ vm.equips[b-1], vm.equips[a-1] ] )
+			var anades=[], tornades=[];
+			var jornada= vm.jornades.length;
+			for (var j in rr) {
+				if (!vm.jornades[jornada]) vm.jornades[jornada]=[];
+				j= rr[j];
+				var jorobj= { data: new Date(), enfrontaments:[] }
+				for (var p in j) {
+					jorobj.enfrontaments.push([ eqs[j[p][0]],eqs[j[p][1]] ])
 				}
+				jorobj.grup= grup;
 				vm.jornades[jornada]= jorobj;
 				jornada++;
-				if (vm.tornades) vm.jornades[jornada] = { data: new Date(), enfrontaments: tornades };
-
-			} else {
-				// generació de partides de lliga (tots contra tots, anada i tornada) amb taula pregenerada :
-				var anades=[], tornades=[];
-				var jornada= 0;
+			}
+			if (vm.tornades) { // si hem d'afegir les tornades...
 				for(var j in rr) {
 					if (!vm.jornades[jornada]) vm.jornades[jornada]=[];
 					j= rr[j];
 					var jorobj= { data: new Date(), enfrontaments:[] }
 					for(var p in j) {
-						jorobj.enfrontaments.push([ vm.equips[j[p][0]],vm.equips[j[p][1]] ])
+						jorobj.enfrontaments.push([ eqs[j[p][1]],eqs[j[p][0]] ])
 					}
-					vm.jornades[jornada]= jorobj;
-					jornada++;
-				}
-				if (vm.tornades)
-				for(var j in rr) {
-					if (!vm.jornades[jornada]) vm.jornades[jornada]=[];
-					j= rr[j];
-					var jorobj= { data: new Date(), enfrontaments:[] }
-					for(var p in j) {
-						jorobj.enfrontaments.push([ vm.equips[j[p][1]],vm.equips[j[p][0]] ])
-					}
+					jorobj.grup= grup;
 					vm.jornades[jornada]= jorobj;
 					jornada++;
 				}
 			}
+		},
+		genera: function() {
+			var vm= this;
+			var html='';
+			vm.jornades= [];
+			vm.ultimagenera= new Date();
+			var grups= [];
+			var eqs= [...vm.equips]; /// copia equips per a preparar els grups amb separadors
+			var s= [];
+			var id_grup=0;
+			while (eqs.length) {
+				var elm = eqs.shift()
+				if (elm) {
+					elm.grup= id_grup;
+					s.push(elm);
+				} else {
+					if (s.length) {
+						grups.push(s);
+						s= [];
+						id_grup++;
+					}
+				}
+			}
+			if (s.length) grups.push(s);
+			//console.info(grups)
+			grups.forEach( (grup) => {
+				if (vm.esTrofeu) {
+					this.trofeu(grup); //vm.equips);
+				} else {
+					this.lliga(grup); //vm.equips);
+				}
+			} );
 			vm.ultimagenera= new Date();
 			
 			this.inpChangedForCode(0,new Date(),true)
@@ -336,9 +431,20 @@ export default {
 			vm.ultimagenera= new Date();
         	if (!d) return console.log('no hi ha data');
         	for( var i= idx+1; i < this.jornades.length; i++ ) if (this.jornades[i].data) this.jornades[i].data= null;
+        	var inid= new Date( d );
         	var d= new Date( d );
-			for( var i= idx+1; i < this.jornades.length; i++ ) vm.jornades[i].data= (new Date(d.addDays(7).toString())).toString();
+        	var grup= this.jornades[0].grup;
+			for( var i= idx+1; i < this.jornades.length; i++ ) {
+				if (grup!= this.jornades[i].grup) {
+					d= new Date(inid);
+					d.addDays(-7);
+					grup= this.jornades[i].grup;
+					console.log('canvi grup',grup,d)
+				}
+				vm.jornades[i].data= (new Date(d.addDays(7).toString())).toString();
+			}
 			vm.jornades.push(vm.jornades.pop());
+			console.dir(vm.jornades)
         },
 		onQueryChangeEquip: function(query) {
             if (query.length < 3) return;
@@ -358,13 +464,12 @@ export default {
         enviar: function() {
         	var vm= this;
         	vm.jornades.forEach(function(a){ 
-        		a.data= (new Date(a.data)).toISOString().substring(0,10).replace(/-/g,''); 
-        		window.enf= a.enfrontaments;
-        		a.enfrontaments= a.enfrontaments.filter(function(a){ return a[0].id!=0 && a[1].id!=0 });
+        		a.datacurta= (new Date(a.data)).toISOString().substring(0,10).replace(/-/g,'');
+        		//window.enf= a.enfrontaments;
+        		if (a.enfrontaments) a.enfrontaments= a.enfrontaments.filter(function(a){ return a[0].id!=0 && a[1].id!=0 });
         	})
         	vm.jornades.bloc= vm.blockID;
         	vm.jornades.node= vm.nodeId;
-        	//console.log(JSON.stringify(vm.jornades))
         	vm.$http.post('/equip/genera?node='+vm.nodeId+'&bloc='+vm.blockId, JSON.stringify(vm.jornades) )
         	.then(function (response) {
 	        	vm.acabat= true;
@@ -381,13 +486,34 @@ export default {
 	        .then(function (response) {
 	            
 	            vm.equips = response.data;
+				vm.genera(); // afegit per a que genere partides amb els equips ja existents al iniciar el component
 	            
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
 
-        }
+        },
+		openModal: function() {
+			console.log(window.kk= this)
+            this.$refs.reubicaModal.open();
+        },
+        acceptModal:function(ref) {
+        	var id=this.categoriaSeleccionada.id;
+        	var vm= this;
+        	vm.$http.post('/canvicateg', JSON.stringify({"idnode":id,"idequip":vm.equipCanvi} ))
+	        .then(function (response) {
+	        	vm.equips.forEach( (e,a)=>{
+	        		console.log([e,a])
+	        		if (e.id==vm.equipCanvi) vm.equips.splice(a, 1);
+	        	} )
+	        	alert('ok')
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+            this.$refs.reubicaModal.close();
+        },
         
     },
 	watch: {
@@ -429,7 +555,8 @@ export default {
 .visitant { background-color:#ffc5c5; }
 
 .jornada { padding-bottom:4px; text-align:center; }
-
+.sepa { background:red; }
+.sepa td:after { content:"_____"; }
 
 .equips {
 	width:100%;

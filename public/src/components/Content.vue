@@ -24,21 +24,23 @@
 					<table class="table results">
 						<thead>
 							<tr>
-								<th>Data</th>
-								<th>Lloc</th>
-								<th>Local</th>
-								<th>Res. Local</th>
-								<th>Res. Visitant</th>
-								<th>Visitant</th>
+								<th>{{$i18n.t('common.group')}}</th>
+								<th>{{$i18n.t('common.date')}}</th>
+								<th>{{$i18n.t('common.place')}}</th>
+								<th>{{$i18n.t('common.local')}}</th>
+								<th>Res. {{$i18n.t('common.local')}}</th>
+								<th>Res. {{$i18n.t('common.visitor')}}</th>
+								<th>{{$i18n.t('common.visitor')}}</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0">
+							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[(element.grup%2)?'odd':'even']">
+								<td>{{ element.grup?String.fromCharCode(65+parseInt(element.grup)):'' }}</td>
 								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
 								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
-								<td>{{element.resultatlocal}}</td>
-								<td>{{element.resultatvisitant}}</td>
+								<td><span class="no-print">{{element.resultatlocal}}</span></td>
+								<td><span class="no-print">{{element.resultatvisitant}}</span></td>
 								<td>{{element.visitant.nom}}</td>
 							</tr>
 						</tbody>
@@ -111,26 +113,29 @@
 						<table class="table results">
 							<thead>
 								<tr>
-									<th>Data</th>
-									<th>Local</th>
-									<th>Res. Local</th>
-									<th>Res. Visitant</th>
-									<th>Visitant</th>
-									<th>Lloc</th>
+									<th>{{$i18n.t('common.group')}}</th>
+									<th>{{$i18n.t('common.date')}}</th>
+									<th>{{$i18n.t('common.place')}}</th>
+									<th>{{$i18n.t('common.local')}}</th>
+									<th>Res. {{$i18n.t('common.local')}}</th>
+									<th>Res. {{$i18n.t('common.visitor')}}</th>
+									<th>{{$i18n.t('common.visitor')}}</th>
 									<th></th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" v-bind:class="{ 'selected':element.selected }">
+								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+
+									<td>{{ String.fromCharCode(65+parseInt(element.grup)) }}</td>
 									<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
-									
-									<td>{{element.local.nom}}</td>
-									<td>{{element.resultatlocal}}</td>
-									<td>{{element.resultatvisitant}}</td>
-									<td>{{element.visitant.nom}}</td>
 									<td>{{element.lloc.nom}}</td>
+									<td>{{element.local.nom}}</td>
+									<td><span class="no-print">{{element.resultatlocal}}</span></td>
+									<td><span class="no-print">{{element.resultatvisitant}}</span></td>
+									<td>{{element.visitant.nom}}</td>
+
 									<th>
-										<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>
+										<!--<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>-->
 										<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>
 									</th>
 								</tr>
@@ -333,6 +338,7 @@
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentMap" tooltip="Insertar Mapa" size="small" icon="map" type="secondary"></ui-icon-button>
                 <ui-icon-button v-if="disable && !gameOn" @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>
+                <ui-icon-button v-if="" @click="taula_inscripcions" tooltip="Ver tabla d'inscripcions per club" size="small" icon="view_module" type="secondary"></ui-icon-button>
         </div>
         
         <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
@@ -795,13 +801,23 @@ export default {
 
 			var vm=this;
 
-			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
-	        .then(function (response) {
-	            vm.nodeContent = response.data;
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
+
+			var r = confirm("Confirma acció d'esborrar");
+			if (r == true) {
+				
+	  			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
+		        .then(function (response) {
+		            vm.nodeContent = response.data;
+		        })
+		        .catch(function (error) {
+		            console.log(error);
+		        });
+		        
+			} else {
+			  
+			}
+
+
 	        
 	        
 		},
@@ -881,6 +897,11 @@ export default {
 	    setMap:function(map){
 	    	var vm=this;
 	    	vm.dataMap = map.lat+','+map.lng;
+	    },
+	    taula_inscripcions:function() {
+	    	var vm= this;
+	    	window.kk=vm
+	    	window.open('/api/resumnode/'+vm.nodeContent[0].jerarquia)
 	    }
 		
 	},
@@ -898,6 +919,7 @@ export default {
       	nodeId: function(newVal, oldVal) {
           this.getNode();
           this.setOrder(true);
+          this.generator=false;
         },
         authOn: function(){
         	if(this.$store.getters.isAuthenticatedWithRole(0)) {
@@ -1044,17 +1066,20 @@ export default {
 	}
 
 	.nodeContentElement{
-		padding: 10px;
-	    margin-left: -10px;
-	    position: relative;
-	    align-items: center;
-	    box-sizing: border-box;
-	    margin: 10px 0;
-	    border: 1px solid @fedcolor;
-	    &.autenticated {
-		margin:20px 0;
-		border:none;
-		padding:0;
+			padding: 10px;
+		    margin-left: -10px;
+		    position: relative;
+		    align-items: center;
+		    box-sizing: border-box;
+		    margin: 10px 0;
+		    border: 1px solid @fedcolor;
+			@media print {    
+		    	border:0;
+			}
+		    &.autenticated {
+			margin:20px 0;
+			border:none;
+			padding:0;
 		}
 		&.floating {
 		    border: 2px dashed #87212e;
@@ -1149,6 +1174,9 @@ export default {
 	    border: 1px solid #87212e;
 	    position:absolute;
 	    top: -1px;
+    	@media print {    
+	    	visibility:hidden;
+		}
 	    &:hover{
 	    	border: 2px solid #87212e;
 	    }
@@ -1160,6 +1188,9 @@ export default {
 	    margin-right: 10px;
 	    margin-left: -40px;
 	    position: absolute;
+    	@media print {    
+	    	visibility:hidden;
+		}
 	    top: -1px;
 		&:hover {
 		    &:before, &:after {	width: 2px; }
@@ -1195,5 +1226,12 @@ export default {
 
 }
 
+.results tr.odd {
+	background-color: #ececec;
+	@media print {
+		-webkit-print-color-adjust: exact; 
+	}
+}
 
 </style>
+
