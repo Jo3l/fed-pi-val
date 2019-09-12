@@ -31,7 +31,7 @@ const getters = {
   countCart: function(state) {
   		var number=0;
 		state.added.forEach(function(element) {
-		  number+=element.quantity;
+		  number+=parseFloat(element.quantity);
 		});
 		return number;
   },
@@ -43,7 +43,7 @@ const getters = {
 
 		state.added.forEach(function(element) {
 			var item = element.fullProduct.types.find(function(item) {return item.id === element.id && item.name === element.name})
-			total+= (item.price.amount * element.quantity)
+			total+= (parseFloat(item.price.amount) * parseFloat(element.quantity))
 		});
 		return total.toFixed(2);
   }

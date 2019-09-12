@@ -15,7 +15,7 @@
 						        <picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductType(item)}}</span></picture>
 						        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
 						        <span class="item-price">{{getProductPrice(item)}}€</span>
-						        <span class="item-quantity">{{$t('cart.quantity')}}: {{item.quantity}}</span>
+						        <span class="item-quantity">{{$t('cart.quantity')}}: <input class="item-quantity" type="number" v-model="item.quantity"> </span>
 						        </router-link>
 						        <div class="modifier">
 						        	<ui-icon-button color="fedpival" icon="add" size="small" type="secondary" @click="$store.dispatch('increaseProductToCart', item)"></ui-icon-button>
@@ -263,6 +263,16 @@ export default {
 <style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
+
+.item-quantity {
+	width:2em;
+}
+
+input[type=number].item-quantity::-webkit-inner-spin-button, 
+input[type=number].item-quantity::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
 
 .done {
     position: absolute;

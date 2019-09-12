@@ -31,7 +31,7 @@
 					</div>
 				</div>
 			</div>
-			<ui-modal ref="events" size="normal" title="titol">
+			<ui-modal ref="events" size="large" title="titol" class="calendarEvent">
 	            <div slot="header">
 	                {{selected.day}} - {{selected.month+1}} - {{selected.year}}
 	                
@@ -494,7 +494,9 @@ export default {
 	}
 
 }
-	
+.calendarEvent img{
+	max-width:100%;
+}
 .calendarContainer {
 	display:flex;
 	position: relative;
