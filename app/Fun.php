@@ -616,7 +616,7 @@ static public function producte_query(Request $request, Response $response, $par
 	$slug= $params['slug'];
     $db = new db();
     // OJO JSON_EXTRACT NO disponible en occentus : $db->sql("select * from producte where JSON_EXTRACT(json, '$.content.es.slug') ='".$slug."' OR JSON_EXTRACT(json, '$.content.val.slug') ='".$slug."';");
-    $db->sql("select * from producte where POSITION( '".$slug."' IN json)>0;");
+    $db->sql("select * from producte where POSITION( '\"slug\":\"".$slug."' IN json)>0;");
     //$db->sql("select * from pagina,idioma where registreid=pagina.id and camp='slug' and  text='".$slug."' and pagina.tipus = 'N';");
     $data = $db->all();
 	$a= $data[0]['json']; 
