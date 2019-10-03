@@ -117,7 +117,7 @@
 	    </div>
 	    
 	</ui-toolbar>
-
+		
 	<div class="mainMenu">
 	    <input id="menu-toggle" type="checkbox" v-model="menuOpen">
 	    <label class="menu-button-container" for="menu-toggle">

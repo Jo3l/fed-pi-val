@@ -1,14 +1,27 @@
 <template>
     <transition name="fade">
-<div v-bind:class="{ 'alert':true, 'visible':!alertVisible }" v-if="!readCookie('seen-alert-message')">
-	
-    <div class="consent-content">
-        <p>{{$i18n.t('common.oldweb')}} <a href="http://antiga.fedpival.es" target="_blank">http://antiga.fedpival.es</a></p>
-    </div>
-    <div class="consent-action">
-         <button @click="acceptCookie" class="button cta"> {{$i18n.t('modal.close')}} </button>
-    </div>
-</div>
+    	<div class="alertContainer">
+			<div v-bind:class="{ 'alert':true, 'visible':!alertVisible }" v-if="!readCookie('seen-alert-message')">
+				
+			    <div class="consent-content">
+			        <p>{{$i18n.t('common.oldweb')}} <a href="http://antiga.fedpival.es" target="_blank">http://antiga.fedpival.es</a></p>
+			    </div>
+			    <div class="consent-action">
+			         <button @click="acceptCookie" class="button cta"> {{$i18n.t('modal.close')}} </button>
+			    </div>
+			</div>
+			
+			<ui-modal ref="alertModal" size="normal" title="Alerta" dismissOn="close-button">
+				<div class="ui-autocomplete__content">
+					<p>{{alert.message}}</p>
+					<div class="buttonGroupRight">
+						<ui-button size="small" @click="doFunc()">{{ $t('common.yes') }}</ui-button>
+						<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
+					</div>
+					
+				</div>
+	        </ui-modal>
+		</div>	
     </transition>
 </template>
 
@@ -22,6 +35,9 @@ export default {
 	data () {
 		return {
 			alertVisible:false,
+			alert:{
+				message:""
+			},
 		}
 	},
 	methods: {
@@ -48,10 +64,28 @@ export default {
 	            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
 	        }
 	        return null;
+	    },
+	    closeAllModals: function() {
+	    	var vm=this;
+		    for (var key in vm.$refs) {
+	        	if (vm.$refs[key].close) vm.$refs[key].close();
+	        }
+	    },
+        alertEvent: function(a){
+	    	var vm=this;
+	    	vm.alert=a;
+	    	
+	    	console.log(vm.alert)
+	    	vm.$refs.alertModal.open()
+	    },
+	    doFunc: function() {
+	    	this.$eventHub.$emit('doFunc', {func:this.alert.func, item:this.alert.items});
 	    }
 	},
 	mounted: function () {
-
+		var vm=this;
+		console.log(vm.$refs)
+		vm.$eventHub.$on('alert', vm.alertEvent);
 	}
 }
 </script>
@@ -60,108 +94,112 @@ export default {
 
 @import "../../assets/less/defines.less";
 
-.alert {
-    position: fixed;
-	left: 0;
-    top: 0;
-	background-color: rgb(132, 33, 47);
-    padding: 5px 5%;
-    z-index:99;
-    display:none;
-    color: white;
-    @media print {    
-    	display: none !important;
+.alertContainer {
+	padding:0;
+	margin:0;
+
+	.alert {
+	    position: fixed;
+		left: 0;
+	    top: 0;
+		background-color: rgb(132, 33, 47);
+	    padding: 5px 5%;
+	    z-index:99;
+	    display:none;
+	    color: white;
+	    @media print {    
+	    	display: none !important;
+		}
+	
+	}
+	.alert.visible {
+	    display:flex;
+	    justify-content: center;
+	    align-items: center;
+	    box-sizing: border-box;
+	    width: 100%;
+	    box-shadow: 0px 0px 30px rgba(0,0,0,0.2);
+	}
+	
+	
+	.alert .consent-content {
+	    p{
+	        margin: 0;
+	        font-size: 16px;
+	        margin-right: 15px;
+	        a, a:hover, a:visited {color:white!important; text-decoration:underline!important;}
+	        
+	    }
+	
+	}
+	
+	.alert .consent-info {
+	    color: white;
+	    padding: 25px 0;
+	    margin: 0;
+	    opacity: 1;
+	    transition: color 500ms ease;
+	    text-transform: capitalize;
+	    font-weight: bolder;
+	    text-decoration: underline;
+	}
+	.alert .consent-action {
+	    min-width:200px;
+	}
+	.alert .consent-action .button{
+		border: none;
+	    height: 42px;
+	    line-height: 32px;
+	    padding: 0 12px;
+	    font-size: 16px;
+	    font-weight: normal;
+	    font-style: normal;
+	    display: inline-block;
+	    text-decoration: none;
+	    color: #FFF;
+	    transition: all .3s ease;
+	    cursor:pointer;
+	    &.cta {
+			height: initial;
+		    font-size: 14px;
+		    border-radius: 8px;
+		    color:@fedcolor;
+		    background-color: white;
+		    display: block;
+		    text-align: center;
+	    }
+	}
+	
+	@media (max-width: 768px) {
+	    .alert.visible {
+	        display: block;
+	        padding: 25px 6%;
+	    }
+	    .alert p {
+	        font-size: 14px;
+	        text-align: left;
+	    }
+	    .alert .consent-action {
+	        padding:0;
+	        display: flex;
+	        flex-wrap: wrap; 
+	        min-width:0px;
+	        .button{width:100%;}
+	    }
+	    
+	    .consent-action {
+	        display: block !important;
+	        margin-top: 10px;
+	    }
+	    .alert .consent-info {
+	        order: 1;
+	        margin: 0;
+	        width: 100%;
+	        text-align: center;
+	    }
 	}
 
 }
-.alert.visible {
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    width: 100%;
-    box-shadow: 0px 0px 30px rgba(0,0,0,0.2);
-}
-
-
-.alert .consent-content {
-    p{
-        margin: 0;
-        font-size: 16px;
-        margin-right: 15px;
-        a, a:hover, a:visited {color:white!important; text-decoration:underline!important;}
-        
-    }
-
-}
-
-.alert .consent-info {
-    color: white;
-    padding: 25px 0;
-    margin: 0;
-    opacity: 1;
-    transition: color 500ms ease;
-    text-transform: capitalize;
-    font-weight: bolder;
-    text-decoration: underline;
-}
-.alert .consent-action {
-    min-width:200px;
-}
-.alert .consent-action .button{
-	border: none;
-    height: 42px;
-    line-height: 32px;
-    padding: 0 12px;
-    font-size: 16px;
-    font-weight: normal;
-    font-style: normal;
-    display: inline-block;
-    text-decoration: none;
-    color: #FFF;
-    transition: all .3s ease;
-    cursor:pointer;
-    &.cta {
-		height: initial;
-	    font-size: 14px;
-	    border-radius: 8px;
-	    color:@fedcolor;
-	    background-color: white;
-	    display: block;
-	    text-align: center;
-    }
-}
-
-@media (max-width: 768px) {
-    .alert.visible {
-        display: block;
-        padding: 25px 6%;
-    }
-    .alert p {
-        font-size: 14px;
-        text-align: left;
-    }
-    .alert .consent-action {
-        padding:0;
-        display: flex;
-        flex-wrap: wrap; 
-        min-width:0px;
-        .button{width:100%;}
-    }
-    
-    .consent-action {
-        display: block !important;
-        margin-top: 10px;
-    }
-    .alert .consent-info {
-        order: 1;
-        margin: 0;
-        width: 100%;
-        text-align: center;
-    }
-}
-
-
 
 
 </style>
