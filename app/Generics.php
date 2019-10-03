@@ -106,7 +106,7 @@ public function generic_insert(Request $request, Response $response, $params) {
 	if ($tabla=='jugador') {
 		$db->sql("select count(*) as c from jugador where dni='".$json['dni']."';");
 		$all= $db->all();
-		if ($all[0]['c']>0) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"ERROR":"Ya existe ese DNI"}'));
+		if ($all[0]['c']>0) die($response->withStatus(409)->withHeader('Content-Type', 'application/json')->write('{"ERROR":"Ya existe ese DNI"}'));
 	}
 	if ($tabla=='producte') {
 		$jsonobj= json_decode($json['json'],true);
@@ -177,7 +177,7 @@ static public function generic_query(Request $request, Response $response, $para
 	    Auth::verifyRol($request,0);
 	}
     $tabla= Fun::tables($params['tabla'],'select');
-	$options= array( 'limit'=>Fun::$itemsPerPage );
+	$options= ['limit'=>Fun::$itemsPerPage];
 	if (in_array($tabla,['trinquet','producte'])) $options['limit']=PHP_INT_MAX; // canvie el limit per defecte si és trinquet (modificable per paràmetres a continuació)
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
@@ -188,8 +188,8 @@ static public function generic_query(Request $request, Response $response, $para
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
-    if (!empty($options['limit'])) $sql.= " limit ".$options['limit'];
-//print_r($options);echo $sql;exit;
+    if (!isset($_GET['csv']) && !empty($options['limit'])) $sql.= " limit ".$options['limit'];
+	//print_r($options);echo $sql;exit;
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
