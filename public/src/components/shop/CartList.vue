@@ -39,8 +39,20 @@
 
 							<h3>{{$i18n.t('cart.info')}}:</h3>
 							<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo')}} <a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
+						
+							<br>
+							
+							<ui-radio-group
+				                name="payment"
+				                :options="shipping"
+				                v-model="order.payment"
+				            >{{$i18n.t('cart.payType')}}</ui-radio-group>
+				            
+							<br>
+						    
 							<div class="clientData">
 								<div class="form">
+									
 						            <ui-textbox
 						                floating-label
 						                label="Nom"
@@ -132,12 +144,27 @@ export default {
   data () {
     return {
     	resultDone:'',
+    	shipping : [
+		    {
+		        label: this.$t('cart.cashOnDelivery'),
+		        value: 'cash-on-delivery'
+		    },
+		    {
+		        label: this.$t('cart.bankTransfer'),
+		        value: 'bank-transfer'
+		    },
+		    {
+		        label: this.$t('cart.onlinePay'),
+		        value: 'online-pay'
+		    }
+		],
     	order:{
     		name:'',
     		address:'',
     		cp:'',
     		tel:'',
-    		email:''
+    		email:'',
+    		payment:'online-pay'
     	},
         swiperOptionThumbs: {
           direction: 'vertical',
@@ -191,12 +218,16 @@ export default {
 
 		vm.$http.post('/comprar', vm.order)
 		.then(function (response) {
-				vm.$refs.version.value= response.data.params.Ds_SignatureVersion;
-				vm.$refs.parameters.value= response.data.params.Ds_MerchantParameters;
-				vm.$refs.signature.value= response.data.params.Ds_Signature;
-				vm.$refs.tpvform.action= response.data.url;
-    			vm.$refs.tpvform.submit()
-				
+    			if(vm.order.payment==='online-pay') {
+    				vm.$refs.version.value= response.data.params.Ds_SignatureVersion;
+					vm.$refs.parameters.value= response.data.params.Ds_MerchantParameters;
+					vm.$refs.signature.value= response.data.params.Ds_Signature;
+					vm.$refs.tpvform.action= response.data.url;
+    				vm.$refs.tpvform.submit()
+    			} else {
+    				window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('cart.shop')+'/'+vm.$i18n.t('cart.buyed')+'/'+vm.order.payment;
+    			}
+
 				/*setTimeout(function(){
 					vm.resultDone = vm.$i18n.t('cart.success');
 				}, 500);*/

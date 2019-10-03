@@ -2,22 +2,32 @@
     <transition name="fade">
 		<div class="success">
 			<br>
-			<h2>Gràcies per comprar a la tenda de la Fedració!</h2>
-			<br>
-			<dl>
-			  <dt>Nº comanda: {{datos.comanda}}</dt>
-			  <dt>Nom: {{datos.name}}</dt>
-			  <dt>Adreça: {{datos.address}}</dt>
-			  <dt>Codi Postal: {{datos.cp}}</dt>
-			  <dt>Telèfon: {{datos.tel}}</dt>
-			</dl>
-			
-			<br>
-			
-			<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop') }"><ui-button raised size="normal">Continuar comprant</ui-button></router-link>
-			
-			<!--<pre>{{datos}}</pre>-->
+			<section v-if="datos">
+			<h2>{{ $i18n.t('cart.thanks') }}</h2>
+				<br>
+				<dl>
+				  <dt>{{ $i18n.t('cart.orderNumber') }}: {{datos.comanda}}</dt>
+				  <dt>{{ $i18n.t('cart.name') }}: {{datos.name}}</dt>
+				  <dt>{{ $i18n.t('cart.adr') }}: {{datos.address}}</dt>
+				  <dt>{{ $i18n.t('cart.cp') }}: {{datos.cp}}</dt>
+				  <dt>{{ $i18n.t('cart.tlf') }}: {{datos.tel}}</dt>
+				</dl>
+				<br>
+				<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop') }">
+					<ui-button raised size="normal">{{ $i18n.t('cart.continueBuying') }}</ui-button>
+				</router-link>
+			</section>
 
+			
+			<ui-modal ref="error" title="">
+	            {{error}}
+		        <div slot="footer">
+		            <router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('cart.shop') }">
+						<ui-button size="normal">OK</ui-button>
+					</router-link>
+		        </div>
+	        </ui-modal>
+        
 		</div>
 
     </transition>
@@ -25,217 +35,52 @@
 
 <script>
 
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'Success',
   components: { },
   data () {
     return {
-		datos:{
-				  "name": "test alfons",
-				  "address": "adreca",
-				  "cp": "12345",
-				  "tel": "834783738",
-				  "email": "al@vlc.wiki",
-				  "cart": [
-				    {
-				      "name": "5 m",
-				      "fullProduct": {
-				        "types": [
-				          {
-				            "name": "5 m",
-				            "price": {
-				              "amount": 6.2,
-				              "oldPrice": 6.2
-				            }
-				          },
-				          {
-				            "name": "10 m",
-				            "price": {
-				              "amount": 10.7,
-				              "oldPrice": 10.7
-				            }
-				          }
-				        ],
-				        "images": [
-				          {
-				            "img": "/static/productes/2019/06/tesamoll.jpg",
-				            "thumb": "/static/productes/2019/06/tesamoll.jpg"
-				          }
-				        ],
-				        "content": {
-				          "es": {
-				            "name": "Tesa-Dur",
-				            "slug": "tesa-dur",
-				            "details": "Tesa-Dur",
-				            "category": "Protecciones para las Manos",
-				            "description": "Espuma especial para proteger las manos con una protecciu00f3n dura, mayor al tesa-moll y el tesa-blau. Formato de 5 y 10 metros.",
-				            "shippingOptions": [
-				              "Envio",
-				              "Recogida en nuestra sede"
-				            ],
-				            "shortDescription": "Espuma especial para proteger las manos con una protecciu00f3n dura, mayor al tesa-moll y el tesa-blau. Formato de 5 y 10 metros."
-				          },
-				          "val": {
-				            "name": "Tesa-Dur",
-				            "slug": "tesa-dur",
-				            "details": "Tesa-Dur",
-				            "category": "Proteccions per a les Mans",
-				            "description": "Escuma especial per a protegir les mans amb una protecciu00f3 dura,  major al tesa-moll i el tesa-blau. Format de 5 i 10 metres.",
-				            "shippingOptions": [
-				              "Enviament",
-				              "Recollida a la seu"
-				            ],
-				            "shortDescription": "Escuma especial per a protegir les mans amb una protecciu00f3 dura,  major al tesa-moll i el tesa-blau. Format de 5 i 10 metres."
-				          }
-				        },
-				        "shipping": {
-				          "amount": [
-				            "8.9",
-				            0
-				          ]
-				        }
-				      },
-				      "quantity": 1
-				    },
-				    {
-				      "name": "10 m",
-				      "fullProduct": {
-				        "types": [
-				          {
-				            "name": "5 m",
-				            "price": {
-				              "amount": 6.2,
-				              "oldPrice": 6.2
-				            },
-				            "fullProduct": {
-				              "types": [
-				                {
-				                  "name": "5 m",
-				                  "price": {
-				                    "amount": 6.2,
-				                    "oldPrice": 6.2
-				                  }
-				                },
-				                {
-				                  "name": "10 m",
-				                  "price": {
-				                    "amount": 10.7,
-				                    "oldPrice": 10.7
-				                  }
-				                }
-				              ],
-				              "images": [
-				                {
-				                  "img": "/static/productes/2019/06/tesamoll.jpg",
-				                  "thumb": "/static/productes/2019/06/tesamoll.jpg"
-				                }
-				              ],
-				              "content": {
-				                "es": {
-				                  "name": "Tesa-Dur",
-				                  "slug": "tesa-dur",
-				                  "details": "Tesa-Dur",
-				                  "category": "Protecciones para las Manos",
-				                  "description": "Espuma especial para proteger las manos con una protecciu00f3n dura, mayor al tesa-moll y el tesa-blau. Formato de 5 y 10 metros.",
-				                  "shippingOptions": [
-				                    "Envio",
-				                    "Recogida en nuestra sede"
-				                  ],
-				                  "shortDescription": "Espuma especial para proteger las manos con una protecciu00f3n dura, mayor al tesa-moll y el tesa-blau. Formato de 5 y 10 metros."
-				                },
-				                "val": {
-				                  "name": "Tesa-Dur",
-				                  "slug": "tesa-dur",
-				                  "details": "Tesa-Dur",
-				                  "category": "Proteccions per a les Mans",
-				                  "description": "Escuma especial per a protegir les mans amb una protecciu00f3 dura,  major al tesa-moll i el tesa-blau. Format de 5 i 10 metres.",
-				                  "shippingOptions": [
-				                    "Enviament",
-				                    "Recollida a la seu"
-				                  ],
-				                  "shortDescription": "Escuma especial per a protegir les mans amb una protecciu00f3 dura,  major al tesa-moll i el tesa-blau. Format de 5 i 10 metres."
-				                }
-				              },
-				              "shipping": {
-				                "amount": [
-				                  "8.9",
-				                  0
-				                ]
-				              }
-				            }
-				          },
-				          {
-				            "name": "10 m",
-				            "price": {
-				              "amount": 10.7,
-				              "oldPrice": 10.7
-				            }
-				          }
-				        ],
-				        "images": [
-				          {
-				            "img": "/static/productes/2019/06/tesamoll.jpg",
-				            "thumb": "/static/productes/2019/06/tesamoll.jpg"
-				          }
-				        ],
-				        "content": {
-				          "es": {
-				            "name": "Tesa-Dur",
-				            "slug": "tesa-dur",
-				            "details": "Tesa-Dur",
-				            "category": "Protecciones para las Manos",
-				            "description": "Espuma especial para proteger las manos con una protecciu00f3n dura, mayor al tesa-moll y el tesa-blau. Formato de 5 y 10 metros.",
-				            "shippingOptions": [
-				              "Envio",
-				              "Recogida en nuestra sede"
-				            ],
-				            "shortDescription": "Espuma especial para proteger las manos con una protecciu00f3n dura, mayor al tesa-moll y el tesa-blau. Formato de 5 y 10 metros."
-				          },
-				          "val": {
-				            "name": "Tesa-Dur",
-				            "slug": "tesa-dur",
-				            "details": "Tesa-Dur",
-				            "category": "Proteccions per a les Mans",
-				            "description": "Escuma especial per a protegir les mans amb una protecciu00f3 dura,  major al tesa-moll i el tesa-blau. Format de 5 i 10 metres.",
-				            "shippingOptions": [
-				              "Enviament",
-				              "Recollida a la seu"
-				            ],
-				            "shortDescription": "Escuma especial per a protegir les mans amb una protecciu00f3 dura,  major al tesa-moll i el tesa-blau. Format de 5 i 10 metres."
-				          }
-				        },
-				        "shipping": {
-				          "amount": [
-				            "8.9",
-				            0
-				          ]
-				        }
-				      },
-				      "quantity": 1
-				    }
-				  ],
-				  "comanda": "19000005",
-				  "authcode": "151175",
-				  "preu": "25.8"
-				}
+		datos:null,
+		error:''
     }
   },
   methods: {
 
   },
+  computed: {
+    ...mapGetters({
+    	countCart: 'countCart',
+    	cart: 'cart',
+    	checkoutStatus: 'checkoutStatus',
+    	cartTotalPrice :'cartTotalPrice',
+    	validate:'validate'
+    })
+  },
   mounted: function() {
 	  	var vm=this;
+	  	var res= location.href.split('/').pop();
 	  	
+	  	if (res=='bank-transfer' || res=='cash-on-delivery') {
+	        vm.error= 'Comanda finalitzada amb èxit. ';
+	        if (res=='bank-transfer') vm.error+= 'Rebrà instruccions per email per a la transferència.';
+	        if (res=='cash-on-delivery') vm.error+= 'Haurà de fer el pagament al rebre la comanda.';
+	        this.$store.dispatch('deleteCart');
+			vm.$refs.error.open();
+	  		return;
+	  	}
 	  	
 		vm.$http.post('/pagat', vm.$route.query)
         .then(function (response) {
         	
-        	//vm.datos=response.data;
+        	vm.datos=response.data;
+            this.$store.dispatch('deleteCart');
             
-        })
+        } )
         .catch(function (error) {
-            console.log(error);
+	        vm.error=error.response.data.error;
+			vm.$refs.error.open();
         });
         
   }
