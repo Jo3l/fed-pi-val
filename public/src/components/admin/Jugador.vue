@@ -8,14 +8,6 @@
 			
 				<div class="left50">
 					
-					<div class="contentFlex intern">
-						<div class="left50">
-							<ui-switch v-model="jugador.actiu">Actiu</ui-switch>
-						</div>
-						<div class="left50">
-	                		<ui-switch v-model="jugador.segur">Assegurat</ui-switch>
-	                	</div>
-					</div>
 					<ui-textbox
 					    floating-label
 			            autocomplete="off"
@@ -75,8 +67,7 @@
 			        ></ui-textbox>
 		        	
 					<ui-datepicker
-						v-if="typeof jugador.naixement === 'object'"
-		                placeholder="$i18n.t('calendar.dateTip')"
+		                :placeholder="$i18n.t('calendar.dateTip')"
 		                :start-of-week="datePickerOptions.dow"
 		                v-model="jugador.naixement"
 		                :lang="datePickerOptions"
@@ -124,7 +115,31 @@
 						type="text"
 			            v-model="jugador.poblacio"
 			        ></ui-textbox>
-			        
+
+					<!--div class="contentFlex intern">
+						<div class="left50">
+							<ui-switch v-model="jugador.actiu">Actiu</ui-switch>
+						</div>
+						<div class="left50">
+	                		<ui-switch v-model="jugador.segur">Assegurat</ui-switch>
+	                	</div>
+					</div-->
+					<ui-datepicker
+						v-if="typeof jugador.dataactiu === 'object'"
+		                :placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.dataactiu"
+		                :lang="datePickerOptions"
+		            >Actiu fins al </ui-datepicker>
+		            
+					<ui-datepicker
+						v-if="typeof jugador.datasegur === 'object'"
+		                :placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.datasegur"
+		                :lang="datePickerOptions"
+		            >Assegurat fins al </ui-datepicker>	
+
 			    	<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 
 				</div>
@@ -178,6 +193,8 @@ export default {
 			      cp: null,
 			      poblacio: null,
 			      foto: null,
+			      datasegur: new Date(),
+			      dataactiu: new Date()
 		    },
 		    datePickerOptions: {
 			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
@@ -248,6 +265,8 @@ export default {
 		
 			var vm=this;
 			vm.jugador.naixement = vm.jugador.naixement.toString('yyyyMMddHHmmss');
+			vm.jugador.datasegur = vm.jugador.datasegur.toString('yyyyMMddHHmmss');
+			vm.jugador.dataactiu = vm.jugador.dataactiu.toString('yyyyMMddHHmmss');
 			var editant= vm.$route.params.jugadorId?true:false;
 			
 			/*console.log(editant?'editant':'noedit');
@@ -259,11 +278,13 @@ export default {
 			
 	        vm.$http.post('/jugador/'+ (editant?vm.$route.params.jugadorId :'') , vm.jugador)
 	        .then(function (response) {
-	        	if (response.status==200) return alert('Error, DNI existent');
-	        	console.log(response);
-	        	return;
+	        	if (response.status==409) return alert('Error, DNI existent');
+	        	//console.log(response);
+	        	//return;
 	            //vm.jugador = response.data[0];
 	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
+	            vm.jugador.datasegur = vm.parseTime(vm.jugador.datasegur);
+	            vm.jugador.dataactiu = vm.parseTime(vm.jugador.dataactiu);
 	            vm.$router.push({ path: `/admin/jugadors/`});
 	        })
 	        .catch(function (error) {
@@ -307,6 +328,8 @@ export default {
 	        .then(function (response) {
 	            vm.jugador = response.data[0];
 	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
+	            vm.jugador.datasegur = vm.parseTime(vm.jugador.datasegur);
+	            vm.jugador.dataactiu = vm.parseTime(vm.jugador.dataactiu);
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -321,7 +344,7 @@ export default {
 			var data= JSON.parse(atob(unescape(predefined)));
 			vm.jugador.nom= data.nom;
 			vm.jugador.cognoms= data.cognoms;
-			vm.jugador.naixement= data.naixement;
+			vm.jugador.naixement= vm.parseTime(data.naixement);
 			vm.jugador.email= data.email;
 			vm.jugador.telefon= data.telefon;
 			vm.jugador.dir= data.dir;
@@ -330,6 +353,8 @@ export default {
 			vm.jugador.dni= data.dni;
 			vm.jugador.sexe= data.sexe;
 			vm.jugador.foto= data.foto;
+			vm.jugador.dataactiu= data.dataactiu;
+			vm.jugador.datasegur= data.datasegur;
 		}
 	},
 	created: function() {

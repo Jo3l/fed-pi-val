@@ -5,6 +5,7 @@
 			<h1>Jugadors</h1>
 			
 			<span class="button-right">
+		        <ui-button icon="table_chart" icon-position="left" size="big" @click="csv('jugadors')">CSV</ui-button>
 				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Jugador</ui-button>
 			</span>
 			
@@ -30,7 +31,11 @@
 						<td class="actiu">
 							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu==1"></ui-icon> 
 							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
-							<ui-checkbox v-model="props.row.actiu" @change="saveChanges(props.row)">actiu</ui-checkbox>
+							<div :class="props.row.dataactiu > timeToStr(new Date()) ? 'green':'red'">
+								<!--ui-icon v-if="props.row.datasegur >= timeToStr(new Date())">redo</ui-icon>
+								<ui-icon v-if="props.row.datasegur < timeToStr(new Date())">keyboard_tab</ui-icon-->
+								{{ diaMesAny(props.row.datasegur) }}
+							</div>
 						</td>
 					</template>
 					
@@ -38,14 +43,19 @@
 						<td class="segur">
 							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.segur==1"></ui-icon>
 							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
-							<ui-checkbox v-model="props.row.segur" @change="saveChanges(props.row)">segur</ui-checkbox>
+							<div :class="props.row.datasegur > timeToStr(new Date()) ? 'green':'red'">
+								<!--ui-icon v-if="props.row.dataactiu >= timeToStr(new Date())">redo</ui-icon>
+								<ui-icon v-if="props.row.dataactiu < timeToStr(new Date())">keyboard_tab</ui-icon-->
+								{{ diaMesAny(props.row.dataactiu) }}
+							</div>
+							<!--ui-checkbox v-model="props.row.segur" @change="saveChanges(props.row)">segur</ui-checkbox-->
 						</td>
 					</template>
 					
 					<template slot="actions" scope="props">
 						<td class="actions">
 							<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
-							<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
+							<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="confirmAction(remove, props.row)">Borrar</ui-button>
 						</td>
 					</template>
 					
@@ -79,13 +89,13 @@ export default {
 		    list:{},
 		    columns:[
 	            {
-	                label: 'Actiu',
+	                label: 'Actiu fins al',
 	                field: 'actiu',
 	                html: false,
 	                icon: true
 	            },
 	            {
-	                label: 'Assegurat',
+	                label: 'Segur fins al',
 	                field: 'segur',
 	                html: false,
 	                icon: true
@@ -111,6 +121,13 @@ export default {
 		}
 	},
 	methods: {
+		confirmAction: function(func, item) {
+
+			if(confirm( this.$i18n.t('common.confirm') )) {
+				func(item);
+			}
+
+		},
 	  	edit:function(row) {
 	    	this.$router.push({ path: `/admin/jugador/`+row.id });
 	    },
@@ -154,7 +171,29 @@ export default {
 	        .catch(function (error) {
 	            console.log(error);
 	        });
+		},
+		csv: function(listName) {
+	        window.location.href='/api/'+listName+'?csv=true';
+		},
+		parseTime: function(time) {
+			var str = time;
+			var year = str.substring(0, 4);
+			var month = str.substring(4, 6);
+			var day = str.substring(6, 8);
+			var hour = str.substring(8, 10);
+			var minute = str.substring(10, 12);
+			var second = str.substring(12, 14);
+			
+			return new Date(year, month-1, day, hour, minute, second);	
+			
+		},
+		timeToStr: function(time) {
+			return time.toISOString().replace(/[-T:\.Z]/g,'').substring(0,14);
+		},
+		diaMesAny: function(time) {
+			return time.substring(6,8)+'/'+time.substring(4,6)+'/'+time.substring(2,4);
 		}
+		
 	},
 	mounted: function () {
 		var vm=this;
@@ -169,5 +208,6 @@ export default {
 </script>
 
 <style lang="less">
-
+.red { color:red; font-weight:bold; display:inline; white-space:nowrap; } 
+.green { color:green; display:inline; white-space:nowrap; }
 </style>
