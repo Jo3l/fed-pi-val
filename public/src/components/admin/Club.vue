@@ -130,7 +130,7 @@
 							
 						</div>
 						
-						<ui-button color="saveForm" icon="security" size="small" type="secondary" title="Només es pot enviar amb un email correcte especificat" :class="emailValid(club.email)?'':'is-disabled'" v-if="club.id" @click="sendPwd()">{{$i18n.t('common.sendPwd')}}</ui-button>
+						<ui-button color="saveForm" icon="security" size="small" type="secondary" title="Només es pot enviar amb un email correcte especificat" :class="emailValid(club.email)?'':'is-disabled'" v-if="club.id" @click="sendPwd()">{{$i18n.t('common.sendPwd')}} <span v-if="!validPwd()"> &nbsp; per primera vegada</span></ui-button>
 						
 						<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 		
@@ -166,7 +166,7 @@
 					</div>
                 </ui-tab>
 
-                <ui-tab title="Accés com a club">
+                <ui-tab title="Accés com a club" v-if="club.id && validPwd()">
                 	
 					
 						<br>
@@ -343,11 +343,20 @@ export default {
 		},
 		tempPwd: function() {
 			var vm= this;
-			var pwd= JSON.parse(vm.club.json).pwd;
+			if (!validPwd()) return '';
+			var json=JSON.parse(vm.club.json);
+			if (!json || !json.pwd) return '';
+			var pwd= json.pwd;
 			var email= vm.club.email;
 			var dt= (new Date()).toISOString().replace(/[-\.TZ:]/g,'').substr(0,11);
 			let myCipher = vm.cipher(dt)
 			return myCipher(email+'|'+pwd)
+		},
+		validPwd: function() {
+			var vm= this;
+			if (!vm.club.id) return false;
+			var json=JSON.parse(vm.club.json);
+			return (json && json.pwd);
 		},
 		parseTime: function(time) {
 			
