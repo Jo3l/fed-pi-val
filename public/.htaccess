@@ -1,6 +1,10 @@
 
-<filesMatch ".(jpg|jpeg|png|gif|ico|js|css)$">
+<filesMatch ".(jpg|jpeg|png|gif|ico)$">
 	Header set Cache-Control "max-age=2628000, public"
+</filesMatch>
+
+<filesMatch ".(js|css)$">
+	Header set Cache-Control "max-age=3600, public"
 </filesMatch>
 
 <IfModule mod_rewrite.c>
