@@ -236,6 +236,9 @@ class Filem
 
 		$fileDestination = $month_folder;
 		
+		// afegit control longitud nom arxiu >100 :
+		if (strlen($_FILES['files']['name'])>100) $_FILES['files']['name']= substr($_FILES['files']['name'],-100,100);
+		
 		if(file_exists($fileDestination.'/'.$_FILES['files']['name'])) {
 			$tmpRand = rand(00,99);
 			move_uploaded_file($_FILES['files']['tmp_name'], $file.$fileDestination.'/'.$tmpRand."_".$_FILES['files']['name']);

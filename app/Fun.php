@@ -54,6 +54,22 @@ class Fun
 * mostra el resultat indicat com a JSON amb les capçaleres correctes
 */
 static public function render($result,$doexit=false) {
+	if (!empty($_GET['csv'])) {
+		$output = fopen("php://output",'w') or die("Error: Can't open php://output");
+		header("Content-type: application/csv;charset=UTF-8");
+		header("Content-Disposition: attachment; filename=".date('YmdHis').".csv");
+		header("Pragma: no-cache");
+		header("Expires: 0");
+		fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
+		fputcsv($output, array_keys($result[0]),";");
+		foreach($result as $row) {
+			$row= array_map("utf8_decode", $row );
+		    fputcsv($output, $row,";");
+		}
+		fclose($output) or die("Can't close php://output");		
+		if ($doexit) exit; // ojo, se carrega el postproces (caché)
+		return $result;
+	}
 	header('Content-Type: application/json, charset=utf-8');
 	// si només hi ha un element, el torna sense array
 	//if (is_array($result) && count($result)==1) $result= $result[0];
@@ -140,9 +156,9 @@ static public function equipsdeclub(Request $request, Response $response, $param
 	$options= array();
 	//$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
 	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
-	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (!isset($params['o'])) $params['o']='id-';
 	$sql.= " order by ".str_replace('-',' desc',$params['o']);
+	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	$db->sql($sql);
 	$data= $db->all();
 	foreach($data as $id=>$elm) {
@@ -400,6 +416,18 @@ static public function eliminaequip(Request $request, Response $response, $param
 	$db->sql("update partida set baixa='".date('YmdHis')."' where local='".$params['equip']."' or visitant=".$params['equip']);
 	$db->sql("update equip set baixa='".date('YmdHis')."' where id=".$params['equip']);
 	return '{"result":"ok"}';
+}
+
+/*
+* @description
+* llista tots els clubs
+* URL: DELETE /api/nomsclubs
+*/
+static public function nomsclubs(Request $request, Response $response, $params) {
+	$db= new db();
+	$db->sql("select id,nom from club ");
+	$data= $db->all();
+	return json_encode($data);
 }
 
 //  //  //  //  //  //  //  //
@@ -700,7 +728,33 @@ static public function resum_competicio(Request $request, Response $response, $p
 	}
 	ksort($modalitats);
 	//echo '<pre>',print_r($clubs),'<hr/>',print_r($modalitats);exit;
-	echo '<link rel="stylesheet" type="text/css" href="/static/table.css">';
+	/// ARA HO FAIG EN CSV
+	$output = fopen("php://output",'w') or die("Error: Can't open php://output");
+	header("Content-type: application/csv;charset=UTF-8");
+	header("Content-Disposition: attachment; filename=".date('YmdHis').".csv");
+	header("Pragma: no-cache");
+	header("Expires: 0");
+	fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
+	$campos= $modalitats;
+	$campos= array_map("utf8_decode", $campos );
+	array_unshift($campos,'club');
+	fputcsv($output, $campos,";");
+	foreach($clubs as $club=>$fem) {
+		$row= [];
+		foreach($modalitats as $moda=>$nommoda) {
+			$suma=0;
+			foreach($data as $insc) { 
+				if ($insc['nomclub']==$club && $insc['competicio']==$moda) $suma++; 
+			}
+			array_push($row,$suma);
+		}
+		array_unshift($row,$club);
+	    fputcsv($output, $row,";");	
+	}
+	fclose($output) or die("Can't close php://output");
+	exit;
+	
+	/// ABANS HO FEIA EN HTML
 	echo '<table><thead><td></td><td>',implode('</td><td>',$modalitats),'</td></thead>';
 	foreach($clubs as $club=>$fem) {
 		echo '<tr><td>',$club,'</td>';
@@ -801,6 +855,7 @@ static public function slugify($string, $id=null) {
 * En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
 */
 static public function comprar(Request $request, Response $response, $params) {
+	mail('alsanan@gmail.com','test','1234');
 	//$json = Fun::getPost($tabla);
 	$json= json_decode(file_get_contents("php://input"),true);
 	//file_put_contents('../data/compra_'.date('YmdHis').'.json',json_encode($json));
@@ -810,6 +865,7 @@ static public function comprar(Request $request, Response $response, $params) {
 	$address= $json['address'].' '.$json['cp'];
 	$tel= $json['tel'];
 	$email= $json['email'];
+	$json['data']= date('YmdHis');
 	$html='';
 	$min= [];
 	
@@ -827,7 +883,7 @@ static public function comprar(Request $request, Response $response, $params) {
 
 
 
-	$preu+= config::preuenviament;
+	$preu+= 8.9; // DONA UN ERROR EN PRODUCCIÓ: config::preuenviament;
 
 	$html= '<h2>Comanda:</h2><table>'.$html.'</table>';
 	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
@@ -860,17 +916,6 @@ static public function comprar(Request $request, Response $response, $params) {
 	*/
 	//include 'thirdparty/redsys/apiRedsys.php';
 
-	// Se crea Objeto
-	$miObj = new RedsysAPI;
-
-	// Valores de entrada que no hemos cmbiado para ningun ejemplo
-	$fuc="272095225";
-	$terminal="001";
-	$moneda="978";
-	$trans = "0";
-	$url="https://fedpival.es";
-	$urlOKKO="https://fedpival.es/".(Fun::$idioma).(Fun::$idioma=='es'?'/tienda/comprado':'/botiga/comprat')."/";
-
 	Fun::$db= new db();
 	Fun::$db->sql("select max(codi) as codi from comanda where codi like '".date('y')."%';");
 	$id= Fun::$db->all();
@@ -879,61 +924,105 @@ static public function comprar(Request $request, Response $response, $params) {
 	$id= $id['codi']+1;
 	Fun::$db->sql("insert into comanda(codi,json,quantitat) values('".$id."','".json_encode($json)."',".$preu.");");
 
-	// Se Rellenan los campos
-	$miObj->setParameter("DS_MERCHANT_AMOUNT",$preu*100);
-	//str_replace('.',',',number_format($preu,2)));
-	$miObj->setParameter("DS_MERCHANT_ORDER",$id);
-	$miObj->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
-	$miObj->setParameter("DS_MERCHANT_CURRENCY",$moneda);
-	$miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
-	$miObj->setParameter("DS_MERCHANT_TERMINAL",$terminal);
-	$miObj->setParameter("DS_MERCHANT_MERCHANTURL",$url);
-	$miObj->setParameter("DS_MERCHANT_URLOK",$urlOKKO);
-	$miObj->setParameter("DS_MERCHANT_URLKO",$urlOKKO);
 
-	//Datos de configuración
-	$version="HMAC_SHA256_V1";
-	$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';//Clave recuperada de CANALES
-	// Se generan los parámetros de la petición
-	$request = "";
-	$params = $miObj->createMerchantParameters();
-	$signature = $miObj->createMerchantSignature($kc);	
-
-
-
+	if($json['payment']=='cash-on-delivery') {
+		@mail('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		mail($email,'Comanda contra-reemborsament en Federació de Pilota : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		return json_encode([ 
+			"tipus"=> 'contra-reemborsament',
+			"url"=> '/val/botiga/comprat',
+			"params"=> [
+				'id'=>$id
+				],
+			"preu"=>$preu
+			]);
+	}
 	
-/*<form name="frm" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
-Ds_Merchant_SignatureVersion <input type="text" name="Ds_SignatureVersion" value="<?php echo $version; ?>"/></br>
-Ds_Merchant_MerchantParameters <input type="text" name="Ds_MerchantParameters" value="<?php echo $params; ?>"/></br>
-Ds_Merchant_Signature <input type="text" name="Ds_Signature" value="<?php echo $signature; ?>"/></br>
-*/	
+	if($json['payment']=='bank-transfer') {
+		//@mail('botiga@fedpival.es','comanda per transferència '.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		mail('alsanan@gmail.com','comanda per transferència : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		mail($email,'Comanda per transferència en Federació de Pilota : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		return json_encode([ 
+			"tipus"=> 'contra-reemborsament',
+			"url"=> '/val/botiga/comprat',
+			"params"=> [
+				'id'=>$id
+				],
+			"preu"=>$preu
+			]);	
+		
+	}
 
-	$fields_string='Ds_SignatureVersion='.$version.'&Ds_MerchantParameters='.$params.'&Ds_Signature='.$signature;
+	if($json['payment']=='online-pay') {
 	
-	return json_encode([ 
-		"url"=> 'https://sis-t.redsys.es:25443/sis/realizarPago', // PROVES
-		//"url"=> 'https://sis.redsys.es/sis/realizarPago', // REAL
-		"params"=> [
-			'Ds_SignatureVersion'=>$version,
-			'Ds_MerchantParameters'=>$params,
-			'Ds_Signature'=>$signature,
-			'id'=>$id
-			],
-		"preu"=>$preu
-		]);
-/*	
-operación Aprobada. Utilice esta tarjeta de prueba:
-Número de tarjeta	4548812049400004
-Caducidad	12/20
-Código CVV2	123
-Código CIP	123456
-
-operación Denegada. Utilice esta tarjeta de prueba:
-Número de tarjeta	1111111111111117
-Caducidad	12/20
-
-resultat ok: https://fedpival.es/val/botiga/comprat/?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=eyJEc19EYXRlIjoiMTIlMkYwOSUyRjIwMTkiLCJEc19Ib3VyIjoiMTglM0EzMiIsIkRzX1NlY3VyZVBheW1lbnQiOiIxIiwiRHNfQW1vdW50IjoiMjU4MCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIxOTAwMDAwNSIsIkRzX01lcmNoYW50Q29kZSI6IjI3MjA5NTIyNSIsIkRzX1Rlcm1pbmFsIjoiMDAxIiwiRHNfUmVzcG9uc2UiOiIwMDAwIiwiRHNfVHJhbnNhY3Rpb25UeXBlIjoiMCIsIkRzX01lcmNoYW50RGF0YSI6IiIsIkRzX0F1dGhvcmlzYXRpb25Db2RlIjoiMTUxMTc1IiwiRHNfQ29uc3VtZXJMYW5ndWFnZSI6IjEiLCJEc19DYXJkX0NvdW50cnkiOiI3MjQiLCJEc19DYXJkX0JyYW5kIjoiMSJ9&Ds_Signature=uhAeMCq4TgKjDdRjSMSlxyFPCCg28q2IEFiLUolQgtA%3D
-*/
+		// Se crea Objeto
+		$miObj = new RedsysAPI;
+	
+		// Valores de entrada que no hemos cmbiado para ningun ejemplo
+		$fuc="272095225";
+		$terminal="001";
+		$moneda="978";
+		$trans = "0";
+		$url="https://fedpival.es";
+		$urlOKKO="https://fedpival.es/".(Fun::$idioma).(Fun::$idioma=='es'?'/tienda/comprado':'/botiga/comprat')."/";
+	
+		// Se Rellenan los campos
+		$miObj->setParameter("DS_MERCHANT_AMOUNT",round($preu*100));
+		//str_replace('.',',',number_format($preu,2)));
+		$miObj->setParameter("DS_MERCHANT_ORDER",$id);
+		$miObj->setParameter("DS_MERCHANT_MERCHANTCODE",$fuc);
+		$miObj->setParameter("DS_MERCHANT_CURRENCY",$moneda);
+		$miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
+		$miObj->setParameter("DS_MERCHANT_TERMINAL",$terminal);
+		$miObj->setParameter("DS_MERCHANT_MERCHANTURL",$urlOKKO);
+		$miObj->setParameter("DS_MERCHANT_URLOK",$urlOKKO);
+		$miObj->setParameter("DS_MERCHANT_URLKO",$urlOKKO);
+	
+		//Datos de configuración
+		$version="HMAC_SHA256_V1";
+		//$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';//Clave recuperada de CANALES (pruebas)
+		$kc = 'ioGUb1lc23Ua1LkQv176y4EP0sloCaDP';//Clave recuperada de CANALES (real)
+		// Se generan los parámetros de la petición
+		$request = "";
+		$params = $miObj->createMerchantParameters();
+		$signature = $miObj->createMerchantSignature($kc);	
+	
+	
+	
+		
+	/*<form name="frm" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
+	Ds_Merchant_SignatureVersion <input type="text" name="Ds_SignatureVersion" value="<?php echo $version; ?>"/></br>
+	Ds_Merchant_MerchantParameters <input type="text" name="Ds_MerchantParameters" value="<?php echo $params; ?>"/></br>
+	Ds_Merchant_Signature <input type="text" name="Ds_Signature" value="<?php echo $signature; ?>"/></br>
+	*/	
+	
+		$fields_string='Ds_SignatureVersion='.$version.'&Ds_MerchantParameters='.$params.'&Ds_Signature='.$signature;
+		@mail('botiga@fedpival.es','comanda abans de pagar online'.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		return json_encode([ 
+			//"url"=> 'https://sis-t.redsys.es:25443/sis/realizarPago', // PROVES
+			"url"=> 'https://sis.redsys.es/sis/realizarPago', // REAL
+			"params"=> [
+				'Ds_SignatureVersion'=>$version,
+				'Ds_MerchantParameters'=>$params,
+				'Ds_Signature'=>$signature,
+				'id'=>$id
+				],
+			"preu"=>$preu
+			]);
+		/*	
+		operación Aprobada. Utilice esta tarjeta de prueba:
+		Número de tarjeta	4548812049400004
+		Caducidad	12/20
+		Código CVV2	123
+		Código CIP	123456
+		
+		operación Denegada. Utilice esta tarjeta de prueba:
+		Número de tarjeta	1111111111111117
+		Caducidad	12/20
+		
+		resultat ok: https://fedpival.es/val/botiga/comprat/?Ds_SignatureVersion=HMAC_SHA256_V1&Ds_MerchantParameters=eyJEc19EYXRlIjoiMTIlMkYwOSUyRjIwMTkiLCJEc19Ib3VyIjoiMTglM0EzMiIsIkRzX1NlY3VyZVBheW1lbnQiOiIxIiwiRHNfQW1vdW50IjoiMjU4MCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIxOTAwMDAwNSIsIkRzX01lcmNoYW50Q29kZSI6IjI3MjA5NTIyNSIsIkRzX1Rlcm1pbmFsIjoiMDAxIiwiRHNfUmVzcG9uc2UiOiIwMDAwIiwiRHNfVHJhbnNhY3Rpb25UeXBlIjoiMCIsIkRzX01lcmNoYW50RGF0YSI6IiIsIkRzX0F1dGhvcmlzYXRpb25Db2RlIjoiMTUxMTc1IiwiRHNfQ29uc3VtZXJMYW5ndWFnZSI6IjEiLCJEc19DYXJkX0NvdW50cnkiOiI3MjQiLCJEc19DYXJkX0JyYW5kIjoiMSJ9&Ds_Signature=uhAeMCq4TgKjDdRjSMSlxyFPCCg28q2IEFiLUolQgtA%3D
+		*/
+	}
 
 }
 
@@ -963,16 +1052,20 @@ static public function pagat(Request $request, Response $response, $params) {
 
 	if ($firma === $signatureRecibida){
 	} else {
+		header("HTTP/1.0 402 Payment required");
 		die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
 	}
 
 	$data= json_decode($decodec);
 
-	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') die(json_encode(["error"=>'Error en el pago'])); // header reload
-
 	Fun::$db= new db();
-	Fun::$db->sql("update comanda set resultat=".($data->Ds_AuthorisationCode)." where codi='".($data->Ds_Order)."';");
+	Fun::$db->sql("update comanda set resultat='".($data->Ds_AuthorisationCode)."' where codi='".($data->Ds_Order)."';");
 	Fun::$db->sql("select json,quantitat from comanda where codi='".($data->Ds_Order)."';");
+
+	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') {
+		header("HTTP/1.0 402 Payment required");
+		die(json_encode(["error"=>'Error en el pago'])); // header reload
+	}
 
 	$row= Fun::$db->all();
 	$json= json_decode($row[0]['json']);
@@ -980,16 +1073,23 @@ static public function pagat(Request $request, Response $response, $params) {
 	$json->comanda = $data->Ds_Order;
 	$json->authcode = $data->Ds_AuthorisationCode;
 	$json->preu = $row[0]['quantitat'];
-	echo json_encode($json);
+	$jsonarr= json_decode($row[0]['json'],true);
+
+	$html='---';
+	foreach($jsonarr['cart'] as $elm) {
+		$prod= $elm['name'];
+		foreach($elm['fullProduct']['types'] as $tipo) { 
+			if ($tipo['name']==$prod) {
+				$preuprod= $tipo['price']['amount'];
+				$preu+= $preuprod*$elm['quantity'];
+				$html.= '<tr><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td>'.($preuprod*$elm['quantity']).'&euro;</td></tr>';
+			}
+		}
+		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
+	}
 
 // PAGAT. enviament mail comanda
-	$html= '<h2>Comanda:</h2><table>'.$html.'</table>';
-	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
-		date('d-m-Y H:i:s'),
-		$name, $address, $tel, $email, $email,
-		$preu+8.9
-		//,str_replace(['[',','],"\n[",json_encode($carro))
-	);
+	$html= '<h2>Comanda:</h2><table>'.$html.'</table>--- <hr/>';
 	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
 		a la recepció del material.\n
 		Per a qualsevol devolució es imprescindible presentar la factura.\n
@@ -1001,15 +1101,25 @@ static public function pagat(Request $request, Response $response, $params) {
 		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
 		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
 		Juan, 32 baix B, Valencia, 46015";
-
-	Fun::email('alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
-	Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str);
-
+	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><br/>Comanda %s pagada amb autorització %s<hr/>%s",
+		date('d-m-Y H:i:s'),
+		$name, $address, $tel, $email, $email,
+		$preu+8.9,
+		$data->Ds_Order,
+		$data->Ds_AuthorisationCode,
+		$html.$legal
+		//,str_replace(['[',','],"\n[",json_encode($carro))
+	);
+	@mail('botiga@fedpival.es','Nova compra a fedpival.es : '.date('YmdHis'),$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+	@mail($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+	Fun::email($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	return json_encode($json);
 }
 
 
 
-static public function email($to,$sub,$text){
+static public function email($to,$sub,$text,$html=false){
 	# Include the Autoloader (see "Libraries" for install instructions)
 	//require 'vendor/autoload.php';
 	//use Mailgun\Mailgun;
@@ -1022,12 +1132,14 @@ static public function email($to,$sub,$text){
 	  'from'    => config::mailgundata['from'],
 	  'to'      => $to,
 	  'subject' => $sub,
-	  'text'    => $text
+	  ($html?'html':'text')    => $text
 	]);
 	# You can see a record of this email in your logs: https://app.mailgun.com/app/logs
 	# Next, you should add your own domain so you can send 10,000 emails/month for free.
 	return '{"result":'.json_encode($result).'}';
 }
+
+
 //  //  //  //  //  //  //  //
 /*
 * @description
