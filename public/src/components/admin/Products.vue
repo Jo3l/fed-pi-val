@@ -5,6 +5,7 @@
 			<h1>Productes</h1>
 			
 			<span class="button-right">
+		        <ui-button icon="table_chart" icon-position="left" size="big" @click="csv('productes')">CSV</ui-button>
 				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="newProduct">Afegir Producte</ui-button>
 			</span>
 			
@@ -29,7 +30,7 @@
 					<template slot="actions" scope="props">
 						<td class="actions">
 							<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="edit(props.row)">Editar</ui-button>
-							<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="remove(props.row)">Borrar</ui-button>
+							<ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="confirmAction(remove, props.row)">Borrar</ui-button>
 						</td>
 					</template>
 				</tablerone>
@@ -68,6 +69,13 @@ export default {
 		}
 	},
 	methods: {
+		confirmAction: function(func, item) {
+
+			if(confirm( this.$i18n.t('common.confirm') )) {
+				func(item);
+			}
+
+		},
 		newProduct:function(row) {
 	    	this.$router.push({ path: `/admin/producte/` });
 	    },
@@ -113,7 +121,10 @@ export default {
 	            console.log(error);
 	        });
 	        
-	    }
+	    },
+		csv: function(listName) {
+	        window.location.href='/api/'+listName+'?csv=true';
+		}
 	  },
 	  mounted: function() {
 			this.getData('/productes');
