@@ -7,7 +7,7 @@
 				<vue-core-image-upload v-if="tipo=='pdf'"
 			    :text="$i18n.t('common.uploadPdf')"
 			    class="uploader"
-			    url="/api/static/uploadpdf"
+			    url="/api/static/uploaddoc"
 				@imageuploaded="getData(uploadFolder)"
 			    :data="{do:'uploadpdf'}"
 			    extensions="pdf"
