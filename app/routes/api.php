@@ -232,6 +232,13 @@ $app->get('/api/equipsdeclub/{club:[0-9]+}[/p/{p:\d+}[/o/{o:[a-z-]+}]]', '\app\F
 
 /*
 * @description
+* Llista tots els clubs
+* URL: DELETE /api/nomsclubs
+*/
+$app->get('/api/nomsclubs', '\app\Fun::nomsclubs');
+
+/*
+* @description
 * Elimina les partides i l'equip
 * URL: DELETE /api/eliminaequip/12
 */
@@ -462,9 +469,10 @@ $app->post('/api/static/uploadimg', '\app\Filem::uploadimg'); // guardar imatge
 /*
 * @description
 * Pujar/guardar/upload d'un document PDF
-* URL: /api/static/uploadpdf
+* URL: /api/static/uploaddoc
+* URL ANTIGA: /api/static/uploadpdf
 */
-$app->post('/api/static/uploadpdf', '\app\Filem::uploadpdf'); // guardar pdf
+$app->post('/api/static/uploaddoc', '\app\Filem::uploadpdf'); // guardar pdf
 
 /*
 * @description
