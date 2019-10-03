@@ -6,26 +6,27 @@
 			<ui-textbox
 			    floating-label
 	            autocomplete="off"
-	            :error="$i18n.t('common.wrong')"
+	            :error="$i18n.t('common.required')"
 	            label="Nom"
 				type="text"
 	            v-model="noujugador.nom"
-	            required
+	            :invalid="$store.getters.validate({string:noujugador.nom,type:'not-null'})"
 	        ></ui-textbox>
 
 			<ui-textbox
 			    floating-label
 	            autocomplete="off"
-	            error="Camp obligatori"
+	            :error="$i18n.t('common.required')"
 	            label="Cognoms"
 				type="text"
 	            v-model="noujugador.cognoms"
-	            required
+	            :invalid="$store.getters.validate({string:noujugador.cognoms,type:'not-null'})"
 	        ></ui-textbox>
 	        
+	        <br>
 	        <ui-radio-group
                 name="sexe"
-                error="Sel·lecció necesària"
+                :error="$i18n.t('common.required')"
                 :options="[{label: 'Home', value: 'h'},{label: 'Dona', value: 'd'}]"
                 v-model="noujugador.sexe"
                 :invalid="$store.getters.validate({string:noujugador.sexe,type:'not-null'})"
@@ -34,28 +35,31 @@
 			<ui-textbox
 			    floating-label
 	            autocomplete="off"
-	            error="Camp de text no correcte"
+	            :error="$i18n.t('common.requiredmore')"
 	            label="Dni"
 				type="text"
 	            v-model="noujugador.dni"
 	            :invalid="$store.getters.validate({string:noujugador.dni,type:'dni'})"
+	            required
 	        ></ui-textbox>
 	        
 			<ui-textbox
 			    floating-label
 	            autocomplete="off"
+	            :error="$i18n.t('common.requiredmore')"
 	            label="Correu Electrònic"
 				type="email"
 	            v-model="noujugador.email"
-	            :invalid="$store.getters.validate({string:noujugador.email,type:'emailnull'})"
+	            :invalid="$store.getters.validate({string:noujugador.email,type:'email'})"
+	            required
 	        ></ui-textbox>
-            
+            <br>
 			<ui-datepicker
-				v-if="typeof noujugador.naixement === 'object'"
                 :placeholder="$i18n.t('calendar.dateTip')"
                 :start-of-week="datePickerOptions.dow"
                 v-model="noujugador.naixement"
                 :lang="datePickerOptions"
+                required
             >Data Naixement</ui-datepicker>
 	            
 			<ui-textbox
@@ -65,6 +69,7 @@
 	            label="Telèfon"
 				type="number"
 	            v-model="noujugador.telefon"
+	            :invalid="$store.getters.validate({string:noujugador.telefon,type:'not-null'})"
 	        ></ui-textbox>
 	        
 			<ui-textbox
@@ -74,8 +79,9 @@
 	            label="Adreça"
 				type="text"
 	            v-model="noujugador.dir"
+	            :invalid="$store.getters.validate({string:noujugador.dir,type:'not-null'})"
 	        ></ui-textbox>
-	        
+	        <br>
 	        <ui-select
                 disable-filter
                 has-search
@@ -98,6 +104,7 @@
 	            label="Població"
 				type="text"
 	            v-model="noujugador.poblacio"
+	            :invalid="$store.getters.validate({string:noujugador.poblacio,type:'not-null'})"
 	        ></ui-textbox>
 
 			<!--<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
@@ -151,7 +158,7 @@ export default {
 			      cognoms: '',
 			      dni: '',
 			      sexe: '',
-			      naixement: '',
+			      naixement: new Date,
 			      dir: null,
 			      cp: 0,
 			      poblacio: null,
@@ -220,6 +227,8 @@ export default {
 				return false;
 			}
 			var vm=this;
+			console.log(vm.noujugador.naixement)
+			vm.noujugador.naixement = vm.noujugador.naixement.toString('yyyyMMdd');
 	        vm.$http.post('/jugador/registre' , vm.noujugador)
 	        .then(function (response) {
 	            alert('ok. Sol·licitud enviada... ');
