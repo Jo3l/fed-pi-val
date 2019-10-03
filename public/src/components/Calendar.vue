@@ -88,8 +88,8 @@
 						<h4>{{parseTime(event.publicacio)}}</h4>
 						<i class="remove" @click="removeContent(event, todayEvent)"></i>
 						
-						<h4>Codi de color:</h4>
 						<!--
+						<h4>Codi de color:</h4>
 						<ui-icon-button color="primary" :icon="event.color=='primary'?'done':''" size="small" @click="event.color='primary'"></ui-icon-button>
 						<ui-icon-button color="accent"  :icon="event.color=='accent'?'done':''"size="small" @click="event.color='accent'"></ui-icon-button>
 						<ui-icon-button color="orange" :icon="event.color=='orange'?'done':''"size="small" @click="event.color='orange'"></ui-icon-button>
