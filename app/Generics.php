@@ -172,11 +172,12 @@ public function generic_delete(Request $request, Response $response, $params) {
 
 //  //  //  //  //  //  //  //
 static public function generic_query(Request $request, Response $response, $params) {
-	if ($params['tabla']=='usuari') {
-		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
+	if (in_array($params['tabla'],['usuari','jugador','club','comanda'])) {
+		// fa falta un rol 0 per gestionar usuaris i altres dades privades
 	    Auth::verifyRol($request,0);
 	}
     $tabla= Fun::tables($params['tabla'],'select');
+    
 	$options= ['limit'=>Fun::$itemsPerPage];
 	if (in_array($tabla,['trinquet','producte'])) $options['limit']=PHP_INT_MAX; // canvie el limit per defecte si és trinquet (modificable per paràmetres a continuació)
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
@@ -184,16 +185,25 @@ static public function generic_query(Request $request, Response $response, $para
 	if (in_array('p3',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
 	if (in_array('p4',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p4'],$options,$tabla));
     $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
+
+    try {
+    	if ($params['tabla']=='noticia') {
+			$user= Auth::getUser($request,$response);
+			if (!empty($user)) if ($user->data->rol==0) $tabla='_noticia';
+    	}
+    } catch (Exception $e) { die($e->getMessage()); }
+    
     $db = new db();
     $sql= "SELECT * FROM ".$tabla;
     if (!empty($options['wheres'])) $sql.= " where ".implode(' and ',$options['wheres']);
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
     if (!isset($_GET['csv']) && !empty($options['limit'])) $sql.= " limit ".$options['limit'];
 	//print_r($options);echo $sql;exit;
+	if ($params['tabla']=='jugador') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=jugador.club) as nomclub ',$sql);
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
-    if (in_array($tabla,array('noticia','_noticia_es','_noticia_val'))) {
+    if (in_array($tabla,array('noticia','_noticia_es','_noticia_val','_noticia'))) {
 		foreach($data as $i=>$r) { // en cada registre...
 			foreach($r as $k=>$v) { // en cada parell de valors
 				if (empty($options['id']) && in_array($k,['titol','contingut']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth(strip_tags($v), 0, 100)."...");
@@ -206,6 +216,20 @@ static public function generic_query(Request $request, Response $response, $para
 			$a= json_decode($a,true); 
 			$data[$idx]['json']= $a;
 			//echo '<pre>',var_dump($data);exit;
+		}
+	}
+	if (isset($_GET['csv']) && $tabla=='comanda') {
+		foreach($data as $idx=>$elm) {
+			$json= json_decode($data[$idx]['json'],true);
+			unset($data[$idx]['json']);
+			$data[$idx]['nom']= $json['name'];
+			$data[$idx]['dir']= $json['address']+' '+$json['cp'];
+			$data[$idx]['tel']= $json['tel'];
+			$data[$idx]['email']= $json['email'];
+			$data[$idx]['data']= $json['data'];
+			$data[$idx]['email']= $json['email'];
+			$data[$idx]['email']= $json['email'];
+			$data[$idx]['tipus']= $json['payment']=='cash-on-delivery'?'contra-reembors.':$json['payment']=='online-pay'?'targeta':'transfer.';
 		}
 	}
     Fun::render($data);
@@ -277,6 +301,34 @@ static public function generic_search(Request $request, Response $response, $par
 	}
     echo json_encode($data);
     return $params;
+}
+
+//  //  //  //  //  //  //  //
+static public function global_search(Request $request, Response $response, $params) {
+	if (strlen($params['que'])<3) die ( 'ERROR: Mínim 3 caràcters per buscar...' );
+	$options= array();
+	if (isset($params['p'])) $options['limit']= ($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
+	if (isset($params['i'])) $options['idioma']= $params['i'];
+	$options= array( );
+	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
+	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+    $db = new db();
+    $tot= [];
+/// afegir ací campionats i arxius
+	foreach( ['club','_noticia'] as $t ) :
+    	$sql= "SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$t."' and data_type in ('varchar','text','mediumtext');";
+		$db->sql($sql);
+		$que= $db->all();
+		$ques= [];
+		foreach( $que as $elm ) { array_push( $ques, $elm['column_name']." like '%".$params['que']."%' " ); }
+		$flds= 'id';
+		$sql= "select ".$flds." from ".$t." where ".implode( $ques, ' OR ');
+	    if (isset($options['order'])) $sql.= " order by ".$options['order'];
+	    if (isset($options['limit'])) $sql.= " limit ".$options['limit'];
+		$db->sql($sql);
+		$tot[$t]= $db->all();
+	endforeach;
+	echo '<pre>', print_r($tot);
 }
 
 //  //  //  //  //  //  //  //

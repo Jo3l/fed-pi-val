@@ -15,7 +15,7 @@
 			    	
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
-					    	<small>{{ fixDate(noticia.alta) }}</small>
+					    	<small>{{ fixDate(noticia.publicacio) }}</small>
 					    	<h2>{{ noticia.titol }}</h2>
 					    	<section>
 					    		<p>{{ stripHtmlToText(noticia.contingut) }}</p>
@@ -40,7 +40,7 @@
 			    <progressive-background class="articleP" :src="noticia.url">
 			    	<router-link :to="{ path: '/'+$i18n.locale+'/'+$i18n.t('common.news')+'/'+noticia.slug }">
 				    	<div class="articleContainer">
-					    	<small>{{ fixDate(noticia.alta) }}</small>
+					    	<small>{{ fixDate(noticia.publicacio) }}</small>
 					    	<h2>{{ noticia.titol }}</h2>
 					    	<section>
 					    		<p>{{ stripHtmlToText(noticia.contingut) }}</p>

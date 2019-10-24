@@ -166,7 +166,7 @@
 					</div>
                 </ui-tab>
 
-                <ui-tab title="Accés com a club" v-if="club.id && validPwd()">
+                <ui-tab title="Accés com a club" v-if="club.id && club.pwd/*validPwd()*/">
                 	
 					
 						<br>
@@ -223,7 +223,8 @@ export default {
 			      imatge: null,
 				  president:null,
 				  secretari:null,
-				  json:null
+				  json:null,
+				  pwd: null
 		    },
 		    datePickerOptions: {
 			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
@@ -343,7 +344,7 @@ export default {
 		},
 		tempPwd: function() {
 			var vm= this;
-			if (!validPwd()) return '';
+			if (!vm.validPwd()) return '';
 			var json=JSON.parse(vm.club.json);
 			if (!json || !json.pwd) return '';
 			var pwd= json.pwd;
@@ -389,6 +390,8 @@ export default {
 	        vm.$http.get('/club/'+vm.$route.params.clubId, { cache: false })
 	        .then(function (response) {
 	            vm.club = response.data[0];
+	            var json= JSON.parse(vm.club.json);
+	            vm.pwd= json.pwd;
 	            vm.club.fundacio = vm.parseTime(response.data[0].fundacio);
 	            vm.getEquips('equipsdeclub');
 	        })

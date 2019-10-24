@@ -7,7 +7,7 @@ const getters = {
 
 			var DNI_REGEX = /^(\d{8})([A-Z])$/;
 			var CIF_REGEX = /^([ABCDEFGHJKLMNPQRSUVW])(\d{7})([0-9A-J])$/;
-			var NIE_REGEX = /^[XYZ]\d{7,8}[A-Z]$/;
+			var DNINIE_REGEX = /^[XYZ]?\d{7,8}[A-Z]$/;
 			var EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			
 			if(n.type!='emailnull' && (n.string==null||n.string=='')) return true;
@@ -16,7 +16,7 @@ const getters = {
 				return CIF_REGEX.test(n.string.toUpperCase())==false;
 			}
 			else if(n.type=='dni') {
-				return DNI_REGEX.test(n.string.toUpperCase())==false;
+				return DNINIE_REGEX.test(n.string.toUpperCase())==false;
 			}
 			else if(n.type=='email') {
 				return EMAIL_REGEX.test(n.string.toUpperCase())==false;

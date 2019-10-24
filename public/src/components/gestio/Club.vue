@@ -27,7 +27,8 @@
 							<th slot="headActions"></th>
 							<template slot="actions" scope="props">
 								<td class="actions">
-									<ui-button color="saveForm" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi" style="margin:0">Modificar</ui-button>
+									<ui-button color="saveForm" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi" style="margin:0;display:inline">Modificar</ui-button>
+									<ui-button color="saveForm" icon="delete" icon-position="left" size="small" type="secondary" @click="deSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi" style="margin:0;display:inline">Esborrar</ui-button>
 									<ui-button color="default" icon="print" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row,true)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'>props.row.fi">Imprimir</ui-button>
 								</td>
 							</template>
@@ -600,6 +601,12 @@ export default {
 			vm.getInfoPartida(partida.id);
 			vm.$refs.updateResultats.open()
 	    },
+	    deSubscribe:function(champ, readonly=false){
+	    	var vm=this;
+	    	vm.$http.delete('/eliminaequip/'+champ.id);
+			vm.getInscripcions();
+			vm.getEquips(vm.$store.getters.userId);
+	    },
 	    modSubscribe:function(champ, readonly=false){
 			var vm=this;
 			vm.readonly= readonly;
@@ -634,7 +641,6 @@ export default {
 					vm.$refs.error.open()
 					console.log(vm.error);
 				} else {
-					
 					vm.$http.post('/inscrits/'+(id?id:response.data[0].id), vm.equip)
 					.then( function(response) {
 						vm.closeAllModals();

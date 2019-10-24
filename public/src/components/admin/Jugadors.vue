@@ -60,6 +60,7 @@
 					</template>
 					
 				</tablerone>
+
 				<paginate
 				    :page-count="Math.ceil(list.total / list.per_page)"
 					:clickHandler="clickCallback"

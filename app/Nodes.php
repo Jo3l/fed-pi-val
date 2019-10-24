@@ -118,10 +118,50 @@ static public function insert_element(Request $request, Response $response, $par
 //  //  //  //  //  //  //  //
 /*
 * @description
+* Calcula la classificació i la torna com un array a partir de les partides i els punts
+*/
+static private function ranking($pars) {
+	$equips= [];
+	$ppartida= 3; // asumisc que si no es posen, seran 3 punts
+	$ptanteig= $pars[0]['puntstanteig']?:1; // asumisc que si no es posen, seran 1 punt
+	foreach($pars[0]['partides'] as $p) {
+		if ($p['baixa']) continue;
+		$local= $p['local'];
+		$visitant= $p['visitant'];
+		if (!isset($equips[$local['id']])) $equips[$local['id']]= [ "nom"=> $local['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 ];
+		if (!isset($equips[$visitant['id']])) $equips[$visitant['id']]= [ "nom"=> $visitant['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 ];
+		$equips[$local['id']]['pj']++;
+		$equips[$visitant['id']]['pj']++;
+		if ($p['resultatlocal']<$p['resultatvisitant']) {
+			$equips[$visitant['id']]['punts']+= $ppartida;
+			$equips[$visitant['id']]['pg']++;
+			$equips[$local['id']]['pp']++;
+			if($p['resultatlocal']>=$ptanteig) $equips[$local['id']]['punts']+= 1;
+		} else {
+			$equips[$local['id']]['punts']+= $ppartida;
+			$equips[$local['id']]['pg']++;
+			$equips[$visitant['id']]['pp']++;
+			if($p['resultatvisitant']>=$ptanteig) $equips[$visitant['id']]['punts']+= 1;
+		}
+	}
+	usort($equips, function($a,$b) { return $b['punts']-$a['punts']; } );
+	return $equips;
+}
+
+//  //  //  //  //  //  //  //
+/*
+* @description
 * llista els elements d'un node
 */
 static public function list_elements(Request $request, Response $response, $params) {
-    echo Fun::render(Nodes::contingutnode($params['id']), true);
+	$partides= Nodes::contingutnode($params['id']);
+    $db = new db();
+	$db->sql("select puntspartida, puntstanteig from _jerarquia where id=".$params['id']);
+	$result= $db->getResult();
+	$partides[0]['puntspartida']= $result[0]['puntspartida'];
+	$partides[0]['puntstanteig']= $result[0]['puntstanteig'];
+	$partides[0]['ranking']= Nodes::ranking($partides);
+    echo Fun::render($partides, true);
 }
 
 //  //  //  //  //  //  //  //

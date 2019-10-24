@@ -32,7 +32,7 @@
 					    floating-label
 			            autocomplete="off"
 			            error="Format incorrecte"
-			            label="Dni"
+			            label="Dni/Nie"
 						type="text"
 			            v-model="jugador.dni"
 			            :invalid="$store.getters.validate({string:jugador.dni,type:'dni'})"

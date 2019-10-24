@@ -369,7 +369,7 @@ ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}/{id:[0-9]+}', '\app\Generics::generic_id');
 
 /*
 * @description
@@ -377,7 +377,7 @@ $app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jer
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_delete');
+$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}/{id:[0-9]+}', '\app\Generics::generic_delete');
 
 /*
 * @description
@@ -385,7 +385,7 @@ $app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarqu
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}/{id:[0-9]+}', '\app\Generics::generic_update');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}/{id:[0-9]+}', '\app\Generics::generic_update');
 
 /*
 * @description
@@ -394,7 +394,7 @@ $app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet}[/]', '\app\Generics::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}[/]', '\app\Generics::generic_insert');
 
 /*
 * @description
@@ -435,6 +435,13 @@ $app->get('/api/{tabla:[A-Za-z]+}[{p1:/p/\d+|/t/[A-Za-z0-9_\+\-]+|/s/\w+|/o/[a-z
 */
 $app->get('/api/{tabla:[A-Za-z]+}/search/{que:[^/]+}[{p1:/p/\d+|/o/[a-z-]+|/i/\w+}[{p2:/p/\d+|/o/[a-z-]+|/i/\w+}[{p3:/p/\d+|/o/[a-z-]+|/i/\w+}]]]', '\app\Generics::generic_search'); // buscar
 
+/*
+* @description
+* Cerca de contingut global
+* modificadors: /p/pagina
+* URL: /api/globalsearch/sanchez
+*/
+$app->get('/api/globalsearch/{que:[^/]+}[{p1:/p/\d+|/i/\w+}[{p2:/p/\d+|/i/\w+}]]', '\app\Generics::global_search'); // buscar
 
 
 /*

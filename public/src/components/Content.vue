@@ -24,9 +24,29 @@
 					<table class="table results">
 						<thead>
 							<tr>
+								<th>Equip</th>
+								<th>Punts</th>
+								<th title="Partits jugats">PJ</th>
+								<th title="Partits guanyats">PG</th>
+								<th title="Partits perduts">PP</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="rank in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+								<td>{{rank.nom}}</td>
+								<td>{{rank.punts}}</td>
+								<td>{{rank.pj}}</td>
+								<td>{{rank.pg}}</td>
+								<td>{{rank.pp}}</td>
+							</tr>
+						</tbody>
+					</table>
+					<hr/>
+					<table class="table results">
+						<thead>
+							<tr>
 								<th>{{$i18n.t('common.group')}}</th>
 								<th>{{$i18n.t('common.date')}}</th>
-								<th>{{$i18n.t('common.place')}}</th>
 								<th>{{$i18n.t('common.local')}}</th>
 								<th>Res. {{$i18n.t('common.local')}}</th>
 								<th>Res. {{$i18n.t('common.visitor')}}</th>
@@ -37,7 +57,6 @@
 							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[(element.grup%2)?'odd':'even']">
 								<td>{{ element.grup?String.fromCharCode(65+parseInt(element.grup)):'' }}</td>
 								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
-								<td>{{element.lloc.nom}}</td>
 								<td>{{element.local.nom}}</td>
 								<td><span class="no-print">{{element.resultatlocal}}</span></td>
 								<td><span class="no-print">{{element.resultatvisitant}}</span></td>
@@ -113,9 +132,29 @@
 						<table class="table results">
 							<thead>
 								<tr>
+									<th>Equip</th>
+									<th>Punts</th>
+									<th title="Partits jugats">PJ</th>
+									<th title="Partits guanyats">PG</th>
+									<th title="Partits perduts">PP</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="rank in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+									<td>{{rank.nom}}</td>
+									<td>{{rank.punts}}</td>
+									<td>{{rank.pj}}</td>
+									<td>{{rank.pg}}</td>
+									<td>{{rank.pp}}</td>
+								</tr>
+							</tbody>
+						</table>
+						<hr/>
+						<table class="table results">
+							<thead>
+								<tr>
 									<th>{{$i18n.t('common.group')}}</th>
 									<th>{{$i18n.t('common.date')}}</th>
-									<th>{{$i18n.t('common.place')}}</th>
 									<th>{{$i18n.t('common.local')}}</th>
 									<th>Res. {{$i18n.t('common.local')}}</th>
 									<th>Res. {{$i18n.t('common.visitor')}}</th>
@@ -128,7 +167,6 @@
 
 									<td>{{ String.fromCharCode(65+parseInt(element.grup)) }}</td>
 									<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
-									<td>{{element.lloc.nom}}</td>
 									<td>{{element.local.nom}}</td>
 									<td><span class="no-print">{{element.resultatlocal}}</span></td>
 									<td><span class="no-print">{{element.resultatvisitant}}</span></td>
@@ -136,7 +174,7 @@
 
 									<th>
 										<!--<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>-->
-										<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>
+										<!--<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>-->
 									</th>
 								</tr>
 							</tbody>

@@ -37,7 +37,7 @@ public function getUserByToken($token,$rol=9999)
     	$dectoken= JWT::decode($token, $secretKey, array('HS256'));
     	if ($dectoken->data->rol>$rol) throw new UnauthorizedException('Not enough permission '.$rol.'<'.$dectoken->data->rol);
     } catch(PDOException $e){
-        throw new UnauthorizedException('Invalid Token');
+        throw new UnauthorizedException('Unauthorized');
     }
     return $dectoken;
 }
@@ -51,6 +51,7 @@ public function getUser(Request $request, Response $response)
 {
 	//die($request->getServerParam('HTTP_AUTHORIZATION').'.');
 	$token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
+	if (!$token) return false;
 	return Auth::getUserByToken($token);
 }
 

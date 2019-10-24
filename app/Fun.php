@@ -155,7 +155,7 @@ static public function equipsdeclub(Request $request, Response $response, $param
 	$club= $params['club'];
 	$options= array();
 	//$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
-	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE _camins.id=competicio and club=".$club;
+	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE baixa is null and _camins.id=competicio and club=".$club;
 	if (!isset($params['o'])) $params['o']='id-';
 	$sql.= " order by ".str_replace('-',' desc',$params['o']);
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
@@ -889,7 +889,7 @@ static public function comprar(Request $request, Response $response, $params) {
 	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
 		date('d-m-Y H:i:s'),
 		$name, $address, $tel, $email, $email,
-		$preu+8.9
+		$preu
 		//,str_replace(['[',','],"\n[",json_encode($carro))
 	);
 	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
@@ -940,6 +940,7 @@ static public function comprar(Request $request, Response $response, $params) {
 	
 	if($json['payment']=='bank-transfer') {
 		//@mail('botiga@fedpival.es','comanda per transferència '.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n";
 		mail('alsanan@gmail.com','comanda per transferència : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
 		mail($email,'Comanda per transferència en Federació de Pilota : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
 		return json_encode([ 
@@ -1087,7 +1088,8 @@ static public function pagat(Request $request, Response $response, $params) {
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
-
+	
+	$preu+= 8.9;
 // PAGAT. enviament mail comanda
 	$html= '<h2>Comanda:</h2><table>'.$html.'</table>--- <hr/>';
 	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
@@ -1104,7 +1106,7 @@ static public function pagat(Request $request, Response $response, $params) {
 	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><br/>Comanda %s pagada amb autorització %s<hr/>%s",
 		date('d-m-Y H:i:s'),
 		$name, $address, $tel, $email, $email,
-		$preu+8.9,
+		$preu,
 		$data->Ds_Order,
 		$data->Ds_AuthorisationCode,
 		$html.$legal
