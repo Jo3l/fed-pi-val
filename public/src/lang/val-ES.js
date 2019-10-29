@@ -1,6 +1,6 @@
 export default { 
 	calendar: {
-		mondayFirst: '1',
+		mondayFirst: 'true',
 		weekShort : [ 'Diu', 'Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss'],
 		weekLong : [ 'Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
 		weekInitials: ['D', 'D', 'D', 'D', 'D', 'D', 'D'],

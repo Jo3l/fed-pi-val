@@ -63,8 +63,16 @@
 		
 						            <ui-textbox
 						                floating-label
-						                label="Adreça"
-						                placeholder="Pose l'adreça on es va a enviar"
+						                label="Cognoms"
+						                placeholder="Pose els seus cognoms"
+						                v-model="order.surname"
+						                :invalid="order.surname.length<4"
+						            ></ui-textbox>
+		
+						            <ui-textbox
+						                floating-label
+						                label="Adreça completa"
+						                placeholder="Pose l'adreça completa on es va a enviar"
 						                v-model="order.address"
 						                :invalid="order.address.length<4"
 						            ></ui-textbox>
@@ -76,6 +84,14 @@
 						                type="number"
 						                v-model="order.cp"
 						                :invalid="isNaN(order.cp)||order.cp.toString().length!=5"
+						            ></ui-textbox>
+						            
+						            <ui-textbox
+						                floating-label
+						                label="Població"
+						                placeholder="Pose la població on es va a enviar"
+						                v-model="order.city"
+						                :invalid="order.city.length<3"
 						            ></ui-textbox>
 		
 						            <ui-textbox
@@ -160,8 +176,10 @@ export default {
 		],
     	order:{
     		name:'',
+    		surname:'',
     		address:'',
     		cp:'',
+    		city:'',
     		tel:'',
     		email:'',
     		payment:'online-pay'
@@ -201,7 +219,7 @@ export default {
     eraseCart: function(ref) {
     	var vm = this;
     	vm.resultDone = '';
-    	vm.order={name:'', address:'', cp:'', tel:'', email:''};
+    	vm.order={name:'', surname:'', address:'', cp:'', city:'', tel:'', email:''};
 		vm.$store.dispatch('deleteCart');
         vm.closeModal('buyModal');
     },

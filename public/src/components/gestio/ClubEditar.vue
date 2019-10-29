@@ -1,5 +1,5 @@
 <template>
-	<div class="contentFlex formulari">
+	<div class="contentFlex formulari club">
 		<div class="left50">
 			<ui-textbox
 			    floating-label
@@ -8,6 +8,7 @@
 	            label="Nom"
 				type="text"
 	            v-model="club.nom"
+	            :invalid="$store.getters.validate({string:club.nom,type:'not-null'})"
 	        ></ui-textbox>
 	        
 			<ui-textbox
@@ -17,6 +18,7 @@
 	            label="President"
 				type="text"
 	            v-model="club.president"
+	            :invalid="$store.getters.validate({string:club.president,type:'not-null'})"
 	        ></ui-textbox>
 	        
 			<ui-textbox
@@ -26,6 +28,7 @@
 	            label="Secretari"
 				type="text"
 	            v-model="club.secretari"
+	            :invalid="$store.getters.validate({string:club.secretari,type:'not-null'})"
 	        ></ui-textbox>
 	        
 			<ui-textbox
@@ -45,6 +48,7 @@
 	            label="Correu Electrònic"
 				type="email"
 	            v-model="club.email"
+	            :invalid="$store.getters.validate({string:club.email,type:'email'})"
 	        ></ui-textbox>
         	
 
@@ -54,6 +58,7 @@
                 v-model="club.fundacio"
                 v-if="typeof club.fundacio === 'object'"
                 :lang="datePickerOptions"
+                required
             >Data Fundació</ui-datepicker>
         
 			<ui-textbox
@@ -63,6 +68,7 @@
 	            label="Telèfon"
 				type="number"
 	            v-model="club.telefon"
+	            :invalid="$store.getters.validate({string:club.telefon,type:'not-null'})"
 	        ></ui-textbox>
 	        
 			<ui-textbox
@@ -72,9 +78,11 @@
 	            label="Adreça"
 				type="text"
 	            v-model="club.dir"
+	            :invalid="$store.getters.validate({string:club.dir,type:'not-null'})"
 	        ></ui-textbox>
 	        
 	        <ui-select
+	        	v-if="club.cp"
                 disable-filter
                 has-search
                 label="Codi Postal"
@@ -96,6 +104,7 @@
 	            label="Població"
 				type="text"
 	            v-model="club.poblacio"
+	            :invalid="$store.getters.validate({string:club.poblacio,type:'not-null'})"
 	        ></ui-textbox>
 	        
 			<!--<img v-if="mapa==''" src="/static/img/mapsPlaceholder.jpg">
@@ -158,7 +167,7 @@ export default {
 				  secretari:null
 		    },
 		    datePickerOptions: {
-			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  dow: Number(eval(this.$parent.$i18n.t('calendar.mondayFirst'))),
 			  months: {
 			    full: this.$parent.$i18n.t('calendar.months'),
 			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
@@ -213,9 +222,9 @@ export default {
             
         },
 		saveForm: function() {
-			
-			if(document.querySelectorAll('.formulari .is-invalid:not(.is-disabled)').length>0) {
-				document.querySelector('.formulari .is-invalid:not(.is-disabled) input').focus()
+			console.log('ye')
+			if(document.querySelectorAll('.formulari.club .is-invalid:not(.is-disabled)').length>0) {
+				document.querySelector('.formulari.club .is-invalid:not(.is-disabled) input').focus()
 				return false;
 			}
 			
@@ -225,6 +234,7 @@ export default {
 	        .then(function (response) {
 	            vm.club.fundacio = vm.parseTime(vm.club.fundacio);
 	            vm.$router.push({ path: `/gestio/club`});
+	            alert('Informació guardada.')
 	        })
 	        .catch(function (error) {
 	            console.log(error);

@@ -855,14 +855,13 @@ static public function slugify($string, $id=null) {
 * En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
 */
 static public function comprar(Request $request, Response $response, $params) {
-	mail('alsanan@gmail.com','test','1234');
 	//$json = Fun::getPost($tabla);
 	$json= json_decode(file_get_contents("php://input"),true);
 	//file_put_contents('../data/compra_'.date('YmdHis').'.json',json_encode($json));
 	$preu=0;
 	$carro= array();
-	$name= $json['name'];
-	$address= $json['address'].' '.$json['cp'];
+	$name= $json['name'].' '.$json['surname'];
+	$address= $json['address'].' '.$json['cp'].' '.$json['city'];
 	$tel= $json['tel'];
 	$email= $json['email'];
 	$json['data']= date('YmdHis');
@@ -922,8 +921,7 @@ static public function comprar(Request $request, Response $response, $params) {
 	$id= $id[0];
 	if (empty($id['codi'])) $id= ["codi"=>date('y').'000000'];
 	$id= $id['codi']+1;
-	Fun::$db->sql("insert into comanda(codi,json,quantitat) values('".$id."','".json_encode($json)."',".$preu.");");
-
+	Fun::$db->sql("insert into comanda(codi,json,quantitat) values('".$id."','".utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE))."',".$preu.");");
 
 	if($json['payment']=='cash-on-delivery') {
 		@mail('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
@@ -941,7 +939,7 @@ static public function comprar(Request $request, Response $response, $params) {
 	if($json['payment']=='bank-transfer') {
 		//@mail('botiga@fedpival.es','comanda per transferència '.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
 		$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n";
-		mail('alsanan@gmail.com','comanda per transferència : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		mail('botiga@fedpival.es','comanda per transferència : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
 		mail($email,'Comanda per transferència en Federació de Pilota : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
 		return json_encode([ 
 			"tipus"=> 'contra-reemborsament',

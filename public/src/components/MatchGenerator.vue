@@ -249,7 +249,7 @@ export default {
 	            }
 	        ],
 		    datePickerOptions: {
-			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  dow: Number(eval(this.$parent.$i18n.t('calendar.mondayFirst'))),
 			  months: {
 			    full: this.$parent.$i18n.t('calendar.months'),
 			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
@@ -431,10 +431,11 @@ export default {
 			vm.ultimagenera= new Date();
         	if (!d) return console.log('no hi ha data');
         	for( var i= idx+1; i < this.jornades.length; i++ ) if (this.jornades[i].data) this.jornades[i].data= null;
-        	var inid= new Date( d );
+        	var inid= this.jornades[0].data; //new Date( d );
         	var d= new Date( d );
-        	var grup= this.jornades[0].grup;
+        	var grup= this.jornades[idx].grup;
 			for( var i= idx+1; i < this.jornades.length; i++ ) {
+				console.log('aaa',i,grup,this.jornades[i].grup,grup!=this.jornades[i].grup)
 				if (grup!= this.jornades[i].grup) {
 					d= new Date(inid);
 					d.addDays(-7);

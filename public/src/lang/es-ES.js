@@ -1,6 +1,6 @@
 export default {
 	calendar: {
-		mondayFirst: '1',
+		mondayFirst: 'true',
 		weekShort : [ 'Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
 		weekLong : ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
 		weekInitials: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],

@@ -189,7 +189,7 @@ static public function generic_query(Request $request, Response $response, $para
     try {
     	if ($params['tabla']=='noticia') {
 			$user= Auth::getUser($request,$response);
-			if (!empty($user)) if ($user->data->rol==0) $tabla='_noticia';
+			if (!empty($user)) if ($user->data->rol==0) $tabla='_noticia_'.(Fun::$idioma).'_admin';
     	}
     } catch (Exception $e) { die($e->getMessage()); }
     
@@ -203,7 +203,7 @@ static public function generic_query(Request $request, Response $response, $para
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
-    if (in_array($tabla,array('noticia','_noticia_es','_noticia_val','_noticia'))) {
+    if (in_array($tabla,array('noticia','_noticia_es','_noticia_val','_noticia_es_admin','_noticia_val_admin'))) {
 		foreach($data as $i=>$r) { // en cada registre...
 			foreach($r as $k=>$v) { // en cada parell de valors
 				if (empty($options['id']) && in_array($k,['titol','contingut']) && strlen(strval($v))>100) $data[$i][$k]=  rtrim(mb_strimwidth(strip_tags($v), 0, 100)."...");

@@ -197,7 +197,7 @@ export default {
 			      dataactiu: new Date()
 		    },
 		    datePickerOptions: {
-			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  dow: Number(eval(this.$parent.$i18n.t('calendar.mondayFirst'))),
 			  months: {
 			    full: this.$parent.$i18n.t('calendar.months'),
 			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')

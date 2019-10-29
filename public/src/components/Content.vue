@@ -24,6 +24,7 @@
 					<table class="table results">
 						<thead>
 							<tr>
+								<th></th>
 								<th>Equip</th>
 								<th>Punts</th>
 								<th title="Partits jugats">PJ</th>
@@ -32,7 +33,8 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="rank in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+							<tr v-for="(rank, index)  in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+								<td><button class="ui-icon-button ui-icon-button--type-primary ui-icon-button--color-default ui-icon-button--size-mini"><div class="ui-icon-button__icon"><span>{{index+1}}</span></div></button></td>
 								<td>{{rank.nom}}</td>
 								<td>{{rank.punts}}</td>
 								<td>{{rank.pj}}</td>
@@ -132,6 +134,7 @@
 						<table class="table results">
 							<thead>
 								<tr>
+									<th></th>
 									<th>Equip</th>
 									<th>Punts</th>
 									<th title="Partits jugats">PJ</th>
@@ -140,7 +143,8 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="rank in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+								<tr v-for="(rank,index) in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+									<td><button class="ui-icon-button ui-icon-button--type-primary ui-icon-button--color-default ui-icon-button--size-mini"><div class="ui-icon-button__icon"><span>{{index+1}}</span></div></button></td>
 									<td>{{rank.nom}}</td>
 									<td>{{rank.punts}}</td>
 									<td>{{rank.pj}}</td>
@@ -439,7 +443,7 @@ export default {
 				}
 			},
 		    datePickerOptions: {
-			  dow: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
+			  dow: Number(eval(this.$parent.$i18n.t('calendar.mondayFirst'))),
 			  months: {
 			    full: this.$parent.$i18n.t('calendar.months'),
 			    abbreviated: this.$parent.$i18n.t('calendar.monthsShort')
