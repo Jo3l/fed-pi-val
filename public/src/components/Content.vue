@@ -30,6 +30,8 @@
 								<th title="Partits jugats">PJ</th>
 								<th title="Partits guanyats">PG</th>
 								<th title="Partits perduts">PP</th>
+								<th title="Jocs a favor">JF</th>
+								<th title="Jocs en contra">JC</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -40,6 +42,8 @@
 								<td>{{rank.pj}}</td>
 								<td>{{rank.pg}}</td>
 								<td>{{rank.pp}}</td>
+								<td>{{rank.jf}}</td>
+								<td>{{rank.jc}}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -140,6 +144,8 @@
 									<th title="Partits jugats">PJ</th>
 									<th title="Partits guanyats">PG</th>
 									<th title="Partits perduts">PP</th>
+									<th title="Jocs a favor">JF</th>
+									<th title="Jocs en contra">JC</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -150,6 +156,8 @@
 									<td>{{rank.pj}}</td>
 									<td>{{rank.pg}}</td>
 									<td>{{rank.pp}}</td>
+									<td>{{rank.jf}}</td>
+									<td>{{rank.jc}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -380,7 +388,9 @@
                 <ui-icon-button @click="addContentImage" tooltip="Insertar imagen" size="small" icon="photo" type="secondary"></ui-icon-button>
                 <ui-icon-button @click="addContentMap" tooltip="Insertar Mapa" size="small" icon="map" type="secondary"></ui-icon-button>
                 <ui-icon-button v-if="disable && !gameOn" @click="addContentPartida" tooltip="Insertar Resultado" size="small" icon="assignment" type="secondary"></ui-icon-button>
-                <ui-icon-button v-if="" @click="taula_inscripcions" tooltip="Ver tabla d'inscripcions per club" size="small" icon="view_module" type="secondary"></ui-icon-button>
+                <ui-icon-button v-if="" @click="taula_competicio" tooltip="Veure tabla de competicions per club" size="small" icon="view_module" type="secondary"></ui-icon-button>
+                <ui-icon-button v-if="" @click="taula_inscrits" tooltip="Veure tabla d'inscripcions per club" size="small" icon="view_quilt" type="secondary"></ui-icon-button>
+                <ui-icon-button v-if="" @click="taula_calendari" tooltip="Veure calendari de partides" size="small" icon="view_agenda" type="secondary"></ui-icon-button>
         </div>
         
         <ui-modal size="largeSquare" ref="uploadModal" title="Media Manager">
@@ -859,9 +869,6 @@ export default {
 			  
 			}
 
-
-	        
-	        
 		},
 		setOrder: function(initial){
 			var vm=this;
@@ -940,10 +947,14 @@ export default {
 	    	var vm=this;
 	    	vm.dataMap = map.lat+','+map.lng;
 	    },
-	    taula_inscripcions:function() {
-	    	var vm= this;
-	    	window.kk=vm
-	    	window.open('/api/resumnode/'+vm.nodeContent[0].jerarquia)
+	    taula_inscrits:function() {
+	    	window.open('/api/resuminscrits/'+this.nodeContent[0].jerarquia)
+	    },
+	    taula_competicio:function() {
+	    	window.open('/api/resumnode/'+this.nodeContent[0].jerarquia)
+	    },
+	    taula_calendari:function() {
+	    	window.open('/api/resumcalendari/'+this.nodeContent[0].jerarquia)
 	    }
 		
 	},

@@ -562,7 +562,7 @@ export default {
 			column-gap: 40px;
 			margin-top:10px;
 			margin-left: 10px;
-			@media(max-width:768px) {
+			@media(max-width:@screenTablet) {
 				column-count:1;
 				width: ~"calc(100vw - 85px)";
 			}

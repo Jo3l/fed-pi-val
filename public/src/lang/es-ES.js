@@ -1,9 +1,10 @@
 export default {
 	calendar: {
 		mondayFirst: 'true',
-		weekShort : [ 'Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
+		weekShort : ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
+		weekShortEUR : ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
 		weekLong : ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-		weekInitials: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
+		weekInitials: ['M', 'X', 'J', 'V', 'S', 'D', 'L'],
 		months : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
 		monthsShort: ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Sete', 'Oct', 'Nov', 'Des'],
 		events : 'Events',
@@ -18,6 +19,7 @@ export default {
 		adr:'Dirección',
 		cp:'Código Postal',
 		tlf:'Teléfono',
+		comment:'Comentario',
 		continueBuying:'Continuar comprant',
 		orderNumber:'Nº pedido',
 		thanks:'¡Gracias por comprar en la tienda de la Federación!',
@@ -50,6 +52,8 @@ export default {
 		payType: 'Tipo de pago'
 	},
 	common : {
+		searcher: 'buscador',
+		noresults: 'No hay resultados.',
 		yes: 'Si',
 		confirm: '¿Estas seguro?',
 		required: 'Campo obligatorio',

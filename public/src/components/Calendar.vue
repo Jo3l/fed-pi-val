@@ -18,7 +18,7 @@
 		
 					</nav>
 					<div class="labels">
-						<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
+						<span class="calendarLabel" v-for="label in dayLabels">{{ label }} </span>
 					</div>
 					<div class="calendarMonth">
 						<div v-for="week in events[eventos(n-1+increment)]">
@@ -37,7 +37,7 @@
 	                
 		
 	            </div>
-				<article v-for="event in modalEvent">
+				<article class="evnt" v-for="event in modalEvent">
 					<h4>{{event.titol}}</h4>
 					<p v-html="event.contingut"></p>
 				</article>
@@ -66,7 +66,7 @@
 		
 					</nav>
 					<div class="labels">
-						<span class="calendarLabel" v-for="label in dayLabelsFixed">{{ label }} </span>
+						<span class="calendarLabel" v-for="label in dayLabels">{{ label }} </span>
 					</div>
 					<div class="calendarMonth">
 						<div v-for="week in events[eventos(n-1+increment)]">
@@ -161,7 +161,7 @@ export default {
 		return {
 			colorSelected:'',
 			mondayFirst: eval(this.$parent.$i18n.t('calendar.mondayFirst')),
-			dayLabels: this.$parent.$i18n.t('calendar.weekShort'),
+			dayLabels: eval(this.$parent.$i18n.t('calendar.mondayFirst')) ? this.$parent.$i18n.t('calendar.weekShortEUR') : this.$parent.$i18n.t('calendar.weekShort'),
 			increment: 0,
 			events: [],
 			monthArray: this.$parent.$i18n.t('calendar.months'),
@@ -180,13 +180,7 @@ export default {
 		return this.$route.meta;
 	},
 	computed: {
-		dayLabelsFixed: function() {
-			if(this.mondayFirst) {
-				var b = this.dayLabels.shift();
-				this.dayLabels.push(b);
-			}
-			return this.dayLabels;
-		}
+
 	},
 	methods: {
 		createBlock: function() {
@@ -460,6 +454,15 @@ export default {
 
 @import "../assets/less/defines.less";
 
+article.evnt{
+	margin-bottom: 2em;
+    padding-bottom: 1em;
+    border-bottom: 1px solid @fedcolor;
+    &:last-of-type{
+    	border-bottom:none;
+    }
+}
+
 .eventSelected {
 	margin: 2em;
     min-height: 30px;
@@ -630,6 +633,7 @@ export default {
 	}
 
 }
+
 
 
 </style>

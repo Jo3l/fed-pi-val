@@ -124,6 +124,18 @@
 	                		<ui-switch v-model="jugador.segur">Assegurat</ui-switch>
 	                	</div>
 					</div-->
+
+					<ui-select
+						has-search
+						label="Club al que pertany"
+						placeholder="Club al que pertany"
+						:options="clubs"
+						type="basic"
+						@input="updateClub"
+						v-model="clubName"
+					></ui-select>
+					
+			        
 					<ui-datepicker
 						v-if="typeof jugador.dataactiu === 'object'"
 		                :placeholder="$i18n.t('calendar.dateTip')"
@@ -193,9 +205,12 @@ export default {
 			      cp: null,
 			      poblacio: null,
 			      foto: null,
+			      club: null,
 			      datasegur: new Date(),
 			      dataactiu: new Date()
 		    },
+		    clubName:'',
+		    clubs:[],
 		    datePickerOptions: {
 			  dow: Number(eval(this.$parent.$i18n.t('calendar.mondayFirst'))),
 			  months: {
@@ -232,6 +247,21 @@ export default {
 			vm.jugador.cp = poblacio[0];
 			vm.jugador.poblacio = poblacio[1];
 		},
+		updateClub:function(club) {
+			var vm=this;
+			vm.jugador.club = club.value;
+			vm.clubName = club.label;
+		},
+		returnClubNamefromId: function(id) {
+			var vm=this;
+			var name;
+			vm.clubs.forEach(function(club){
+				if(id==club.value) {
+					name = club.label;
+				}
+			});
+			return name;
+		},
 		onQueryChange: function(query) {
             if (query.length < 3) {
                 return;
@@ -264,9 +294,6 @@ export default {
 			}
 		
 			var vm=this;
-			vm.jugador.naixement = vm.jugador.naixement.toString('yyyyMMddHHmmss');
-			vm.jugador.datasegur = vm.jugador.datasegur.toString('yyyyMMddHHmmss');
-			vm.jugador.dataactiu = vm.jugador.dataactiu.toString('yyyyMMddHHmmss');
 			var editant= vm.$route.params.jugadorId?true:false;
 			
 			/*console.log(editant?'editant':'noedit');
@@ -276,15 +303,14 @@ export default {
 				if (!inexistent) return false; // o siga que ja existeix
 			}*/
 			
-	        vm.$http.post('/jugador/'+ (editant?vm.$route.params.jugadorId :'') , vm.jugador)
-	        .then(function (response) {
+	        vm.$http.post('/jugador/'+ (editant?vm.$route.params.jugadorId :'') , {...vm.jugador, 
+		        ...{
+		        	naixement: vm.jugador.naixement.toString('yyyyMMddHHmmss'),
+		        	datasegur: vm.jugador.datasegur.toString('yyyyMMddHHmmss'),
+		        	dataactiu: vm.jugador.dataactiu.toString('yyyyMMddHHmmss')
+		        }
+	        }).then(function (response) {
 	        	if (response.status==409) return alert('Error, DNI existent');
-	        	//console.log(response);
-	        	//return;
-	            //vm.jugador = response.data[0];
-	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
-	            vm.jugador.datasegur = vm.parseTime(vm.jugador.datasegur);
-	            vm.jugador.dataactiu = vm.parseTime(vm.jugador.dataactiu);
 	            vm.$router.push({ path: `/admin/jugadors/`});
 	        })
 	        .catch(function (error) {
@@ -330,20 +356,35 @@ export default {
 	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
 	            vm.jugador.datasegur = vm.parseTime(vm.jugador.datasegur);
 	            vm.jugador.dataactiu = vm.parseTime(vm.jugador.dataactiu);
+	            
+		        vm.$http.get('/nomsclubs')
+		        .then( function (response) {
+		        	response.data.forEach( (clb)=> vm.clubs.push( { 'label':clb.nom, 'value':clb.id } ) );
+		            vm.clubName = vm.returnClubNamefromId(vm.jugador.club);
+		        } )
+		        .catch(function (error) {
+		            console.log(error);
+		        });
+		        
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
+	        
+
+	        
 		},
 	},
 	mounted: function () {
 		var vm=this;
 		if(vm.$route.params.jugadorId >= 0) vm.getData();
+		
 		var predefined= location.search.substring(1);
 		if (predefined) {
 			var data= JSON.parse(atob(unescape(predefined)));
 			vm.jugador.nom= data.nom;
 			vm.jugador.cognoms= data.cognoms;
+			vm.jugador.club= data.club;
 			vm.jugador.naixement= vm.parseTime(data.naixement);
 			vm.jugador.email= data.email;
 			vm.jugador.telefon= data.telefon;

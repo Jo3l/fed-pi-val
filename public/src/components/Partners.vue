@@ -13,6 +13,8 @@
 			<a href="http://www.valencia.es" target="_blank"><img src="/static/img/footer/valencia.jpg" alt="Ajuntament de València" title="Ajuntament de València" loading="lazy"></a>
 			<a href="http://www.deportevalencia.com" target="_blank"><img src="/static/img/footer/fdm.jpg" alt="Fundació Esportiva Municipal" title="Fundació Esportiva Municipal" loading="lazy"></a>
 			<a href="http://www.elcorteingles.es" target="_blank"><img src="/static/img/footer/eci.jpg" alt="El Corte Inglés" title="El Corte Inglés" loading="lazy"></a>
+		</div>
+		<div>
 			<a href="http://www.edicom.es" target="_blank"><img src="/static/img/footer/edicom.jpg" alt="Edicom" title="Edicom" loading="lazy"></a>
 			<a href="http://www.caixapopular.es" target="_blank"><img src="/static/img/footer/caixapopular.jpg" alt="Caixa Popular" title="Caixa Popular" loading="lazy"></a>
 			<a href="http://www.bankia.es" target="_blank"><img src="/static/img/footer/bankia.jpg" alt="Bankia" title="Bankia" loading="lazy"></a>

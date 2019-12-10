@@ -17,6 +17,12 @@ error_reporting(E_ALL);
 
 //$app->etag(md5($_SERVER['REQUEST_URI']));
 
+/*
+* @description
+* test mail
+*/
+$app->get('/api/testmail', '\app\Fun::phpmailer');
+
 $app->get('/api/infophp', function(){ phpinfo(); if (!extension_loaded('imagick')) echo 'imagick not installed';exit; });
 
 $app->get('/api/imgoptimes', '\app\Filem::optimize' );
@@ -176,6 +182,20 @@ $app->get('/api/node/{id:[0-9]+}', '\app\Nodes::list_elements'); // obtindre ele
 * URL: /api/resumnode/17
 */
 $app->get('/api/resumnode/{id:[0-9]+}', '\app\Fun::resum_competicio');
+
+/*
+* @description
+* Obté una taula amb les inscripcions per equip, categoria i jugadors d'un node de competició indicat
+* URL: /api/resuminscrits/17
+*/
+$app->get('/api/resuminscrits/{id:[0-9]+}', '\app\Fun::resum_inscrits');
+
+/*
+* @description
+* Obté una taula amb el calendari de la competició, i categories d'un node de competició indicat
+* URL: /api/resumcalendari/17
+*/
+$app->get('/api/resumcalendari/{id:[0-9]+}', '\app\Fun::resum_calendari');
 
 /*
 * @description
@@ -523,6 +543,7 @@ $app->get('/{path:val/competicions/.+|es/competiciones/.+}', '\app\Headers::head
 * URL: /val/federacio
 */
 $app->get('/{path:val/federacio/.+|es/federacion/.+}', '\app\Headers::headers_federacio');
+
 
 
 

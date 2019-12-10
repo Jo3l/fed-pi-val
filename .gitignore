@@ -8,6 +8,7 @@
 /public/old_api
 /public/js/*
 /app/config/config.php
+/data/orders
 npm-debug.log
 .idea
 composer.phar

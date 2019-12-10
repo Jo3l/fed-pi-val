@@ -116,6 +116,17 @@
 						                v-model="order.email"
 						                :invalid="$store.getters.validate({string:order.email,type:'email'})"
 						            ></ui-textbox>
+						            
+						            <ui-textbox
+						                enforce-maxlength
+						                help="Maxim 256 caracters"
+						                label="Comentari"
+						                placeholder="Si vols afegir cap comentari, escriu ací"
+						                :multi-line="true"
+						                :maxlength="256"
+						                v-model="order.comentari"
+						            ></ui-textbox>
+						            
 								</div>
 								<div class="list">
 									
@@ -127,12 +138,12 @@
 									    </div>
 
 									</div>
-									<span class="finalPrice">+Despeses d'enviament 8.90€<br/><br/><strong>Total {{ (parseFloat(cartTotalPrice)+8.9).toFixed(2) }}€</strong></span>
+									<span class="finalPrice">+Despeses d'enviament {{ (cartTotalPrice<20 ? "8.90" : "0") }}€<br/><br/><strong>Total {{ (parseFloat(cartTotalPrice)+( cartTotalPrice<20 ? 8.9 : 0 ) ).toFixed(2) }}€</strong></span>
 								</div>
 				            </div>
 				            
 							<div slot="footer" v-if="!resultDone">
-				                <ui-button @click="buy()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
+				                <ui-button @click="buy()" :loading="buyButtonDisable" :disabled="buyButtonDisable" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
 				                <ui-button @click="closeModal('buyModal')">{{$i18n.t('modal.cancel')}}</ui-button>
 				            </div>
 				        </ui-modal>
@@ -160,6 +171,7 @@ export default {
   data () {
     return {
     	resultDone:'',
+    	buyButtonDisable: false,
     	shipping : [
 		    {
 		        label: this.$t('cart.cashOnDelivery'),
@@ -182,6 +194,7 @@ export default {
     		city:'',
     		tel:'',
     		email:'',
+    		comentari:'',
     		payment:'online-pay'
     	},
         swiperOptionThumbs: {
@@ -224,7 +237,7 @@ export default {
         vm.closeModal('buyModal');
     },
     buy: function(cart){
-
+		
 		if(document.querySelectorAll('.is-invalid:not(.is-disabled)').length>0) {
 			document.querySelector('.is-invalid:not(.is-disabled) input').focus()
 			this.resultDone = '';
@@ -233,7 +246,7 @@ export default {
 
 		var vm = this;
 		vm.order.cart = vm.cart;
-
+		vm.buyButtonDisable = true;
 		vm.$http.post('/comprar', vm.order)
 		.then(function (response) {
     			if(vm.order.payment==='online-pay') {
@@ -241,8 +254,10 @@ export default {
 					vm.$refs.parameters.value= response.data.params.Ds_MerchantParameters;
 					vm.$refs.signature.value= response.data.params.Ds_Signature;
 					vm.$refs.tpvform.action= response.data.url;
+					vm.buyButtonDisable = false;
     				vm.$refs.tpvform.submit()
     			} else {
+    				vm.buyButtonDisable = false;
     				window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('cart.shop')+'/'+vm.$i18n.t('cart.buyed')+'/'+vm.order.payment;
     			}
 
@@ -376,6 +391,9 @@ input[type=number].item-quantity::-webkit-outer-spin-button {
 		    font-size: 125%;
 		    text-transform: uppercase;
 		}
+	    .ui-button__icon span {
+	    	display:contents;
+	    }
 	}
     .swiper-button-next.cart{
 		bottom: 10px;

@@ -50,22 +50,30 @@
 					<dl>
 					  <dt><strong>Pagament:</strong> {{visibleOrder.payment}}</dt>
 					  <dt><strong>{{ $i18n.t('cart.orderNumber') }}:</strong> {{visibleOrder.codi}}</dt>
-					  <dt><strong>{{ $i18n.t('cart.name') }}:</strong> {{visibleOrder.name}}</dt>
+					  <dt><strong>{{ $i18n.t('cart.name') }}:</strong> {{visibleOrder.name+' '+visibleOrder.surname}}</dt>
 					  <dt><strong>Email:</strong> {{visibleOrder.email}}</dt>
 					  <dt><strong>{{ $i18n.t('cart.adr') }}:</strong> {{visibleOrder.address}}</dt>
-					  <dt><strong>{{ $i18n.t('cart.cp') }}:</strong> {{visibleOrder.cp}}</dt>
+					  <dt><strong>{{ $i18n.t('cart.cp') }}:</strong> {{visibleOrder.cp+' '+visibleOrder.city}}</dt>
 					  <dt><strong>{{ $i18n.t('cart.tlf') }}:</strong> {{visibleOrder.tel}}</dt>
+					  <dt><strong>{{ $i18n.t('cart.comment') }}:</strong> {{visibleOrder.comentari}}</dt>
 					</dl>
 					<strong>Articles:</strong>
 			    	<div class="shopping-cart-items final">
 					    <div v-for="item in visibleOrder.cart">
-					        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}} [{{getProductType(item)}}]</span>
+					        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}} [{{getProductType(item)}}]:</span>
 					        <span class="item-price">{{getProductPrice(item)}}€</span>
-					        <span class="item-quantity">{{$t('cart.quantity')}}: {{item.quantity}}</span>
+					        <span class="item-quantity">x {{item.quantity}}ud = <b>{{getProductPrice(item)*item.quantity}}€</b></span>
 					    </div>
 					</div>
 					<br>
 					<p><strong>Total:</strong> {{visibleOrder.total}}€</p>
+			        <ui-radio-group
+						name="estat"
+						v-bind:data-id="visibleOrder.id"
+						@change="estat"
+						:options="[{value:'N',label:'No llegit'},{value:'L',label:'Llegit'},{value:'P',label:'Preparat'},{value:'E',label:'Enviat'}]"
+						v-model="visibleOrder.estat"
+		            >Estat</ui-radio-group><br>
 				</div>
 	           
 	        </ui-modal>
@@ -84,6 +92,7 @@ export default {
 	data () {
 		return {
 		    orders:{},
+			estats: { "N": "No llegit", "L": "Llegit", "P": "Preparat", "E": "Enviat" },
 		    visibleOrder:{},
 		    columns:[
 	            {
@@ -113,6 +122,11 @@ export default {
 	                //field: 'JSON.parse(json).payment',
 	                field: 'payment',
 	                html: false,    
+	            },
+	            {
+	            	label: 'Estat',
+	            	field: 'estatdesc',
+	            	html: false
 	            },
 	            {
 	                label: 'Codi resultat',
@@ -154,9 +168,14 @@ export default {
 		},
 	  	view:function(row) {
 	  		var vm=this;
-	  		vm.visibleOrder = JSON.parse(row.json);
+	  		try {
+	  			var obj= JSON.parse(row.json);
+	  		} catch( e ) { console.log(e); console.log(row.json); obj={}; }
+	  		vm.visibleOrder = obj;
+	  		vm.visibleOrder.id = row.id;
 	  		vm.visibleOrder.codi = row.codi;
 	  		vm.visibleOrder.total = row.quantitat;
+	  		vm.visibleOrder.estat = row.estat;
 	  		vm.$refs.modal.open();
 	    },
 	    clickCallback: function(pageNum) {
@@ -176,9 +195,13 @@ export default {
 	        this.$http.get(apiUrl+page, { cache: false }
 			).then(function (response) {
 				response.data.forEach( (a)=>{ 
-					a.payment= nomtipus[(JSON.parse(a.json)).payment]; 
-					if(!a.resultat && (JSON.parse(a.json)).payment=='online-pay') a.resultat = '!!! NO-COMPLETAT';
-					a.data= vm.diaMesAny( (JSON.parse(a.json)).data ); 
+					try {
+						var obj= JSON.parse(a.json);
+					} catch(e) { console.log(e); obj={}; }
+					a.payment= nomtipus[obj.payment]; 
+					a.estatdesc= vm.estats[a.estat];
+					if(!a.resultat && obj.payment=='online-pay') a.resultat = '!!! NO-COMPLETAT';
+					a.data= vm.diaMesAny( a.data ); 
 				} );
 	            vm.orders = response.data;
 	            vm.allOrders = response.data;
@@ -191,6 +214,18 @@ export default {
 	    },
 		csv: function(listName) {
 	        window.location.href='/api/'+listName+'?csv=true';
+		},
+		estat: function(que) {
+			var vm= this;
+			vm.visibleOrder.estat= que;
+			console.log(que, vm.visibleOrder.id)
+			this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"estat":que})
+			.catch( (e)=>console.log('error',e) );
+			vm.orders.forEach( (o)=> { if (o.id==vm.visibleOrder.id) { 
+				o.estat= que;
+				o.estatdesc= vm.estats[que];
+			} } );
+			console.log(vm.orders)
 		}
 	  },
 	  mounted: function() {

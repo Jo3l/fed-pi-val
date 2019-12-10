@@ -28,7 +28,15 @@
 	                v-model="publishedDate"
 	                :lang="datePickerOptions"
 	            >Data Publicació:</ui-datepicker>
-				            
+	            
+				<ui-select
+	                floating-label
+	                label="Hora Publicació"
+	                placeholder="Sel.lecciona hora"
+	                :options="['02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00']"
+	                v-model="hora"
+	            ></ui-select>
+	            
 				<br>
 				
 				<strong>Idioma actual: {{$i18n.t('common.label')}}</strong><br>
@@ -153,6 +161,7 @@ export default {
 		    selected:{},
 		    destacada:false,
 		    news: '',
+		    hora:'',
 		    showMobileMenu: false,
 		    publishedDateText: '',
 		    publishedDate: '',
@@ -242,6 +251,8 @@ export default {
 		SaveNews: function() {
 			var vm = this;
 			var id = vm.news.id ? vm.news.id : '';
+			vm.publishedDate.setHours(parseInt(vm.hora.split(':')[0] | 0));
+			console.log(vm.publishedDate, vm.publishedDate.toString('yyyyMMddHHmmss'))
 			vm.$http.post('/noticia/'+id, 
 				{
 					idioma: vm.$i18n.locale,
@@ -276,11 +287,13 @@ export default {
 	        	var n = response.data.find(function(element) {  return element.idioma == vm.$i18n.locale });
 	            vm.news = n;
 	            vm.destacada = n.destacada=='1';
-	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio||n.alta));
+	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio||n.alta)) || new Date();
+	        	vm.hora = vm.publishedDate.toString('HH:mm');
+	            console.log(vm.publishedDate)
 	            vm.publishedDateText = vm.fixDate(n.publicacio||n.alta);
 	            vm.selectedTags = n.tags.split('|');
-	            vm.$emit('updateHead')
-	            
+	            vm.$emit('updateHead');
+	            vm.scrollToTop(600);
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -291,7 +304,7 @@ export default {
 		  if(date) return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("d/M/yyyy");
 		},
 	  	fixDateForParse: function (date) { 
-		  if(date) return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("yyyy/M/d");
+		  if(date) return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("yyyy/M/d HH:mm");
 		},
 	   	scrollToTop: function (scrollDuration) {
 		const   scrollHeight = window.scrollY,
@@ -355,7 +368,6 @@ export default {
 		//el puto router no actualitza el component ja que soles cambies de slug, pel que esta el before route update que ens permet cridar i actualitzar el objecte news al cambiar de slug
     	this.getData('noticia/slug/'+to.params.slug);
     	next();//aço actualitza la url
-		if(!this.isIe) this.scrollToTop(600);
 	}
 }
 </script>

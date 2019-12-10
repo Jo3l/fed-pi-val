@@ -124,14 +124,19 @@ static private function ranking($pars) {
 	$equips= [];
 	$ppartida= 3; // asumisc que si no es posen, seran 3 punts
 	$ptanteig= $pars[0]['puntstanteig']?:1; // asumisc que si no es posen, seran 1 punt
+	if (empty($pars[0]['partides'])) return $equips;
 	foreach($pars[0]['partides'] as $p) {
 		if ($p['baixa']) continue;
 		$local= $p['local'];
 		$visitant= $p['visitant'];
-		if (!isset($equips[$local['id']])) $equips[$local['id']]= [ "nom"=> $local['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 ];
-		if (!isset($equips[$visitant['id']])) $equips[$visitant['id']]= [ "nom"=> $visitant['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 ];
+		if (!isset($equips[$local['id']])) $equips[$local['id']]= [ "nom"=> $local['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 , "jf"=>0, "jc"=>0];
+		if (!isset($equips[$visitant['id']])) $equips[$visitant['id']]= [ "nom"=> $visitant['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0, "jf"=>0, "jc"=>0 ];
 		$equips[$local['id']]['pj']++;
 		$equips[$visitant['id']]['pj']++;
+		$equips[$local['id']]['jf']+= $p['resultatlocal'];
+		$equips[$local['id']]['jc']+= $p['resultatvisitant'];
+		$equips[$visitant['id']]['jf']+= $p['resultatvisitant'];
+		$equips[$visitant['id']]['jc']+= $p['resultatlocal'];
 		if ($p['resultatlocal']<$p['resultatvisitant']) {
 			$equips[$visitant['id']]['punts']+= $ppartida;
 			$equips[$visitant['id']]['pg']++;
@@ -161,6 +166,8 @@ static public function list_elements(Request $request, Response $response, $para
 	$partides[0]['puntspartida']= $result[0]['puntspartida'];
 	$partides[0]['puntstanteig']= $result[0]['puntstanteig'];
 	$partides[0]['ranking']= Nodes::ranking($partides);
+	// si no hi ha blocs, hem de saber qui es el node pare per a mostrar boto de llista de participacio en content
+	if (empty($partides[0]['jerarquia'])) $partides[0]['jerarquia']= $params['id'];
     echo Fun::render($partides, true);
 }
 
@@ -240,7 +247,11 @@ static private function editaelement($id) {
     $db= new db();
     if (isset($json['id'])) { // UPDATE!
         $camps= [];
-        foreach($json as $nom=>$val) if (!in_array($nom,array('id','titol','contingut'))) array_push($camps,$nom."=".(empty($val) ? 'NULL' : "'".$val."'"));
+        foreach($json as $nom=>$val) {
+        	if (in_array($nom,array('tipus','jerarquia','ordre','slug','destacada','categoria','tags','url','json','alta','modificacio','publicacio','baixa'))) {
+        		array_push($camps,$nom."=".(empty($val) ? 'NULL' : "'".$val."'"));
+        	}
+        }
         $camps= implode(',',$camps);
         $sql= "START TRANSACTION;";
         $db->sql( $sql );

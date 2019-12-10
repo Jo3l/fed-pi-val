@@ -135,8 +135,13 @@ export default {
 	    res = res.trim();
 	    return res;
 	},
-  	fixDate: function (date) { 
-	  return Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) ).toString("d/M/yyyy");
+  	fixDate: function (date) {
+  		var dateReturn = Date.parse(date.substr(0, 4) + '.' + date.substr(4, 2) + '.' + date.substr(6,2) + ' ' + date.substr(8,2) + ':' + date.substr(10,2) + ':' + date.substr(12) );
+		if(dateReturn) {
+			return dateReturn.toString("d/M/yyyy");
+		} else {
+			return '';
+		}
 	},
   	loadingBar: function(data){
 			this.$parent.$emit('loadingBar', data);
@@ -180,7 +185,6 @@ export default {
 	      this.getData('/noticia/p/'+newVal+'/i/'+this.$i18n.locale+(this.busca!='all'&&this.busca!=''?'/s/'+this.slugify(this.busca):''), true);
 	    }, 
 	    busca: function (newVal, oldVal) {
-	    	console.log(newVal);
 	      this.getData('/noticia/p/'+this.pagina+'/i/'+this.$i18n.locale+(newVal!='all'&&newVal.busca!=''?'/s/'+this.slugify(newVal):''), false);
 	    }, 
 	},

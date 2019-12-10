@@ -25,7 +25,8 @@ use \app\Content;	// funcions per gestionar els blocs de contingut d'un node
 use Mailgun\Mailgun; // funcion d'enviament de correu
 use config;
 use RedsysAPI; // llibreria de Redsys per a la passarel.la de pagaments
-
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class Fun
 {
@@ -84,6 +85,7 @@ static public function render($result,$doexit=false) {
         );
 	echo json_encode($result);
 	if ($doexit) exit; // ojo, se carrega el postproces (caché)
+	exit;
 	return $result;
 }
 
@@ -753,23 +755,122 @@ static public function resum_competicio(Request $request, Response $response, $p
 	}
 	fclose($output) or die("Can't close php://output");
 	exit;
-	
-	/// ABANS HO FEIA EN HTML
-	echo '<table><thead><td></td><td>',implode('</td><td>',$modalitats),'</td></thead>';
-	foreach($clubs as $club=>$fem) {
-		echo '<tr><td>',$club,'</td>';
-		foreach($modalitats as $moda=>$nommoda) {
-			$suma=0;
-			foreach($data as $insc) { 
-				if ($insc['nomclub']==$club && $insc['competicio']==$moda) $suma++; 
-			}
-			echo '<td>',($suma?:''),'</td>';
+}
+
+
+//  //  //  //  //  //  //  //
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obté una taula amb les inscripcions per equip, categoria i jugadors d'un node de competició indicat
+* URL: /api/resuminscrits/17
+*/
+static public function resum_inscrits(Request $request, Response $response, $params) {
+	$node= $params['id'];
+	$db = new db();
+	$db->sql("select id,pare,nom from _jerarquia_val");
+	$data= $db->all();
+	//$llistanodes[$node]= 'arrel';
+	for ($i=5; $i>0; $i--)
+		foreach($data as $elm) {
+			if ($elm['id']==$node) $llistanodes[$node]= $elm['nom'];
+			if (in_array($elm['pare'],array_keys($llistanodes)))
+				if (!in_array($elm['id'],array_keys($llistanodes)))
+					$llistanodes[$elm['id']]= $elm['nom'];
 		}
-		echo '</tr>';
+	$ids= array_keys($llistanodes);
+	//echo '<h1>',$llistanodes[$node],'</h1>';
+	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, /*competicio,*/ (select node.nom from _jerarquia_val node where node.id=competicio) as cat from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
+	$db->sql($sql);
+	$data= $db->all();
+	$clubs=[];
+	$modalitats=[];
+	echo '<pre>';
+	$ara= null;
+	foreach($data as $r) {
+		if ($ara!=$r['cat']) echo '<h1>', $ara=$r['cat'], '</h1>';
+		echo $r['nomclub'], '<br/>';
+		$db->sql("select concat(convert(numsoci,UNSIGNED),': ',nom,' ',cognoms) as qui from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
+		foreach($db->all() as $rr) echo $rr['qui'],' | ';
+		echo '<br/>';
 	}
-	echo '</table>';
-	?><style>td{border:1px solid black;}</style><?php
-	//Fun::render($data);
+exit;
+}
+
+//  //  //  //  //  //  //  //
+//  //  //  //  //  //  //  //
+/*
+* @description
+* Obté una taula amb el calendari de la competició, i categories d'un node de competició indicat
+* URL: /api/resumcalendari/17
+*/
+static public function resum_calendari(Request $request, Response $response, $params) {
+	$node= $params['id'];
+	$db = new db();
+	$db->sql("select id,pare,nom from _jerarquia_val");
+	$data= $db->all();
+	//$llistanodes[$node]= 'arrel';
+	for ($i=5; $i>0; $i--)
+		foreach($data as $elm) {
+			if ($elm['id']==$node) $llistanodes[$node]= $elm['nom'];
+			if (in_array($elm['pare'],array_keys($llistanodes)))
+				if (!in_array($elm['id'],array_keys($llistanodes)))
+					$llistanodes[$elm['id']]= $elm['nom'];
+		}
+	$ids= array_keys($llistanodes);
+	//echo '<h1>',$llistanodes[$node],'</h1>';
+	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, competicio, delegat, telefon, lloc, diasem, hora, (select node.nom from _jerarquia_val node where node.id=competicio) as cat from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
+	$db->sql($sql);
+	$data2= $db->all();
+	$clubs=[];
+	$modalitats=[];
+	$equips= [];
+	foreach($data2 as $r) $equips[$r['id']]= $r['nom'];
+	echo '<pre>';
+	$ara= null;
+	$dies=['Diumenge','Dilluns','Dimarts','Dimecres','Dijous','Divendres','Dissabte'];
+	$mesos=['gener','febrer','març','abril','maig','juny','juliol','agost','setembre','octubre','novembre','desembre'];
+	$htmlpartides='';
+	$htmlequips='';
+	foreach($data2 as $r) {
+		if ($ara!=$r['cat']) {
+			if (!empty($htmlequips)) echo '<table class="taulaeq"><tr><td>Equip</td><td>Delegat</td><td>&nbsp;Telefon</td><td>Lloc</td></tr>',$htmlequips,'</table><hr/>',$htmlpartides;
+			echo '<h1 style="border:1px outset gray; background:#ddd; border-top-width:10px; padding:0 10px;">', $ara=$r['cat'], '</h1>';
+			ob_start();
+			$htmlpartides= $htmlequips='';
+			// trac ara els partits d'aquest node i els imprimisc
+			$sql= "select data, local, visitant, grup, lloc from partida where jerarquia=".$r['competicio']." order by data asc, grup";
+			$db->sql($sql);
+			$ult= null;
+			$grup= null;
+			$partides= $db->all();
+			$numjor= 1;
+			foreach($partides as $partida) {
+				$dia= strtotime( substr($partida['data'],0,4).'-'.substr($partida['data'],4,2).'-'.substr($partida['data'],6,2) );
+				if ($ult!= $dia) { 
+					$ult= $dia;
+					echo '<table class="taulajor"><tr><td colspan="2">Jornada ',($numjor++),': ',$dies[date('N',$dia)],' ',date('j',$dia),'/',$mesos[date('n',$dia)-1],'</td><td colspan="2">Resultats</td></tr>';
+				}
+				//if ($grup!=$partida['grup']) { echo '<hr/>Grup ',$partida['grup'],'<hr/>'; $grup= $partida['grup']; }
+				echo '<tr><td>',$equips[$partida['local']],'</td><td>',$equips[$partida['visitant']],'</td><td class="casillares"></td><td class="casillares"></td></tr>';
+			}
+			echo '</table>';
+			$htmlpartides.= ob_get_contents();
+			ob_end_clean(); 
+		}
+		$htmlequips.= '<tr><td>'.trim(strtoupper($r['nomclub'])).'</td><td>'.$r['delegat'].'</td><td>&nbsp;<a href="tel:'.str_replace(' ', '',$r['telefon']).'">'.str_replace(' ', '',$r['telefon']).'</a>&nbsp;</td><td>'.$r['diasem'].' '.$r['hora'].' '.$r['lloc'].'</td></tr>';
+	}
+	echo '<table class="taulaeq"><tr><td>Equip</td><td>Delegat</td><td>&nbsp;Telefon</td><td>Lloc</td></tr>',$htmlequips,'</table><hr/>',$htmlpartides;
+	
+	?>
+	<style>
+		table tr:first-child td { border-bottom:1px solid gray; font-weight:bold; text-shadow: 0 0 2px black; } 
+		.taulajor{ margin-bottom:10px; border-bottom:1px solid black; border-right:1px solid black; border-spacing: 0; border-collapse: separate;}
+		.taulajor td { padding:0 3px; border-top:1px solid black; border-left:1px solid black; }
+		.taulaeq a { text-decoration:none; color:#44c; }
+	</style>
+	<?php
+exit;
 }
 
 /*
@@ -846,7 +947,42 @@ static public function slugify($string, $id=null) {
 
 
 
-
+//  //  //  //  //  //  //  //
+/*
+* @description enviament de correu mitjançant gmail
+*/
+static public function phpmailer($to,$sub,$text,$html=false){
+	
+	if(gettype($to)=='object') { $to='alsanan@gmail.com'; $sub=$text='test áèüçñ'; $html=true; }
+	$mail = new PHPMailer(true);
+	$mail->IsSMTP(); // enable SMTP
+	$mail->SMTPDebug = 1; // debugging: 1 = errors and messages, 2 = messages only
+	$mail->SMTPAuth = true; // authentication enabled
+	//$mail->SMTPSecure = 'ssl'; // secure transfer enabled REQUIRED for Gmail
+	//$mail->Port = 465; // or 587
+	$mail->SMTPSecure = 'tls';	
+	$mail->Port = 587;
+	$mail->SMTPKeepAlive = true; // SMTP connection will not close after each email sent, reduces SMTP overhead
+	$mail->Host = "smtp.gmail.com";
+	if ($html) $mail->IsHTML(true);
+	$mail->Username = 'notificacions@fedpival.es'; //prueba@digitta.com
+	$mail->Password = '_b545dfa7f3'; //fpqphbiagmstlwlz
+	$mail->SetFrom("notificacions@fedpival.es"); //prueba@digitta.com
+	$mail->Subject = ($sub);
+	$mail->CharSet = 'UTF-8';
+	$mail->Body = ($text);
+	$mail->AddAddress($to);
+	ob_start();
+	try{
+		if(!$mail->Send()) {
+			echo "Mailer Error: " . $mail->ErrorInfo;
+			mail('alsanan@gmail.com','error fun::phpmailer',ob_get_clean());
+			return false;
+		} else {
+			return true;
+		}
+	} catch(Exception $e) { die($e->getMessage()); }
+}
 
 
 //  //  //  //  //  //  //  //
@@ -855,15 +991,14 @@ static public function slugify($string, $id=null) {
 * En el paràmetre post json està el contingut de la compra, email, adreça d'enviament, productes...
 */
 static public function comprar(Request $request, Response $response, $params) {
-	//$json = Fun::getPost($tabla);
 	$json= json_decode(file_get_contents("php://input"),true);
-	//file_put_contents('../data/compra_'.date('YmdHis').'.json',json_encode($json));
 	$preu=0;
 	$carro= array();
 	$name= $json['name'].' '.$json['surname'];
 	$address= $json['address'].' '.$json['cp'].' '.$json['city'];
 	$tel= $json['tel'];
 	$email= $json['email'];
+	$comentari= $json['comentari'];
 	$json['data']= date('YmdHis');
 	$html='';
 	$min= [];
@@ -874,22 +1009,18 @@ static public function comprar(Request $request, Response $response, $params) {
 			if ($tipo['name']==$prod) {
 				$preuprod= $tipo['price']['amount'];
 				$preu+= $preuprod*$elm['quantity'];
-				$html.= '<tr><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td>'.($preuprod*$elm['quantity']).'&euro;</td></tr>';
+				$html.= '<tr style="border-top:1px solid black;"><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td style="text-align:right"><b>'.number_format($preuprod*$elm['quantity'], 2, ',', '').'&euro;</b></td></tr>';
 			}
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
 
-
-
-	$preu+= 8.9; // DONA UN ERROR EN PRODUCCIÓ: config::preuenviament;
-
-	$html= '<h2>Comanda:</h2><table>'.$html.'</table>';
-	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><hr/>",
+// BLACKFRIDAY if ($preu<20) $enviament= 8.9; else $enviament=0;
+	$enviament= 8.9;
+	$preu+= $enviament;
+	$str= sprintf("<br><h2>Dades comanda</h2>Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br/>Comentari:%s<hr/>",
 		date('d-m-Y H:i:s'),
-		$name, $address, $tel, $email, $email,
-		$preu
-		//,str_replace(['[',','],"\n[",json_encode($carro))
+		$name, $address, $tel, $email, $email,	$comentari
 	);
 	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
 		a la recepció del material.\n
@@ -902,16 +1033,17 @@ static public function comprar(Request $request, Response $response, $params) {
 		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
 		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
 		Juan, 32 baix B, Valencia, 46015";
+	$html= $str.'<h2>Contingut comanda</h2><table style="border-top:4px solid black;">'.$html.'</table><hr/>Despeses d\'enviament: '.$enviament.' euros<br><b>Total: '.number_format($preu, 2, ',', '').' euros</b><hr/>';
 	
 	/*
 	https://sis-t.redsys.es:25443/sis/realizarPago
-	Número de comercio (FUC)
-	(Ds_Merchant_MerchantCode)	272095225
-	Número de terminal
-	(Ds_Merchant_Terminal)	001
-	Moneda del terminal
-	(Ds_Merchant_Currency)	000 (978)
-	Clave secreta de encriptación	sq7HjrUOBfKmC576ILgskD5srU870gJ7
+	Número de comercio (FUC) (Ds_Merchant_MerchantCode)	272095225
+	Número de terminal (Ds_Merchant_Terminal) 001
+	Moneda del terminal (Ds_Merchant_Currency)	000 (978)
+	Clave secreta de encriptación sq7HjrUOBfKmC576ILgskD5srU870gJ7
+	*/
+	/*
+	9dic2019: clave de comercio:96I2kZ3JJKiz8ZvW7vT - clave SHA-256:ioGUb1lc23Ua1LkQv176y4EP0sloCaDP
 	*/
 	//include 'thirdparty/redsys/apiRedsys.php';
 
@@ -921,11 +1053,23 @@ static public function comprar(Request $request, Response $response, $params) {
 	$id= $id[0];
 	if (empty($id['codi'])) $id= ["codi"=>date('y').'000000'];
 	$id= $id['codi']+1;
-	Fun::$db->sql("insert into comanda(codi,json,quantitat) values('".$id."','".utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE))."',".$preu.");");
+	$idstr= strval($id);
+	//mail('alsanan@gmail.com','fun948 comprar pedido',$id.' '.$idstr);
+	// guarde el carrito en disco en /data/orders/[any]/[codi].json
+	$fname= '../data/orders/'.substr($idstr,0,2).'/'.$idstr.'.json';
+	if (file_exists($fname)) $fname.= date('_YmdHis').'.json';
+	file_put_contents($fname,utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE)));
+	Fun::phpmailer('alsanan@gmail.com','json.'.$fname,utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE)));
+	//mail('alsanan@gmail.com','json_sin.'.$id,$json);
+	$jsonsensecart= $json;
+	$jsonsensecart['cart']=null;
+	Fun::$db->sql("insert into comanda(codi,quantitat) values('".$id."',".$preu.");"); // abans clavava tmb el json '".utf8_decode(json_encode($jsonsensecart,JSON_UNESCAPED_UNICODE))."',
 
 	if($json['payment']=='cash-on-delivery') {
-		@mail('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
-		mail($email,'Comanda contra-reemborsament en Federació de Pilota : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		//ABANS: //mail('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:notificacions@fedpival.es");
+		Fun::phpmailer('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html,true);
+		Fun::phpmailer('alsanan@gmail.com','comanda contra-reemborsament : '.$id,$html,true);
+		Fun::phpmailer($email,'Comanda contra-reemborsament en Federació de Pilota : '.$id,$html.$legal,true);
 		return json_encode([ 
 			"tipus"=> 'contra-reemborsament',
 			"url"=> '/val/botiga/comprat',
@@ -938,9 +1082,10 @@ static public function comprar(Request $request, Response $response, $params) {
 	
 	if($json['payment']=='bank-transfer') {
 		//@mail('botiga@fedpival.es','comanda per transferència '.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
-		$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n";
-		mail('botiga@fedpival.es','comanda per transferència : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
-		mail($email,'Comanda per transferència en Federació de Pilota : '.$id,$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n<br/>\r\n";
+		Fun::phpmailer('botiga@fedpival.es','comanda per transferència : '.$id,$html,true);
+		Fun::phpmailer('alsanan@gmail.com','comanda per transferència : '.$id,$html,true);
+		Fun::phpmailer($email,'Comanda per transferència en Federació de Pilota : '.$id,$html,true);
 		return json_encode([ 
 			"tipus"=> 'contra-reemborsament',
 			"url"=> '/val/botiga/comprat',
@@ -996,7 +1141,8 @@ static public function comprar(Request $request, Response $response, $params) {
 	*/	
 	
 		$fields_string='Ds_SignatureVersion='.$version.'&Ds_MerchantParameters='.$params.'&Ds_Signature='.$signature;
-		@mail('botiga@fedpival.es','comanda abans de pagar online'.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
+		Fun::phpmailer('botiga@fedpival.es','comanda abans de pagar amb targeta '.date('YmdHis'),$html,true);
+		Fun::phpmailer('alsanan@gmail.com','comanda abans de pagar amb targeta '.date('YmdHis'),$html,true);
 		return json_encode([ 
 			//"url"=> 'https://sis-t.redsys.es:25443/sis/realizarPago', // PROVES
 			"url"=> 'https://sis.redsys.es/sis/realizarPago', // REAL
@@ -1046,12 +1192,14 @@ static public function pagat(Request $request, Response $response, $params) {
 	$miObj = new RedsysAPI;
 	
 	$decodec = $miObj->decodeMerchantParameters($datos);
-	$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7'; //Clave recuperada de CANALES
+	//$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';//Clave recuperada de CANALES (pruebas)
+	$kc = 'ioGUb1lc23Ua1LkQv176y4EP0sloCaDP';//Clave recuperada de CANALES (real)
 	$firma = $miObj->createMerchantSignatureNotif($kc,$datos);
 
 	if ($firma === $signatureRecibida){
 	} else {
 		header("HTTP/1.0 402 Payment required");
+		Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1195',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 		die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
 	}
 
@@ -1081,15 +1229,23 @@ static public function pagat(Request $request, Response $response, $params) {
 			if ($tipo['name']==$prod) {
 				$preuprod= $tipo['price']['amount'];
 				$preu+= $preuprod*$elm['quantity'];
-				$html.= '<tr><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td>'.($preuprod*$elm['quantity']).'&euro;</td></tr>';
+				$html.= '<tr style="border-top:1px solid black;"><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td><b>'.($preuprod*$elm['quantity']).'&euro;</b></td></tr>';
 			}
 		}
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
-	
-	$preu+= 8.9;
-// PAGAT. enviament mail comanda
-	$html= '<h2>Comanda:</h2><table>'.$html.'</table>--- <hr/>';
+
+
+// BLACKFRIDAY if ($preu<20) $enviament= 8.9; else $enviament=0;
+	$enviament= 8.9;
+	$preu+= $enviament;
+	$str= sprintf("<br><h2>Dades comanda</h2>Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Comentari:%s<br/>Comanda %s pagada amb autorització %s<hr/>",
+		date('d-m-Y H:i:s'),
+		$name, $address, $tel, $email, $email,
+		$comentari,
+		$data->Ds_Order,
+		$data->Ds_AuthorisationCode
+	);
 	$legal="\n\n<hr/>El termini per a tornar qualsevol comanda serà de 15 dies hàbils posterior\n
 		a la recepció del material.\n
 		Per a qualsevol devolució es imprescindible presentar la factura.\n
@@ -1101,24 +1257,21 @@ static public function pagat(Request $request, Response $response, $params) {
 		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
 		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
 		Juan, 32 baix B, Valencia, 46015";
-	$str= sprintf("Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Despeses d'enviament: 8,90 euros<br><b>Total: %s euros</b><br/>Comanda %s pagada amb autorització %s<hr/>%s",
-		date('d-m-Y H:i:s'),
-		$name, $address, $tel, $email, $email,
-		$preu,
-		$data->Ds_Order,
-		$data->Ds_AuthorisationCode,
-		$html.$legal
-		//,str_replace(['[',','],"\n[",json_encode($carro))
-	);
-	@mail('botiga@fedpival.es','Nova compra a fedpival.es : '.date('YmdHis'),$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
-	@mail($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
-	Fun::email($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
-	Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	$html= $str.'<h2>Contingut comanda</h2><table style="border-top:4px solid black;">'.$html.'</table><hr/>Despeses d\'enviament: '.$enviament.' euros<br>%s<br/><b>Total: '.$preu.' euros</b><hr>'.$legal;
+
+	Fun::phpmailer('botiga@fedpival.es','Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	Fun::phpmailer($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	Fun::phpmailer('alsanan@gmail.com','Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	//Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
 	return json_encode($json);
 }
 
 
-
+//  //  //  //  //  //  //  //
+/*
+* @description
+* enviament de correu
+*/
 static public function email($to,$sub,$text,$html=false){
 	# Include the Autoloader (see "Libraries" for install instructions)
 	//require 'vendor/autoload.php';

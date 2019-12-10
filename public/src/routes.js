@@ -5,6 +5,8 @@ import Router from 'vue-router'
 const Login = function(resolve) {require(['./components/admin/Login.vue'], resolve)}
 const PageNotFound = function(resolve) {require(['./components/PageNotFound.vue'], resolve)}
 
+const Search = function(resolve) {require(['./components/Search.vue'], resolve)}
+
 const Start = function(resolve) {require(['./components/Start.vue'], resolve)}
 const News = function(resolve) {require(['./components/News.vue'], resolve)}
 const SingleNews = function(resolve) {require(['./components/SingleNews.vue'], resolve)}
@@ -306,6 +308,26 @@ const routes = [
 	    path: '/trofeu',
 	    name: 'trofeu',
 	    component: Trofeu, 
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/cercador',
+	    redirect: '/val/cercador',
+	  },
+	  {
+	    path: '/buscador',
+	    redirect: '/es/buscador',
+	  },
+	  {
+	    path: '/val/cercador',
+	    name: 'Cercador',
+	    component: Search,
+	    meta: defaultHead
+	  },
+	    {
+	    path: '/es/buscador',
+	    name: 'Buscador',
+	    component: Search,
 	    meta: defaultHead
 	  },
 	  {

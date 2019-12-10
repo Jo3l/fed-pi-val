@@ -1,8 +1,9 @@
 export default { 
 	calendar: {
 		mondayFirst: 'true',
-		weekShort : [ 'Diu', 'Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss'],
-		weekLong : [ 'Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
+		weekShort : ['Diu', 'Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss'],
+		weekShortEUR : ['Dill', 'Dima', 'Dime', 'Dijo', 'Dive', 'Diss', 'Diu'],
+		weekLong : ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
 		weekInitials: ['D', 'D', 'D', 'D', 'D', 'D', 'D'],
 		months : ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'],
 		monthsShort: ['Gen', 'Feb', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Sete', 'Oct', 'Nov', 'Des'],
@@ -18,6 +19,7 @@ export default {
 		adr:'Adreça',
 		cp:'Codi Postal',
 		tlf:'Telèfon',
+		comment:'Comentari',
 		continueBuying:'Continuar comprant',
 		orderNumber:'Nº comanda',
 		thanks:'Gràcies per comprar a la tenda de la Federació!',
@@ -50,6 +52,8 @@ export default {
 		payType: 'Tipus de pagament'
 	},
 	common : {
+		searcher: 'cercador',
+		noresults: 'No hi han resultats.',
 		yes: 'Si',
 		confirm: 'Estas segur?',
 		required: 'Camp obligatori',
@@ -92,7 +96,7 @@ export default {
 		cancel: 'Cancelar',
 		delete: 'Borrar',
 		uploadPdf: 'Pujar document PDF',
-		search: 'Buscar',
+		search: 'Cercar',
 		newsNew: 'Nova noticia',
 		eventNew: 'Nou esdeveniment',
 		wrong: 'Valor incorrecte',

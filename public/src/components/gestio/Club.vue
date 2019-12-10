@@ -27,9 +27,9 @@
 							<th slot="headActions"></th>
 							<template slot="actions" scope="props">
 								<td class="actions">
-									<ui-button color="saveForm" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi" style="margin:0;display:inline">Modificar</ui-button>
-									<ui-button color="saveForm" icon="delete" icon-position="left" size="small" type="secondary" @click="deSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'<=props.row.fi" style="margin:0;display:inline">Esborrar</ui-button>
-									<ui-button color="default" icon="print" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row,true)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')+'235959'>props.row.fi">Imprimir</ui-button>
+									<ui-button color="saveForm" icon="edit" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')<=props.row.fi.substring(0,8)" style="margin:0;display:inline">Modificar</ui-button>
+									<ui-button color="saveForm" icon="delete" icon-position="left" size="small" type="secondary" @click="deSubscribe(props.row)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')<=props.row.fi.substring(0,8)" style="margin:0;display:inline">Esborrar</ui-button>
+									<ui-button color="default" icon="print" icon-position="left" size="small" type="secondary" @click="modSubscribe(props.row,true)" v-if="(new Date).toISOString().split('T')[0].replace(/-/g,'')>props.row.fi.substring(0,8)">Imprimir</ui-button>
 								</td>
 							</template>
 						</tablerone>
@@ -53,16 +53,34 @@
 					</div>
 					
                 </ui-tab>
+
+                <ui-tab title="Demanar registre jugador" id="nou">
+                    
+					<club-nou-jugador></club-nou-jugador>
+                    
+                </ui-tab>
+
+                <ui-tab title="Llistat de jugadors" id="llistatjugadors">
+                    
+					<br>
+					
+					<div class="vuetableContainer">
+						<tablerone :tableList="jugadorsclub" :tableColumns="columnsJugadors">
+							<!--th slot="headActions"></th>
+							<template slot="actions" scope="props">
+								<td class="actions">
+									<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary" @click="console.log(props.row)">Editar</ui-button>
+								</td>
+							</template-->
+						</tablerone>
+					</div>
+                    
+                </ui-tab>
+
 				
                 <ui-tab title="Dades Club">
                     
 					<club-editar></club-editar>
-                    
-                </ui-tab>
-                
-                <ui-tab title="Demanar registre jugador" id="nou">
-                    
-					<club-nou-jugador></club-nou-jugador>
                     
                 </ui-tab>
                                 
@@ -399,6 +417,7 @@ export default {
 			resultats:[],
 		    inscripcions:[],
 		    equips:[],
+		    jugadorsclub:[],
 		    subscribeName:'',
 		    subscribeId:'',
 		    readonly:false,
@@ -468,6 +487,18 @@ export default {
 	            {
 	                label: '',
 	                field: 'resultatvisitant',
+	                html: false,    
+	            }
+	        ],
+		    columnsJugadors:[
+		    	{
+	                label: 'Número soci',
+	                field: 'numsoci',
+	                html: false,    
+	            },
+	            {
+	                label: 'Nom',
+	                field: 'nom',
 	                html: false,    
 	            }
 	        ],
@@ -707,7 +738,7 @@ export default {
 	            vm.getEquips(vm.$store.getters.userId);
 	            vm.getResultats(vm.$store.getters.userId);
 	            vm.getInscripcions();
-	            
+	            vm.getJugadors(vm.$store.getters.userId);
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -791,6 +822,16 @@ export default {
 	        .then(function (response) {
 	            vm.equipLocal = response.data.local;
 	            vm.equipVisitant = response.data.visitant;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+		},
+		getJugadors:function(id){
+	        var vm = this;
+	        vm.$http.get('/jugadorsdeclub/'+id, { cache: false })
+	        .then(function (response) {
+	            vm.jugadorsclub = response.data;
 	        })
 	        .catch(function (error) {
 	            console.log(error);

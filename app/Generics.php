@@ -75,6 +75,21 @@ static public function generic_update(Request $request, Response $response, $par
 	// 1AGO, kike em diu q ja no cal
 	// if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
 	Generics::generic_id($request,$response,$params);
+	try {
+		if ($tabla=='partida') {
+			$id= $params['id'];
+			$db->sql("select *, (select email from equip,club where equip.club=club.id and equip.id=visitant) as email, (select cami_val from _camins where _camins.id=jerarquia) as cami, (select nom from equip where equip.id=local) as local, (select nom from equip where equip.id=visitant) as visitant from partida where id=".$id);
+			$data= $db->all()[0];
+			$sub= "L'equip `".$data['local']."` ha introduit l'acta de la partida";
+			$msg= "Partida: ".str_replace('/',' > ',$data['cami'])
+				."\nResultat: ".$data['resultatlocal'].'-'.$data['resultatvisitant']
+				."\nComentari: ".$data['comentari']
+				."----\nDelegat: ".$json['nomDelegat']." (llicencia ".$json['llicenciaDelegat']."). Contacte: ".$json['contacteDelegat'];
+			$msg.= "\n\n\n Si veus alguna cosa incorrecta, tens 48 hores (".date('H:i\\h \\d\\e\\l d/m/Y', strtotime('+2 days')).") per demanar una correcció a campionats@fedpival.es";
+			Fun::email($data['email'],$sub,$msg);
+			//die("\n\n".$sub."\n\n".$msg);
+		}
+	} catch (Exception $e) { die($e->getMessage()); }
 	return;
 }
 
@@ -221,15 +236,28 @@ static public function generic_query(Request $request, Response $response, $para
 	if (isset($_GET['csv']) && $tabla=='comanda') {
 		foreach($data as $idx=>$elm) {
 			$json= json_decode($data[$idx]['json'],true);
+			if (file_exists('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json')) {
+				$json= utf8_encode(file_get_contents('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json'));
+			}
 			unset($data[$idx]['json']);
 			$data[$idx]['nom']= $json['name'];
 			$data[$idx]['dir']= $json['address']+' '+$json['cp'];
 			$data[$idx]['tel']= $json['tel'];
 			$data[$idx]['email']= $json['email'];
-			$data[$idx]['data']= $json['data'];
-			$data[$idx]['email']= $json['email'];
-			$data[$idx]['email']= $json['email'];
+			$data[$idx]['data']= date('YmdHis',strtotime($data[$idx]['data'])); // des d'ara use timestamp
+			if (empty($data[$idx]['data'])) $data[$idx]['data']= $json['data']; 
 			$data[$idx]['tipus']= $json['payment']=='cash-on-delivery'?'contra-reembors.':$json['payment']=='online-pay'?'targeta':'transfer.';
+		}
+	}
+	if ($params['tabla']=='comanda') {
+		// si es comanda, el cart/json ara s'agafa del directori /data/orders/[any]/[codi].json i matxaque el que hi havia de la taula
+		foreach($data as $idx=>$elm) {
+			if (file_exists('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json')) {
+				$data[$idx]['json']= utf8_encode(file_get_contents('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json'));
+			}
+			$json= json_decode($data[$idx]['json'],true);
+			if (!empty($data[$idx]['data'])) $data[$idx]['data']= date('YmdHis',strtotime($data[$idx]['data'])); // des d'ara use timestamp
+			else $data[$idx]['data']= $json['data'];
 		}
 	}
     Fun::render($data);
@@ -314,21 +342,33 @@ static public function global_search(Request $request, Response $response, $para
 	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
     $db = new db();
     $tot= [];
-/// afegir ací campionats i arxius
-	foreach( ['club','_noticia'] as $t ) :
-    	$sql= "SELECT column_name FROM information_schema.`COLUMNS` C WHERE TABLE_SCHEMA = 'fedpival' and table_name='".$t."' and data_type in ('varchar','text','mediumtext');";
-		$db->sql($sql);
-		$que= $db->all();
-		$ques= [];
-		foreach( $que as $elm ) { array_push( $ques, $elm['column_name']." like '%".$params['que']."%' " ); }
-		$flds= 'id';
-		$sql= "select ".$flds." from ".$t." where ".implode( $ques, ' OR ');
-	    if (isset($options['order'])) $sql.= " order by ".$options['order'];
-	    if (isset($options['limit'])) $sql.= " limit ".$options['limit'];
-		$db->sql($sql);
-		$tot[$t]= $db->all();
-	endforeach;
-	echo '<pre>', print_r($tot);
+    
+    $wheresearch= [
+    	// ELIMINE PQ NO HI HA URL D'ACTES: "_acte_val"=>["titol","categoria","tags","contingut","concat('1',id)"],
+		"_camins"=>["cami_val","cami_val"],
+		"_element_val"=>["titol","tipus","contingut","concat('/val',(select cami_val from _camins where _camins.id=jerarquia))"],
+		"_jerarquia"=>["nom_val","concat('/val/',(select cami_val from _camins where _camins.id=_jerarquia.id))"],
+		"_noticia_val"=>["titol","contingut","concat('/val/noticia/',slug)"],
+		"club"=>["nom","poblacio","president","concat('/val/federacio/clubs-de-pilota-valenciana/',id)"],
+		"producte"=>["nom","concat('/val/botiga/',slug)"],
+		"_partida"=>["concat(nom_inscripcio_local,' - ',nom_inscripcio_visitant)","lloc","nom_inscripcio_local","nom_inscripcio_visitant","concat('/val/',(select cami_val from _camins where _camins.id=_partida.jerarquia))"]
+	];
+	$sql=[];
+	foreach($wheresearch as $table=>$fields) {
+		array_push($sql,"select '".$table."' as tipus, id, ".$fields[0]." as nom, ".$fields[count($fields)-1]." as url from ".$table." where lower(concat(ifnull(".implode(",''),ifnull(",array_slice($fields, 0, -1)).",''))) like '%".strtolower($params['que'])."%' ");
+	}
+	$db->sql( implode(' union ',$sql) );
+	$res=$db->all();
+	foreach($res as $idelm=>$elm)
+		if($elm['tipus']=='_element_val') {
+			$url= $elm['url'];
+			$url= explode('/',$url);
+			if (empty($elm['nom'])) $res[$idelm]['nom']= $url[count($url)-1];
+			foreach($url as $idurl=>$nomurl) $url[$idurl]= Fun::slugify($nomurl);
+			$res[$idelm]['url']= implode('/',$url);
+		}
+	$newResponse = $response->withJson($res);
+	return $newResponse;
 }
 
 //  //  //  //  //  //  //  //
