@@ -77,8 +77,11 @@ nav.social {
 	margin-top:-5px;
 }
 
+.social a {
+	margin-right: 16px;
+}
 .ui-icon-button__icon svg {
-	width:2em;
+	width:1.8em;
 	path {fill:#757575;}
 	&:hover {
 		path {fill:@fedcolor;}

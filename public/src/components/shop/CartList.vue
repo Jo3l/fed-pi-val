@@ -28,7 +28,7 @@
 							<ui-icon-button icon="expand_more" type="primary" class="swiper-button-next cart" slot="button-next" v-if="cart.length>0"></ui-icon-button>
 						</swiper>
 
-						<ui-button icon="shopping_cart" :class="cart.length>0 && cartTotalPrice>=10?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0 || cartTotalPrice<10" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}} <span v-if="cartTotalPrice<10">...minim 10€!</span></ui-button>
+						<ui-button icon="shopping_cart" :class="cart.length>0 && cartTotalPrice>=10?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0 || cartTotalPrice<10" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}} <span v-if="cartTotalPrice<10" style="white-space:nowrap">...minim 10€!</span></ui-button>
 
 				        <ui-modal size="large" ref="buyModal" :title="$i18n.t('cart.customerData')">
 				        	
@@ -154,7 +154,6 @@
           <input ref="signature" type="hidden" name="Ds_Signature" />
     </form>
 
-					    
 					 </div>
     </transition>
 </template>
@@ -319,7 +318,6 @@ export default {
 
   },
   mounted: function() {
-
   }
 }
 </script>

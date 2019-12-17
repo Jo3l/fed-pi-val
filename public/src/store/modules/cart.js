@@ -16,6 +16,7 @@ function loadState() {
 
 function saveState(state) {
   try {
+  	console.log(state)
     var serializedState = JSON.stringify(state);
     localStorage.setItem('fedpival_cart', serializedState);
   } catch (err) {
@@ -40,9 +41,9 @@ const getters = {
   },
   cartTotalPrice: function(state) {
   		var total=0;
-
+		console.log(state)
 		state.added.forEach(function(element) {
-			var item = element.fullProduct.types.find(function(item) {return item.id === element.id && item.name === element.name})
+			var item = element.fullProduct.types.find(function(item) {return item.name === element.name})
 			total+= (parseFloat(item.price.amount) * parseFloat(element.quantity))
 		});
 		return total.toFixed(2);
@@ -57,11 +58,12 @@ const actions = {
   },
   addProductToCart ({ state, commit }, product) {
 	  commit('setCheckoutStatus', null)
-      const cartItem = state.added.find(function(item) {return item.id === product.id && item.name === product.name})
+      const cartItem = state.added.find(function(item) {return item.fullProduct.id === product.fullProduct.id && item.name === product.name})
       if (!cartItem) {
-        commit('pushProductToCart', { id: product.id, name: product.name, fullProduct: product.fullProduct });
+        commit('pushProductToCart', { id: product.fullProduct.id, name: product.name, fullProduct: product.fullProduct });
         saveState(state);
       } else {
+      	console.log(product.id)
         commit('incrementItemQuantity', cartItem);
         saveState(state);
       }

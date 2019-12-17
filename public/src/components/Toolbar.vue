@@ -41,6 +41,14 @@
 			<img src="/static/logo.png">
 		</div>
 	    <div slot="actions">
+
+            <ui-icon-button
+                color="black"
+                icon="search"
+                size="large"
+                type="secondary"
+                @click="$router.push({ path: '/'+$i18n.locale+'/'+$i18n.t('common.searcher') } )"
+            ></ui-icon-button>            
 	    	
 	    	<ui-button class="actionDesktop" has-dropdown v-if="$store.getters.isAuthenticated" icon="account_circle" size="small">{{$store.getters.userMail}}
 	                <ui-menu
@@ -79,7 +87,7 @@
                 icon="shopping_cart"
                 size="large"
                 type="secondary"
-                @click="visibleCart=!visibleCart"
+                @click="toggleCart"
             >
             	<span class="ui-icon material-icons shopping_cart">shopping_cart<div class="amount" v-if="countCart>0">{{countCart}}</div></span>
             </ui-icon-button>
@@ -90,6 +98,7 @@
                 icon="custom"
                 size="large"
                 type="secondary"
+                style="margin-right:1em;"
                 ref="localeSelector"
                 :class="$i18n.locale"
             >
@@ -103,14 +112,6 @@
 	                ></ui-menu>
             </ui-icon-button>
             
-            <ui-icon-button
-                color="black"
-                icon="search"
-                size="large"
-                type="secondary"
-                style="margin-right:1em;"
-                @click="$router.push({ path: '/'+$i18n.locale+'/'+$i18n.t('common.searcher') } )"
-            ></ui-icon-button>            
 	    </div>
 	    
 	</ui-toolbar>
@@ -138,7 +139,7 @@
 	</div>
 
 	
-	<div class="closeCart" v-if="visibleCart" @click="visibleCart=false"></div>
+	<div class="closeCart" v-if="visibleCart" @click="toggleCart()"></div>
 	<cart-list v-if="visibleCart"></cart-list>
 	
 </div>
@@ -169,6 +170,12 @@ export default {
 	}
 	},
 	methods: {
+		toggleCart: function() {
+			var vm= this;
+			vm.visibleCart=!vm.visibleCart;
+			console.log(vm.visibleCart)
+			window.document.querySelector('#intergramRoot').style.display= vm.visibleCart?'block':'none';
+		},
 		isMobileDevice: function() {
 		    return document.body.clientWidth<480;
 		},
@@ -267,6 +274,11 @@ export default {
 		.separator {
 			@media(max-width:@screenMobile) {
 				display:none;
+			}
+		}
+		li:first-child { 
+			@media(min-width:@screenMobile) {
+				margin-left:57px !important;
 			}
 		}
 		a {

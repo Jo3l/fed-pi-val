@@ -164,7 +164,7 @@ export default {
         this.$http.get(apiUrl, { cache: auth })
         .then(function (response) {
         	vm.product = response.data[0].json;
-            console.log(vm.product);
+        	vm.product.id = response.data[0].id;
             vm.loaded=true;
             vm.productTitle=vm.product.content[vm.$i18n.locale].name
             
@@ -271,8 +271,10 @@ export default {
   	},
   	productSelected: function(newValue, oldValue){
   		var vm=this;
-		if(vm.product && vm.productSelected)vm.productSelected.fullProduct = JSON.parse( JSON.stringify( vm.product ) );
-		
+		if(vm.product && vm.productSelected) {
+			vm.productSelected.fullProduct = JSON.parse( JSON.stringify( vm.product ) );
+			vm.productSelected.fullProduct.id = vm.product.id;
+		}
   	}, 
   	
   },

@@ -388,6 +388,23 @@ static private function guardanode($params) {
     $db->sql($sql);
     $sql="COMMIT;";
     $db->sql($sql);
+	$db->sql("select @last_id as id");
+	$lastid= $db->getResult()[0]['id'];
+    try {
+	    $db->sql("select id,pare from jerarquia");
+	    $jrq= $db->all();
+	    foreach($jrq as $n) $jrq[$n['id']]= $n['pare'];
+	    $cami=$lastid;
+	    $maxdeep=20;
+	    $nodeara=null;
+	    $nodeara= $json['parent_id'];
+	    while ($nodeara!=0) {
+	    	$cami= $nodeara.'/'.$cami;
+	    	$nodeara= $jrq[$nodeara];
+	    	if (0>$maxdeep--) break;
+	    }
+	    $db->sql("update jerarquia set cami='0/".$cami."' where id=".$lastid);
+    } catch (Exception $e) { Fun::phpmailer('alsanan@gmail.com','excepion Nodes:408',$e->getMessage()); }
 	return Fun::render(Nodes::jerarquia($params['tipus']),true);
 }
 

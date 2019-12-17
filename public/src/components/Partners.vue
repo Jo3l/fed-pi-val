@@ -1,7 +1,7 @@
 <template>
 	<div id="patrocinadors">
 		
-		<h1> <span class="ui-icon material-icons">flag</span> Patrocinadors:</h1>
+		<h1> <span class="ui-icon material-icons">flag</span> Patrocinadors / Col·laboradors </h1>
 			
 		<div>
 			<a href="http://pilotaescola.es" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola" loading="lazy" style="width:128px !important"></a>
@@ -12,16 +12,16 @@
 			<a href="http://www.dipcas.es" target="_blank"><img src="/static/img/footer/castello.jpg" alt="Diputació de Castelló" title="Diputació de Castelló" loading="lazy"></a>
 			<a href="http://www.valencia.es" target="_blank"><img src="/static/img/footer/valencia.jpg" alt="Ajuntament de València" title="Ajuntament de València" loading="lazy"></a>
 			<a href="http://www.deportevalencia.com" target="_blank"><img src="/static/img/footer/fdm.jpg" alt="Fundació Esportiva Municipal" title="Fundació Esportiva Municipal" loading="lazy"></a>
-			<a href="http://www.elcorteingles.es" target="_blank"><img src="/static/img/footer/eci.jpg" alt="El Corte Inglés" title="El Corte Inglés" loading="lazy"></a>
+			<a href="https://fundaciontrinidadalfonso.org/va/" target="_blank"><img src="/static/img/footer/fta.jpg" alt="Trinidad Alfonso" title="Trinidad Alfonso" loading="lazy" style="width:128px !important" /></a>
 		</div>
 		<div>
+			<a href="http://www.elcorteingles.es" target="_blank"><img src="/static/img/footer/eci.jpg" alt="El Corte Inglés" title="El Corte Inglés" loading="lazy"></a>
 			<a href="http://www.edicom.es" target="_blank"><img src="/static/img/footer/edicom.jpg" alt="Edicom" title="Edicom" loading="lazy"></a>
 			<a href="http://www.caixapopular.es" target="_blank"><img src="/static/img/footer/caixapopular.jpg" alt="Caixa Popular" title="Caixa Popular" loading="lazy"></a>
 			<a href="http://www.bankia.es" target="_blank"><img src="/static/img/footer/bankia.jpg" alt="Bankia" title="Bankia" loading="lazy"></a>
-			<a href="http://www.intersport.es/" target="_blank"><img src="/static/img/footer/intersport.jpg" alt="Intersport" title="Intersport" loading="lazy"></a>
 			<a href="http://www.acerbis.com/" target="_blank"><img src="/static/img/footer/acerbis.jpg" alt="Acerbis" title="Acerbis" loading="lazy"></a>
-			<a href="https://fundaciontrinidadalfonso.org/va/" target="_blank"><img src="/static/img/footer/fta.jpg" alt="Trinidad Alfonso" title="Trinidad Alfonso" loading="lazy" style="width:128px !important" /></a>
 			<a href="https://labolata.com/" target="_blank"><img src="/static/img/footer/bolata.jpg" alt="La Bolata" title="La Bolata" loading="lazy"></a>
+			<a href="http://www.intersport.es/" target="_blank"><img src="/static/img/footer/intersport.jpg" alt="Intersport" title="Intersport" loading="lazy"></a>
 			<a href="https://www.aon.com" target="_blank"><img src="/static/img/footer/aon.jpg" alt="Aon" title="Aon" loading="lazy"></a>
 			<!--img src="/static/img/footer/iso.jpg" alt="ISO 9001" title="ISO 9001" loading="lazy">
 			<a href="http://lacaixa.es/" target="_blank"><img src="/static/img/footer/lacaixa.jpg" alt="La Caixa" title="La Caixa" loading="lazy"></a>

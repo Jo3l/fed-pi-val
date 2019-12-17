@@ -8,6 +8,7 @@
 			<div class="result-container" v-if="result.length>0">
 				<ul>
 					<li v-for="(item, index) in result" v-if="item.nom">
+						<i class="ui-icon material-icons" :title="descs[item.tipus]">{{icons[item.tipus]}}</i>
 						<router-link :to="{ path: item.url }">{{item.nom}}</router-link>
 					</li>
 				</ul>
@@ -29,7 +30,25 @@ export default {
     return {
 		searchText:null,
 		rotating:false,
-		result:' '
+		result:' ',
+		icons: {
+			"_noticia_val":"format_quote",
+			"_element_val":"menu_open",
+			"club":"security",
+			"_camins":"bookmark_border",
+			"_jerarquia":"bookmark",
+			"producte":"shopping_cart",
+			"_partida":"sports"
+		},
+		descs: {
+			"_noticia_val":"noticia",
+			"_element_val":"bloc de pàgina",
+			"club":"club",
+			"_camins":"pàgina",
+			"_jerarquia":"pàgina",
+			"producte":"producte",
+			"_partida":"partida"
+		}
     }
   },
   head : function() {
@@ -91,6 +110,7 @@ export default {
 		margin-right:2em;
 	}
 }
+.ui-icon { color: @fedcolor; }
 .result-container {
 	padding: 0 14em;
 	@media(max-width:@screenTablet){
@@ -100,7 +120,9 @@ export default {
 		list-style-type: none;
 		padding:0;
 		li {
-			padding: 10px 0;
+			padding: 5px 0;
+		    font-size: 110%;
+		    border-bottom: 1px dashed #ccc;
 		}
 	}
 }
@@ -141,5 +163,7 @@ export default {
     transform: rotate(360deg);
   }
 }
+
+
 
 </style>

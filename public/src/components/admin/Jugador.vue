@@ -63,8 +63,8 @@
 			            label="Correu Electrònic"
 						type="email"
 			            v-model="jugador.email"
-			            :invalid="$store.getters.validate({string:jugador.email,type:'email'})"
 			        ></ui-textbox>
+			        <!-- :invalid="$store.getters.validate({string:jugador.email,type:'email'})" -->
 		        	
 					<ui-datepicker
 		                :placeholder="$i18n.t('calendar.dateTip')"

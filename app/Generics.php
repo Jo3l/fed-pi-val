@@ -336,22 +336,22 @@ static public function global_search(Request $request, Response $response, $para
 	if (strlen($params['que'])<3) die ( 'ERROR: Mínim 3 caràcters per buscar...' );
 	$options= array();
 	if (isset($params['p'])) $options['limit']= ($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
-	if (isset($params['i'])) $options['idioma']= $params['i'];
+	if (isset($params['i'])) $options['idioma']= $idioma= $params['i'];
 	$options= array( );
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
+    $idioma= Fun::$idioma;
     $db = new db();
     $tot= [];
-    
     $wheresearch= [
     	// ELIMINE PQ NO HI HA URL D'ACTES: "_acte_val"=>["titol","categoria","tags","contingut","concat('1',id)"],
-		"_camins"=>["cami_val","cami_val"],
-		"_element_val"=>["titol","tipus","contingut","concat('/val',(select cami_val from _camins where _camins.id=jerarquia))"],
-		"_jerarquia"=>["nom_val","concat('/val/',(select cami_val from _camins where _camins.id=_jerarquia.id))"],
-		"_noticia_val"=>["titol","contingut","concat('/val/noticia/',slug)"],
-		"club"=>["nom","poblacio","president","concat('/val/federacio/clubs-de-pilota-valenciana/',id)"],
-		"producte"=>["nom","concat('/val/botiga/',slug)"],
-		"_partida"=>["concat(nom_inscripcio_local,' - ',nom_inscripcio_visitant)","lloc","nom_inscripcio_local","nom_inscripcio_visitant","concat('/val/',(select cami_val from _camins where _camins.id=_partida.jerarquia))"]
+		"_camins"=>["cami_".$idioma,"cami_".$idioma],
+		"_element_".$idioma=>["titol","tipus","url","contingut","concat('/".$idioma."',(select cami_".$idioma." from _camins where _camins.id=jerarquia))"],
+		//"_jerarquia"=>["nom_".$idioma,"concat('/".$idioma."/',(select cami_".$idioma." from _camins where _camins.id=_jerarquia.id))"],
+		"_noticia_".$idioma=>["titol","contingut","concat('/".$idioma."/noticia/',slug)"],
+		"club"=>["nom","poblacio","president","concat('/".$idioma."/federacio/clubs-de-pilota-valenciana/',id)"],
+		"producte"=>["nom","concat('/".$idioma."/botiga/',slug)"],
+		"_partida"=>["concat(nom_inscripcio_local,' - ',nom_inscripcio_visitant)","lloc","nom_inscripcio_local","nom_inscripcio_visitant","concat('/".$idioma."/',(select cami_".$idioma." from _camins where _camins.id=_partida.jerarquia))"]
 	];
 	$sql=[];
 	foreach($wheresearch as $table=>$fields) {
@@ -360,12 +360,14 @@ static public function global_search(Request $request, Response $response, $para
 	$db->sql( implode(' union ',$sql) );
 	$res=$db->all();
 	foreach($res as $idelm=>$elm)
-		if($elm['tipus']=='_element_val') {
+		if(in_array($elm['tipus'],array('_element_es','_element_val','_jerarquia','_camins'))) {
 			$url= $elm['url'];
 			$url= explode('/',$url);
 			if (empty($elm['nom'])) $res[$idelm]['nom']= $url[count($url)-1];
 			foreach($url as $idurl=>$nomurl) $url[$idurl]= Fun::slugify($nomurl);
-			$res[$idelm]['url']= implode('/',$url);
+			$url= implode('/',$url);
+			if ($elm['tipus']=='_camins') $url= '/'.(Fun::$idioma).$url;
+			$res[$idelm]['url']= $url;
 		}
 	$newResponse = $response->withJson($res);
 	return $newResponse;

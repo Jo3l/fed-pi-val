@@ -956,7 +956,7 @@ static public function phpmailer($to,$sub,$text,$html=false){
 	if(gettype($to)=='object') { $to='alsanan@gmail.com'; $sub=$text='test áèüçñ'; $html=true; }
 	$mail = new PHPMailer(true);
 	$mail->IsSMTP(); // enable SMTP
-	$mail->SMTPDebug = 1; // debugging: 1 = errors and messages, 2 = messages only
+	$mail->SMTPDebug = 0; // debugging: 1 = errors and messages, 2 = messages only
 	$mail->SMTPAuth = true; // authentication enabled
 	//$mail->SMTPSecure = 'ssl'; // secure transfer enabled REQUIRED for Gmail
 	//$mail->Port = 465; // or 587
