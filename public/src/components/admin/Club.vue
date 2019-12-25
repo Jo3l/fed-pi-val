@@ -45,7 +45,7 @@
 					            v-model="club.cif"
 					            :invalid="$store.getters.validate({string:club.cif,type:'cif'})"
 					        ></ui-textbox>
-				        	
+
 							<ui-textbox
 							    floating-label
 					            autocomplete="off"

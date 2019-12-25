@@ -112,27 +112,27 @@
 	        
 	        </div>
 	        <div class="left50">
-	        
-			<img v-if="noujugador.imatge==null" class="jugador" src="/static/img/blank-user.jpg" style="opacity: 0.15;">
-			<progressive-img v-else class="jugador" :src="noujugador.imatge" fallback="/static/img/blank-user.jpg"/>
-			
-			<vue-core-image-upload
-			    :text="$i18n.t('image.uploadAndCut')"
-			    class="uploader"
-				crop="local"
-				cropRatio="1:1"
-				compress="50"
-			    url="/api/static/uploadimgjugador"
-				@imageuploaded="getPhoto"
-			    :data="{do:'uploadimgjugador'}"
-			    extensions="jpg,jpeg"
-			    inputAccept	="image/jpg,image/jpeg"
-			>
-			</vue-core-image-upload>
-			
-		</div>
+				<template v-if="!nofoto">
+					<img v-if="noujugador.imatge==null" class="jugador" src="/static/img/blank-user.jpg" style="opacity: 0.15;">
+					<progressive-img v-else class="jugador" :src="noujugador.imatge" fallback="/static/img/blank-user.jpg"/>
+					
+					<vue-core-image-upload
+					    :text="$i18n.t('image.uploadAndCut')"
+					    class="uploader"
+						crop="local"
+						cropRatio="1:1"
+						compress="50"
+					    url="/api/static/uploadimgjugador"
+						@imageuploaded="getPhoto"
+					    :data="{do:'uploadimgjugador'}"
+					    extensions="jpg,jpeg"
+					    inputAccept	="image/jpg,image/jpeg"
+					>
+					</vue-core-image-upload>
+				</template>
+			</div>
 		
-		<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">Demanar registre</ui-button>
+			<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">Demanar registre</ui-button>
 
 	</div>
 
@@ -143,6 +143,7 @@ import VueCoreImageUpload from 'vue-core-image-upload'
 
 export default {
   	components: {'vue-core-image-upload': VueCoreImageUpload},
+  	props: ['nofoto'],
 	data () {
 		return {
 			error:{},
@@ -222,20 +223,21 @@ export default {
             
         },
 		saveForm: function() {
+
 			if(document.querySelectorAll('.nou-jugador .is-invalid:not(.is-disabled)').length>0) {
 				document.querySelector('.nou-jugador .is-invalid:not(.is-disabled) input').focus()
 				return false;
 			}
 			var vm=this;
-			console.log(vm.noujugador.naixement)
-			vm.noujugador.naixement = vm.noujugador.naixement.toString('yyyyMMdd');
-	        vm.$http.post('/jugador/registre' , vm.noujugador)
+			//console.log(vm.noujugador.naixement)
+			//vm.noujugador.naixement = vm.noujugador.naixement.toString('yyyyMMdd');
+	        vm.$http.post('/jugador/registre' , {...vm.noujugador, ...{naixement: vm.noujugador.naixement.toString('yyyyMMddHHmmss')}})
 	        .then(function (response) {
 	            alert('ok. Sol·licitud enviada... ');
-	            //vm.$router.push({ path: `/gestio/club`});
+	            vm.$router.push({ path: `/gestio/club`});
 	        })
 	        .catch(function (error) {
-	            console.log(error);
+	            //console.log(error);
 	        });
 		},
 		emailValid: function(email) {

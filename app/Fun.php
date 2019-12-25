@@ -664,13 +664,17 @@ static public function producte_query(Request $request, Response $response, $par
 static public function demanajugador(Request $request, Response $response, $params) {
 	$json= json_decode(file_get_contents("php://input"),true);
 	//{"nom":"test","cognoms":"test2","dni":"12312412z","sexe":"h","naixement":"","dir":"","cp":"","poblacio":"","tel":null,"email":"a@a.a","imatge":null,"club":"1"}
-    $db = new db();
-    $db->sql("select * from club where id=".$json['club']);
-    $f= $db->all()[0];
-    $club= $f['nom'];
+    $club= '';
+    if (!empty($json['club'])) {
+    	$db = new db();
+	    $db->sql("select * from club where id=".$json['club']);
+	    $f= $db->all()[0];
+	    $club= '" proposat pel club "'.$f['nom'];
+    }
     $nom= $json['nom'].' '.$json['cognoms'];
 	$base= base64_encode(file_get_contents("php://input"));
-	Fun::email('campionats@fedpival.es','Nou jugador "'.$nom.'" proposat pel club "'.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
+	Fun::phpmailer('alsanan@gmail.com','Nou jugador "'.$nom.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
+	Fun::phpmailer('campionats@fedpival.es','Nou jugador "'.$nom.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
 	return Fun::render('{"result":"ok"}');
 }
 
@@ -1082,7 +1086,8 @@ static public function comprar(Request $request, Response $response, $params) {
 	
 	if($json['payment']=='bank-transfer') {
 		//@mail('botiga@fedpival.es','comanda per transferència '.date('YmdHis'),$html.$str,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:botiga@fedpival.es");
-		$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n<br/>\r\n";
+		//$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n<br/>\r\n";
+		$html.= "\r\n\r\n En breu rebràs un missatge amb la factura indicant el compte per fer efectiu l'ingrés.\r\n<br/>\r\n";
 		Fun::phpmailer('botiga@fedpival.es','comanda per transferència : '.$id,$html,true);
 		Fun::phpmailer('alsanan@gmail.com','comanda per transferència : '.$id,$html,true);
 		Fun::phpmailer($email,'Comanda per transferència en Federació de Pilota : '.$id,$html,true);
@@ -1208,6 +1213,8 @@ static public function pagat(Request $request, Response $response, $params) {
 	Fun::$db= new db();
 	Fun::$db->sql("update comanda set resultat='".($data->Ds_AuthorisationCode)."' where codi='".($data->Ds_Order)."';");
 	Fun::$db->sql("select json,quantitat from comanda where codi='".($data->Ds_Order)."';");
+
+	Fun::phpmailer('alsanan@gmail.com','resultat pagament fun:1216',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 
 	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') {
 		header("HTTP/1.0 402 Payment required");

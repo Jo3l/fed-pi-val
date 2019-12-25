@@ -86,7 +86,7 @@ static public function generic_update(Request $request, Response $response, $par
 				."\nComentari: ".$data['comentari']
 				."----\nDelegat: ".$json['nomDelegat']." (llicencia ".$json['llicenciaDelegat']."). Contacte: ".$json['contacteDelegat'];
 			$msg.= "\n\n\n Si veus alguna cosa incorrecta, tens 48 hores (".date('H:i\\h \\d\\e\\l d/m/Y', strtotime('+2 days')).") per demanar una correcció a campionats@fedpival.es";
-			Fun::email($data['email'],$sub,$msg);
+			Fun::phpmailer($data['email'],$sub,$msg);
 			//die("\n\n".$sub."\n\n".$msg);
 		}
 	} catch (Exception $e) { die($e->getMessage()); }
@@ -187,7 +187,7 @@ public function generic_delete(Request $request, Response $response, $params) {
 
 //  //  //  //  //  //  //  //
 static public function generic_query(Request $request, Response $response, $params) {
-	if (in_array($params['tabla'],['usuari','jugador','club','comanda'])) {
+	if (in_array($params['tabla'],['usuari','jugador','comanda'])) {
 		// fa falta un rol 0 per gestionar usuaris i altres dades privades
 	    Auth::verifyRol($request,0);
 	}
@@ -233,6 +233,9 @@ static public function generic_query(Request $request, Response $response, $para
 			//echo '<pre>',var_dump($data);exit;
 		}
 	}
+	if ($tabla=='club') {
+		foreach($data as $idx=>$elm) $data[$idx]['json']= $data[$idx]['pwd']= $data[$idx]['email']= null;
+	}	
 	if (isset($_GET['csv']) && $tabla=='comanda') {
 		foreach($data as $idx=>$elm) {
 			$json= json_decode($data[$idx]['json'],true);
@@ -266,7 +269,7 @@ static public function generic_query(Request $request, Response $response, $para
 
 //  //  //  //  //  //  //  //
 static public function generic_id(Request $request, Response $response, $params) {
-	if ($params['tabla']=='usuari') {
+	if (in_array($params['tabla'],['usuari','jugador','comanda'])) {
 		// fa falta un rol 0 per gestionar usuaris (llistar,insertar,editar)
 	    Auth::verifyRol($request,0);
 	}
@@ -283,6 +286,7 @@ static public function generic_id(Request $request, Response $response, $params)
 		$a= json_decode($a,true); 
 		$data[0]['json']= $a;
 	}
+	//if ($params['tabla']=='club') $data[0]['json']= $data[0]['pwd']= $data[0]['email']= null;
 	if ($params['tabla']=='partida') {
 		$delegat= json_decode($data[0]['json'],true);
 		$data[0]['contacteDelegat']= $delegat['contacte'];
@@ -343,13 +347,14 @@ static public function global_search(Request $request, Response $response, $para
     $idioma= Fun::$idioma;
     $db = new db();
     $tot= [];
+    $federaciostr= ($idioma=='es')?'federacion':'federacio';
     $wheresearch= [
     	// ELIMINE PQ NO HI HA URL D'ACTES: "_acte_val"=>["titol","categoria","tags","contingut","concat('1',id)"],
 		"_camins"=>["cami_".$idioma,"cami_".$idioma],
 		"_element_".$idioma=>["titol","tipus","url","contingut","concat('/".$idioma."',(select cami_".$idioma." from _camins where _camins.id=jerarquia))"],
 		//"_jerarquia"=>["nom_".$idioma,"concat('/".$idioma."/',(select cami_".$idioma." from _camins where _camins.id=_jerarquia.id))"],
 		"_noticia_".$idioma=>["titol","contingut","concat('/".$idioma."/noticia/',slug)"],
-		"club"=>["nom","poblacio","president","concat('/".$idioma."/federacio/clubs-de-pilota-valenciana/',id)"],
+		"club"=>["nom","poblacio","president","concat('/".$idioma."/".$federaciostr."/clubs-de-pilota-valenciana/',id)"],
 		"producte"=>["nom","concat('/".$idioma."/botiga/',slug)"],
 		"_partida"=>["concat(nom_inscripcio_local,' - ',nom_inscripcio_visitant)","lloc","nom_inscripcio_local","nom_inscripcio_visitant","concat('/".$idioma."/',(select cami_".$idioma." from _camins where _camins.id=_partida.jerarquia))"]
 	];

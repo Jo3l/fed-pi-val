@@ -18,6 +18,8 @@ const clubsPublic = function(resolve) {require(['./components/ClubsPublic.vue'],
 const clubPublic = function(resolve) {require(['./components/ClubPublic.vue'], resolve)}
 const instalacionsPublic = function(resolve) {require(['./components/InstalacionsPublic.vue'], resolve)}
 const instalacioPublic = function(resolve) {require(['./components/InstalacioPublic.vue'], resolve)}
+const Federat = function(resolve) {require(['./components/Federat.vue'], resolve)}
+
 //cms
 const SubRoutes = function(resolve) {require(['./components/SubRoutes.vue'], resolve)}
 
@@ -328,6 +330,16 @@ const routes = [
 	    path: '/es/buscador',
 	    name: 'Buscador',
 	    component: Search,
+	    meta: defaultHead
+	  },
+	  {
+	    path: '/val/federat',
+	    component: Federat,
+	    meta: defaultHead
+	  },
+	    {
+	    path: '/es/federate',
+	    component: Federat,
 	    meta: defaultHead
 	  },
 	  {

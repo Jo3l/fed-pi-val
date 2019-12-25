@@ -33,7 +33,9 @@ export default {
 		result:' ',
 		icons: {
 			"_noticia_val":"format_quote",
+			"_noticia_es":"format_quote",
 			"_element_val":"menu_open",
+			"_element_es":"menu_open",
 			"club":"security",
 			"_camins":"bookmark_border",
 			"_jerarquia":"bookmark",
@@ -42,7 +44,9 @@ export default {
 		},
 		descs: {
 			"_noticia_val":"noticia",
+			"_noticia_es":"noticia",
 			"_element_val":"bloc de pàgina",
+			"_element_es":"bloque de página",
 			"club":"club",
 			"_camins":"pàgina",
 			"_jerarquia":"pàgina",
@@ -62,7 +66,7 @@ export default {
         var vm = this;
         if(vm.searchText.length>3) {
 	        vm.rotating=true;
-	        vm.$http.get('/globalsearch/'+vm.searchText+'/i/es')
+	        vm.$http.get('/globalsearch/'+vm.searchText+'/i/'+ vm.$i18n.locale)
 	        .then(function (response) {
 	        	vm.result = response.data;
 	        	vm.rotating=false;

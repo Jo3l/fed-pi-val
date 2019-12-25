@@ -16,7 +16,6 @@ function loadState() {
 
 function saveState(state) {
   try {
-  	console.log(state)
     var serializedState = JSON.stringify(state);
     localStorage.setItem('fedpival_cart', serializedState);
   } catch (err) {
@@ -41,7 +40,6 @@ const getters = {
   },
   cartTotalPrice: function(state) {
   		var total=0;
-		console.log(state)
 		state.added.forEach(function(element) {
 			var item = element.fullProduct.types.find(function(item) {return item.name === element.name})
 			total+= (parseFloat(item.price.amount) * parseFloat(element.quantity))
@@ -63,7 +61,6 @@ const actions = {
         commit('pushProductToCart', { id: product.fullProduct.id, name: product.name, fullProduct: product.fullProduct });
         saveState(state);
       } else {
-      	console.log(product.id)
         commit('incrementItemQuantity', cartItem);
         saveState(state);
       }
