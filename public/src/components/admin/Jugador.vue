@@ -134,7 +134,13 @@
 						@input="updateClub"
 						v-model="clubName"
 					></ui-select>
-					
+
+			        <ui-radio-group
+			        	name="tipusfitxa"
+						v-bind:data-id="jugador.id"
+						:options="[{value:1,label:'Jugador Prof.'},{value:2,label:'Jug. Amateur'},{value:3,label:'Jutge/Home Bó'},{value:4,label:'Trinqueter'},{value:5,label:'Feridor'},{value:6,label:'Escolar'},{value:7,label:'Tècnic/Monitor'}]"
+						v-model="jugador.tipusfitxa"
+		            >Tipus de fitxa</ui-radio-group><br>
 			        
 					<ui-datepicker
 						v-if="typeof jugador.dataactiu === 'object'"
@@ -205,6 +211,7 @@ export default {
 			      cp: null,
 			      poblacio: null,
 			      foto: null,
+			      tipusfitxa: 0,
 			      club: null,
 			      datasegur: new Date(),
 			      dataactiu: new Date()
@@ -318,7 +325,7 @@ export default {
 	        });
 		},
 		parseTime: function(time) {
-			
+
 			var str = time;
 			var year = str.substring(0, 4);
 			var month = str.substring(4, 6);
@@ -326,7 +333,7 @@ export default {
 			var hour = str.substring(8, 10);
 			var minute = str.substring(10, 12);
 			var second = str.substring(12, 14);
-			
+
 			return new Date(year, month-1, day, hour, minute, second);	
 			
 		},
@@ -353,18 +360,20 @@ export default {
 	        vm.$http.get('/jugador/'+vm.$route.params.jugadorId, { cache: false })
 	        .then(function (response) {
 	            vm.jugador = response.data[0];
-	            vm.jugador.naixement = vm.parseTime(vm.jugador.naixement);
-	            vm.jugador.datasegur = vm.parseTime(vm.jugador.datasegur);
-	            vm.jugador.dataactiu = vm.parseTime(vm.jugador.dataactiu);
-	            
-		        vm.$http.get('/nomsclubs')
+	            console.log(vm.jugador)
+	            vm.jugador.naixement = vm.jugador.naixement ? vm.parseTime(vm.jugador.naixement) : new Date();
+	            vm.jugador.datasegur = vm.jugador.datasegur ? vm.parseTime(vm.jugador.datasegur) : new Date();
+	            vm.jugador.dataactiu = vm.jugador.dataactiu ? vm.parseTime(vm.jugador.dataactiu) : new Date();
+	            if (isNaN(vm.jugador.tipusfitxa)) vm.jugador.tipusfitxa = 0;
+		        /*vm.$http.get('/nomsclubs')
 		        .then( function (response) {
+		        	vm.clubs.push( { 'label': 'cap', 'value': 0 } ); // afegir un en blanc. a la api ja ho canvie a null
 		        	response.data.forEach( (clb)=> vm.clubs.push( { 'label':clb.nom, 'value':clb.id } ) );
 		            vm.clubName = vm.returnClubNamefromId(vm.jugador.club);
 		        } )
 		        .catch(function (error) {
 		            console.log(error);
-		        });
+		        });*/
 		        
 	        })
 	        .catch(function (error) {
@@ -394,9 +403,21 @@ export default {
 			vm.jugador.dni= data.dni;
 			vm.jugador.sexe= data.sexe;
 			vm.jugador.foto= data.foto;
+			//vm.jugador.tipusfitxa= data.tipusfitxa;
 			vm.jugador.dataactiu= data.dataactiu;
 			vm.jugador.datasegur= data.datasegur;
 		}
+		
+        vm.$http.get('/nomsclubs')
+        .then( function (response) {
+        	vm.clubs.push( { 'label': 'cap', 'value': 0 } ); // afegir un en blanc. a la api ja ho canvie a null
+        	response.data.forEach( (clb)=> vm.clubs.push( { 'label':clb.nom, 'value':clb.id } ) );
+            vm.clubName = vm.returnClubNamefromId(vm.jugador.club);
+        } )
+        .catch(function (error) {
+            console.log(error);
+        });
+		
 	},
 	created: function() {
 	    if (!this.$store.getters.isAuthenticatedWithRole(0)) {
@@ -413,6 +434,6 @@ export default {
 
 <style lang="less">
 
-
+.ui-radio__label-text { white-space: nowrap; }
 
 </style>

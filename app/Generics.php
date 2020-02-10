@@ -52,6 +52,7 @@ static public function generic_update(Request $request, Response $response, $par
 	if ($db->numRows()!=1) die('{"ERROR": "No existeix la fila o hi ha més d\'una"}');
 	$pairs= array();
 	foreach($json as $key=>$value) {
+		if($tabla=='jugador') { if ($json['club']==0) array_push($pairs,'club=null'); }
 		if($value!=null || $key!='ordre') {
 			// si el camp existeix...
 			if ($value===false) $value='0'; // per a camps com destacada (rebre false)
@@ -214,7 +215,7 @@ static public function generic_query(Request $request, Response $response, $para
     if (!empty($options['order'])) $sql.= " order by ".$options['order'];
     if (!isset($_GET['csv']) && !empty($options['limit'])) $sql.= " limit ".$options['limit'];
 	//print_r($options);echo $sql;exit;
-	if ($params['tabla']=='jugador') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=jugador.club) as nomclub ',$sql);
+	if ($tabla=='jugador') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=jugador.club) as nomclub ',$sql);
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:

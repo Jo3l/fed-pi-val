@@ -138,7 +138,7 @@
 									    </div>
 
 									</div>
-									<span class="finalPrice">+Despeses d'enviament {{ (cartTotalPrice<20 ? "8.90" : "0") }}€<br/><br/><strong>Total {{ (parseFloat(cartTotalPrice)+( cartTotalPrice<20 ? 8.9 : 0 ) ).toFixed(2) }}€</strong></span>
+									<span class="finalPrice">+Despeses d'enviament 8,90€<br/><br/><strong>Total {{ (parseFloat(cartTotalPrice)+8.9).toFixed(2) }}€</strong></span>
 								</div>
 				            </div>
 				            

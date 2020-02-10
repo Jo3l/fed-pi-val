@@ -29,24 +29,16 @@
 					
 					<template slot="icon1" scope="props">
 						<td class="actiu">
-							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.actiu==1"></ui-icon> 
-							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
 							<div :class="props.row.dataactiu > timeToStr(new Date()) ? 'green':'red'">
-								<!--ui-icon v-if="props.row.datasegur >= timeToStr(new Date())">redo</ui-icon>
-								<ui-icon v-if="props.row.datasegur < timeToStr(new Date())">keyboard_tab</ui-icon-->
-								{{ diaMesAny(props.row.datasegur) }}
+								{{ diaMesAny(props.row.dataactiu) }}
 							</div>
 						</td>
 					</template>
 					
 					<template slot="icon2" scope="props">
 						<td class="segur">
-							<!--ui-icon icon="lens" class="fedcolor" v-if="props.row.segur==1"></ui-icon>
-							<ui-icon icon="trip_origin" class="fedcolor" v-else ></ui-icon-->
 							<div :class="props.row.datasegur > timeToStr(new Date()) ? 'green':'red'">
-								<!--ui-icon v-if="props.row.dataactiu >= timeToStr(new Date())">redo</ui-icon>
-								<ui-icon v-if="props.row.dataactiu < timeToStr(new Date())">keyboard_tab</ui-icon-->
-								{{ diaMesAny(props.row.dataactiu) }}
+								{{ diaMesAny(props.row.datasegur) }}
 							</div>
 							<!--ui-checkbox v-model="props.row.segur" @change="saveChanges(props.row)">segur</ui-checkbox-->
 						</td>

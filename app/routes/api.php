@@ -79,6 +79,14 @@ $app->get('/api/authtest', '\app\Auth::authtest');
 
 /*
 * @description
+* Obtindre un sitemap de la web
+* URL: /sitemap
+*/
+$app->get('/api/sitemap', '\app\Fun::sitemap');
+
+
+/*
+* @description
 * Test de email existent. Si existeix el email de club i encara no té creada contrasenya, canvia el botó login al vol per un "registrar-se"
 */
 $app->get('/api/emailclub/{email:.+}', '\app\Auth::emailclub');

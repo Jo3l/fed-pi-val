@@ -74,12 +74,12 @@
 			            >Data Final Inscripció:</ui-datepicker>
 				</div>
 				
-				<div class="input3flex" v-if="currentNodeName.compNode">
+				<div class="input4flex" v-if="currentNodeName.compNode">
 					<ui-textbox
 							    floating-label
 					            autocomplete="off"
 					            error=""
-					            label="Mínim Jugadors"
+					            label="Mínim jugadors"
 								type="number"
 					            v-model="currentNodeName.minimjugadors"
 					></ui-textbox>
@@ -87,7 +87,15 @@
 							    floating-label
 					            autocomplete="off"
 					            error=""
-					            label="Punts Tanteig"
+					            label="Màxim jugadors"
+								type="number"
+					            v-model="currentNodeName.maximjugadors"
+					></ui-textbox>
+					<ui-textbox
+							    floating-label
+					            autocomplete="off"
+					            error=""
+					            label="Punts tanteig"
 								type="number"
 					            v-model="currentNodeName.puntstanteig"
 					></ui-textbox>
@@ -95,7 +103,7 @@
 							    floating-label
 					            autocomplete="off"
 					            error=""
-					            label="Punts Partida"
+					            label="Punts partida"
 								type="number"
 					            v-model="currentNodeName.puntspartida"
 					></ui-textbox>
@@ -138,12 +146,12 @@
 					</div>
 				
 				
-					<div class="input3flex">
+					<div class="input4flex">
 						<ui-textbox
 								    floating-label
 						            autocomplete="off"
 						            error=""
-						            label="Mínim Jugadors"
+						            label="Mínim jugadors"
 									type="number"
 						            v-model="newNodeName.minimjugadors"
 						></ui-textbox>
@@ -151,7 +159,15 @@
 								    floating-label
 						            autocomplete="off"
 						            error=""
-						            label="Punts Tanteig"
+						            label="Màxim jugadors"
+									type="number"
+						            v-model="newNodeName.maximjugadors"
+						></ui-textbox>
+						<ui-textbox
+								    floating-label
+						            autocomplete="off"
+						            error=""
+						            label="Punts tanteig"
 									type="number"
 						            v-model="newNodeName.puntstanteig"
 						></ui-textbox>
@@ -159,7 +175,7 @@
 								    floating-label
 						            autocomplete="off"
 						            error=""
-						            label="Punts Partida"
+						            label="Punts partida"
 									type="number"
 						            v-model="newNodeName.puntspartida"
 						></ui-textbox>
@@ -342,6 +358,7 @@ export default {
 	      	vm.currentNodeName.inici='';
 	      	vm.currentNodeName.fi='';
 	      	vm.currentNodeName.minimjugadors=0;
+	      	vm.currentNodeName.maximjugadors=99;
 	      	vm.currentNodeName.puntstanteig=0;
 	      	vm.currentNodeName.puntspartida=0;
         })
@@ -385,6 +402,7 @@ export default {
 	      	vm.modInici=vm.fixDateForParse(vm.findNodeBySlug(vm.tree, lastBread).inici);
 	      	vm.modFinal=vm.fixDateForParse(vm.findNodeBySlug(vm.tree, lastBread).fi);
 	    	vm.currentNodeName.minimjugadors= vm.findNodeBySlug(vm.tree, lastBread).minimjugadors;
+	    	vm.currentNodeName.maximjugadors= vm.findNodeBySlug(vm.tree, lastBread).maximjugadors;
 	      	vm.currentNodeName.puntstanteig= vm.findNodeBySlug(vm.tree, lastBread).puntstanteig;
 	      	vm.currentNodeName.puntspartida= vm.findNodeBySlug(vm.tree, lastBread).puntspartida;
 	      	vm.currentNodeName.compNode=true;
@@ -473,6 +491,11 @@ export default {
 		display:flex;
 		justify-content:space-between;
 		&>div{width:30%;}
+	}
+	.input4flex{
+		display:flex;
+		justify-content:space-between;
+		&>div{width:23%;}
 	}
 }
 .flexWrap {

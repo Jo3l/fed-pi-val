@@ -673,7 +673,7 @@ static public function demanajugador(Request $request, Response $response, $para
     }
     $nom= $json['nom'].' '.$json['cognoms'];
 	$base= base64_encode(file_get_contents("php://input"));
-	Fun::phpmailer('alsanan@gmail.com','Nou jugador "'.$nom.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
+	//Fun::phpmailer('alsanan@gmail.com','Nou jugador "'.$nom.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
 	Fun::phpmailer('campionats@fedpival.es','Nou jugador "'.$nom.$club.'"','Fes clic en aquest enllaç per a registrar-lo... Has d`estar autenticat com a administrador prèviament per a que funcione correctament... https://fedpival.es/admin/jugador?'.$base);
 	return Fun::render('{"result":"ok"}');
 }
@@ -789,15 +789,33 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	$data= $db->all();
 	$clubs=[];
 	$modalitats=[];
-	echo '<pre>';
+	//echo '<pre>';
 	$ara= null;
+	header("Content-type: application/csv;charset=UTF-8");
+	header("Content-Disposition: attachment; filename=competicio_".date('YmdHis').".csv");
+	header("Pragma: no-cache");
+	header("Expires: 0");
+	fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
+	fputcsv($output, array_keys($result[0]),";");
+	$output = fopen("php://output",'w') or die("Error: Can't open php://output");
 	foreach($data as $r) {
-		if ($ara!=$r['cat']) echo '<h1>', $ara=$r['cat'], '</h1>';
-		echo $r['nomclub'], '<br/>';
-		$db->sql("select concat(convert(numsoci,UNSIGNED),': ',nom,' ',cognoms) as qui from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
-		foreach($db->all() as $rr) echo $rr['qui'],' | ';
-		echo '<br/>';
+		//if ($ara!=$r['cat']) echo '<h1>', $ara=$r['cat'], '</h1>';
+		//echo '<b>',$r['nomclub'], '</b><br/>';
+		$db->sql("select convert(numsoci,UNSIGNED) as numsoci,nom,cognoms,if(DATEDIFF(dataactiu,CURRENT_TIMESTAMP)<0,'inactiu','ACTIU') as estat, substring(naixement,1,4) as neix from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
+		//foreach($db->all() as $rr) echo $r['nomclub'],' ',$r['nomclub'],': ',$rr['qui'],' (',$rr['neix'],')<br/>';
+		foreach($db->all() as $rr) {
+			$rr['nomclub']= $r['nomclub'];
+			$rr['competicio']= $r['cat'];
+			$rr= array_map("utf8_decode", $rr );
+	    	fputcsv($output, $rr,";");
+		}
+		//echo '<br/>';
 	}
+	fclose($output) or die("Can't close php://output");		
+	if ($doexit) exit; // ojo, se carrega el postproces (caché)
+	return $result;
+	
+	
 exit;
 }
 
@@ -1189,6 +1207,7 @@ static public function comprar(Request $request, Response $response, $params) {
 */
 static public function pagat(Request $request, Response $response, $params) {
 	$json= json_decode(file_get_contents("php://input"),true);
+	try{ Fun::phpmailer("alsanan@gmail.com",'pagat:1210',file_get_contents("php://input")); }catch(Exception $e){}
 	$version = $json["Ds_SignatureVersion"];
 	$datos = $json["Ds_MerchantParameters"];
 	$signatureRecibida = $json["Ds_Signature"];
@@ -1203,9 +1222,9 @@ static public function pagat(Request $request, Response $response, $params) {
 
 	if ($firma === $signatureRecibida){
 	} else {
-		header("HTTP/1.0 402 Payment required");
-		Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1195',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
-		die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
+		Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1195 PERO SIGO',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+		//header("HTTP/1.0 402 Payment required");
+		//die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
 	}
 
 	$data= json_decode($decodec);
@@ -1217,8 +1236,9 @@ static public function pagat(Request $request, Response $response, $params) {
 	Fun::phpmailer('alsanan@gmail.com','resultat pagament fun:1216',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 
 	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') {
-		header("HTTP/1.0 402 Payment required");
-		die(json_encode(["error"=>'Error en el pago'])); // header reload
+		Fun::phpmailer('alsanan@gmail.com','error en el pago fun:1239 PERO SIGO',$data->Ds_AuthorisationCode.'|'.$data->Ds_Response.json_encode($data));
+		//header("HTTP/1.0 402 Payment required");
+		//die(json_encode(["error"=>'Error en el pago'])); // header reload
 	}
 
 	$row= Fun::$db->all();
@@ -1385,6 +1405,36 @@ static public function cache($req,$res = null) {
 		return true;
 	}
 	return false;
+}
+
+/*
+* @description
+* Obtindre un sitemap de la web
+* URL: /sitemap
+*/
+static public function sitemap(Request $request, Response $response) {
+	$db= new db();
+	$db->sql("select id, nom_val as nom, (select cami_val from _camins where _jerarquia.id=_camins.id) as cami_val, (select cami_es from _camins where _jerarquia.id=_camins.id) as cami_es from _jerarquia where pare in (0,17,1) order by id;");
+	echo '<?xml version="1.0" encoding="UTF-8"?>';
+	?>
+	<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+		<url><loc>https://fedpival.es</loc></url>
+		<?php foreach( $db->all() as $r ) : ?>
+		<url>
+	   		<?php 
+	   		$cami='https://fedpival.es/val'; foreach( explode('/',substr($r['cami_val'],1)) as $elm ) $cami= $cami.'/'.Fun::slugify($elm,false);
+	   		$camies='https://fedpival.es/es'; foreach( explode('/',substr($r['cami_es'],1)) as $elm ) $camies= $camies.'/'.Fun::slugify($elm,false);
+	   		?>
+	      <loc><?=$cami?></loc>
+	      <changefreq>monthly</changefreq>
+	       <xhtml:link 
+               rel="alternate"
+               hreflang="es"
+               href="<?=$camies?>"/>
+		</url>
+	   <?php endforeach; ?>
+	</urlset>	
+	<?php
 }
 
 

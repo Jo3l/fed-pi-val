@@ -127,6 +127,7 @@ static private function ranking($pars) {
 	if (empty($pars[0]['partides'])) return $equips;
 	foreach($pars[0]['partides'] as $p) {
 		if ($p['baixa']) continue;
+		if ($p['resultatlocal']==0 && $p['resultatvisitant']==0) continue;
 		$local= $p['local'];
 		$visitant= $p['visitant'];
 		if (!isset($equips[$local['id']])) $equips[$local['id']]= [ "nom"=> $local['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 , "jf"=>0, "jc"=>0];
@@ -193,7 +194,7 @@ static public function list_nodes(Request $request, Response $response, $params)
 */
 static public function jerarquia($fill='competicions') {
     $db = new db();
-	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.baixa is null and pagina.jerarquia=_jerarquia.id) as elements, inici,fi,baixa,minimjugadors,puntspartida,puntstanteig from _jerarquia order by id asc;");
+	$db->sql("select ordre,id,pare,nom_es,nom_val, (select count(*) from pagina where pagina.baixa is null and pagina.jerarquia=_jerarquia.id) as elements, inici,fi,baixa,minimjugadors,maximjugadors,puntspartida,puntstanteig from _jerarquia order by id asc;");
 	$result= $db->getResult();
 	$resultids= array();
 	foreach($result as $r) $resultids[$r['id']]= array_merge( $r, array( 'slug' => Fun::slugify($r['nom_'.Fun::$idioma],false) , 'name' => $r['nom_'.Fun::$idioma], 'fullSlug'=>'' ) );
@@ -367,6 +368,7 @@ static private function guardanode($params) {
 	    if (isset($json['inici'])) array_push($updates,"inici='".$json['inici']."'");
 	    if (isset($json['fi'])) array_push($updates,"fi='".$json['fi']."'");
 	    if (isset($json['minimjugadors'])) array_push($updates,"minimjugadors='".$json['minimjugadors']."'");
+	    if (isset($json['maximjugadors'])) array_push($updates,"maximjugadors='".$json['maximjugadors']."'");
 	    if (isset($json['puntspartida'])) array_push($updates,"puntspartida='".$json['puntspartida']."'");
 	    if (isset($json['puntstanteig'])) array_push($updates,"puntstanteig='".$json['puntstanteig']."'");
 	    if (count($updates)) $db->sql("update jerarquia set ".implode(',',$updates)." where id=".$json['id']);
@@ -374,11 +376,12 @@ static private function guardanode($params) {
     }
     // Si no està definit és un insert...
     if(!isset($json['minimjugadors'])) $json['minimjugadors']='null';
+    if(!isset($json['maximjugadors'])) $json['maximjugadors']='null';
     if(!isset($json['puntspartida'])) $json['puntspartida']='null';
     if(!isset($json['puntstanteig'])) $json['puntstanteig']='null';
     $sql="BEGIN;";
     $db->sql($sql);
-    $sql="INSERT INTO jerarquia (pare,inici,fi,minimjugadors,puntspartida,puntstanteig) VALUES (".$json['parent_id'].",'".$json['inici']."','".$json['fi']."',".$json['minimjugadors'].",".$json['puntspartida'].",".$json['puntstanteig'].");";
+    $sql="INSERT INTO jerarquia (pare,inici,fi,minimjugadors,maximjugadors,puntspartida,puntstanteig) VALUES (".$json['parent_id'].",'".$json['inici']."','".$json['fi']."',".$json['minimjugadors'].",".$json['maximjugadors'].",".$json['puntspartida'].",".$json['puntstanteig'].");";
     $db->sql($sql);
     $sql="SET @last_id = LAST_INSERT_ID();";
     $db->sql($sql);

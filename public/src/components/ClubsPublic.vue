@@ -104,7 +104,7 @@ export default {
 	        var vm = this;
 	        
 	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
-	        var searchPage = page!=null ? '/p/'+ page : '/p/0';
+	        var searchPage = page!=null ? '/p/'+ page : '/p/0/o/nom';
 	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
 	        vm.$http.get(listName+searchFilter+searchPage, { cache: auth })
 	        .then(function (response) {

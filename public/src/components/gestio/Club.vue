@@ -155,11 +155,11 @@
 				<ui-button
                     color="fedpival"
                     icon="add"
-					:disabled="insertaJugador.length==0"
+					:disabled="insertaJugador.length==0 || equip.length>=maximjugadors"
                     size="small"
                     @click="addPlayer(insertaJugador)"
 			        v-if="readonly === false"
-                >Afegir jugador</ui-button>
+                >Afegir jugador</ui-button> ({{ equip.length }} de {{ maximjugadors }})
 
 				<ui-button
                     color="fedpival"
@@ -429,6 +429,7 @@ export default {
 		    buscadorJugador:[],
 		    insertaJugador:'',
 		    minimjugadors:0,
+		    maximjugadors:99,
 		    hora:'', 
 		    diasem:'', 
 		    lloc:'', 
@@ -643,6 +644,8 @@ export default {
 			vm.readonly= readonly;
 			vm.currChamp= champ.competicio;
 			vm.minimjugadors= champ.minimjugadors;
+			vm.maximjugadors= champ.maximjugadors;
+			console.log(champ,1)
 			vm.subscribeName = champ.nom;
 			vm.subscribeId = champ.id;
 			vm.delegat= champ.delegat || '';
@@ -658,7 +661,8 @@ export default {
 			vm.currChamp=champ.id;
 			vm.equip= []
 			vm.minimjugadors=champ.minimjugadors;
-			console.log(champ);
+			vm.maximjugadors=champ.maximjugadors;
+			console.log(champ,2);
 			vm.$refs.updateEquip.open();
 			//vm.$refs.insertNomEquip.open()
 		},
@@ -768,6 +772,7 @@ export default {
 				  inscripcions[key].fi = vm.parseTime(inscripcions[key].fi).toString('d/M/yyyy');
 				  inscripcions[key].fullName = inscripcions[key].fullName.substring(2);
 				  inscripcions[key].minimjugadors = inscripcions[key].minimjugadors;
+				  inscripcions[key].maximjugadors = inscripcions[key].maximjugadors;
 				}
 
 	            vm.inscripcions = inscripcions;
