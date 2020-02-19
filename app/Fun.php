@@ -1243,7 +1243,13 @@ static public function pagat(Request $request, Response $response, $params) {
 
 	$row= Fun::$db->all();
 	$json= json_decode($row[0]['json']);
+	
 	$email= $json->email;
+	$name= ($json->name).' '.($json->surname);
+	$address= ($json->address).' '.($json->cp).' '.$json->city;
+	$tel= $json->tel;
+	$comentari= $json->comentari;
+	
 	$json->comanda = $data->Ds_Order;
 	$json->authcode = $data->Ds_AuthorisationCode;
 	$json->preu = $row[0]['quantitat'];

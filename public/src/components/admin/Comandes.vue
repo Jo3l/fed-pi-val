@@ -44,7 +44,7 @@
 				</paginate>
   
 			</div>
-			<ui-modal ref="modal" title="">
+			<ui-modal ref="modal" class="printable" title="">
 	            
 	            <div class="list">
 					<dl>

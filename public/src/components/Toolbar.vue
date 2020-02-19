@@ -122,14 +122,14 @@
 	    	<div class="menu-button"></div>
 	  	</label>
 	    <ul class="menu">
-
 	    	<li v-for="menu in $router.options.routes" v-if="menu.lang==$i18n.locale" v-on:click="menuOpen=!menuOpen">
 	    		<router-link v-bind:to="menu.path">{{ menu.name }}</router-link>
 	    	</li>
 	    	<li v-if="!$store.getters.isAuthenticated" class="show-on-mobile" @click="$router.push({ path: `/login` })">{{$t('common.login')}}</li>
 	    	<li v-if="!$store.getters.isAuthenticated" class="show-on-mobile" @click="$router.push({ path: '/'+$i18n.locale+'/'+$i18n.t('common.searcher') } )">{{$t('common.search')}}</li>
 	    	<li v-if="!$store.getters.isAuthenticated"><social></social></li>
-	    	<li class="separator" v-if="$store.getters.isAuthenticatedWithRole(0) || $store.getters.isAuthenticatedWithRole(10)">|</li>
+	    </ul>
+	    <ul class="menu" v-if="$store.getters.isAuthenticated">
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/jugadors' }">Jugadors</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/clubs' }">Clubs</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/productes' }">Productes</router-link></li>
@@ -265,6 +265,9 @@ export default {
 		background-color:rgba(255,255,255,0.2);
 	}
 	.menu {
+		&+.menu{
+			margin:20px 0;
+		}
 		.show-on-mobile{
 			cursor:pointer;
 			@media(min-width:@screenMobile) {

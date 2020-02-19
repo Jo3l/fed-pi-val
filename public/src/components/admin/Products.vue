@@ -48,7 +48,6 @@ import Table from '../custom/Table.vue';
 import Paginate from 'vuejs-paginate'
 
 export default {
-	name: 'Clubs',
   	components: {'tablerone':Table, 'paginate': Paginate},
 	data () {
 		return {

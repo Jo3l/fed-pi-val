@@ -396,6 +396,31 @@ hr {
 	}
 }
 
+@media print {
+	
+	#patrocinadors, .pagination {
+		display:none;
+	}
+	
+	body.ui-modal--is-open {
+		.ui-focus-container.ui-modal__container{
+			width:100%;
+			height:100%;
+		}
+		.vuetableContainer{
+			display:none;
+		}
+		.ui-radio.ui-radio-group__radio.ui-radio--color-primary.ui-radio--button-position-left{
+			display:none;
+			&.is-checked {
+				display:inline!important;
+				.ui-radio__input-wrapper{display:none;}
+			}
+		}
+	}
+
+}
+
 
 @keyframes three-quarters-loader {
   0% {

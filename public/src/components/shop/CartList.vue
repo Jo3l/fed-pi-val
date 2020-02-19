@@ -485,6 +485,7 @@ input[type=number].item-quantity::-webkit-outer-spin-button {
 	    .item-quantity {
 	      color: @fedcolor;
 	      text-transform:capitalize;
+	      border:0;
 	    }
 	}
 
