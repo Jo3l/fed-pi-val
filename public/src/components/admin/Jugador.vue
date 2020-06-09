@@ -135,13 +135,21 @@
 						v-model="clubName"
 					></ui-select>
 
-			        <ui-radio-group
+			        <!--ui-radio-group
 			        	name="tipusfitxa"
 						v-bind:data-id="jugador.id"
 						:options="[{value:1,label:'Jugador Prof.'},{value:2,label:'Jug. Amateur'},{value:3,label:'Jutge/Home Bó'},{value:4,label:'Trinqueter'},{value:5,label:'Feridor'},{value:6,label:'Escolar'},{value:7,label:'Tècnic/Monitor'}]"
 						v-model="jugador.tipusfitxa"
-		            >Tipus de fitxa</ui-radio-group><br>
+		            >Tipus de fitxa</ui-radio-group><br-->
+		            
+		            <!-- {{ jugador.fitxa }}--{{!$route.params.jugadorId}}-->
 			        
+			        <ui-checkbox-group
+			        v-if="Array.isArray(jugador.fitxa)"
+                	:options="jugadorOpcions"
+                	v-model="jugador.fitxa"
+            		>Fitxes</ui-checkbox-group><br/>
+            		
 					<ui-datepicker
 						v-if="typeof jugador.dataactiu === 'object'"
 		                :placeholder="$i18n.t('calendar.dateTip')"
@@ -149,9 +157,9 @@
 		                v-model="jugador.dataactiu"
 		                :lang="datePickerOptions"
 		            >Actiu fins al </ui-datepicker>
-		            
+
 					<ui-datepicker
-						v-if="typeof jugador.datasegur === 'object'"
+						v-if="typeof jugador.datasegur === 'object'"						
 		                :placeholder="$i18n.t('calendar.dateTip')"
 		                :start-of-week="datePickerOptions.dow"
 		                v-model="jugador.datasegur"
@@ -212,10 +220,12 @@ export default {
 			      poblacio: null,
 			      foto: null,
 			      tipusfitxa: 0,
+			      fitxa: null,
 			      club: null,
 			      datasegur: new Date(),
 			      dataactiu: new Date()
 		    },
+		    jugadorOpcions:['Profesional','Amateur','Jutge','Trinqueter','Feridor','Escolar','Monitor'],
 		    clubName:'',
 		    clubs:[],
 		    datePickerOptions: {
@@ -240,7 +250,6 @@ export default {
 			vm.$http.get('/jugador/search/'+vm.jugador.dni)
 			.then( (r)=> {
 				var inexistent= ( !r.data || r.data.length==0 );
-				console.log(r.data.length,inexistent)
 				if (!inexistent) r= r.data[0].id+': '+r.data[0].nom+' '+r.data[0].cognoms+' ('+r.data[0].dni+') Soci:'+r.data[0].numsoci;
 				if (!inexistent) alert("S'ha trobat un altre jugador existent amb el mateix DNI\n"+r);
 				return Promise.resolve(inexistent)
@@ -314,7 +323,8 @@ export default {
 		        ...{
 		        	naixement: vm.jugador.naixement.toString('yyyyMMddHHmmss'),
 		        	datasegur: vm.jugador.datasegur.toString('yyyyMMddHHmmss'),
-		        	dataactiu: vm.jugador.dataactiu.toString('yyyyMMddHHmmss')
+		        	dataactiu: vm.jugador.dataactiu.toString('yyyyMMddHHmmss'),
+		        	fitxa: vm.jugador.fitxa ? vm.jugador.fitxa.join(',') : ''
 		        }
 	        }).then(function (response) {
 	        	if (response.status==409) return alert('Error, DNI existent');
@@ -360,11 +370,15 @@ export default {
 	        vm.$http.get('/jugador/'+vm.$route.params.jugadorId, { cache: false })
 	        .then(function (response) {
 	            vm.jugador = response.data[0];
-	            console.log(vm.jugador)
 	            vm.jugador.naixement = vm.jugador.naixement ? vm.parseTime(vm.jugador.naixement) : new Date();
 	            vm.jugador.datasegur = vm.jugador.datasegur ? vm.parseTime(vm.jugador.datasegur) : new Date();
 	            vm.jugador.dataactiu = vm.jugador.dataactiu ? vm.parseTime(vm.jugador.dataactiu) : new Date();
 	            if (isNaN(vm.jugador.tipusfitxa)) vm.jugador.tipusfitxa = 0;
+	            //if (!vm.jugador.fitxa) vm.jugador.fitxa = [];
+	            console.log('split',vm.jugador.fitxa)
+	            vm.jugador.fitxa= vm.jugador.fitxa ? vm.jugador.fitxa.split(',') : [];
+	            //vm.jugador.fitxa.forEach( (e,idx)=> vm.jugador.fitxa[idx]= '"'+e+'"' )
+
 		        /*vm.$http.get('/nomsclubs')
 		        .then( function (response) {
 		        	vm.clubs.push( { 'label': 'cap', 'value': 0 } ); // afegir un en blanc. a la api ja ho canvie a null
@@ -391,21 +405,23 @@ export default {
 		var predefined= location.search.substring(1);
 		if (predefined) {
 			var data= JSON.parse(atob(unescape(predefined)));
-			vm.jugador.nom= data.nom;
-			vm.jugador.cognoms= data.cognoms;
+			console.log(data);
+			vm.jugador.nom= decodeURIComponent(escape(data.nom));
+			vm.jugador.cognoms= decodeURIComponent(escape(data.cognoms));
 			vm.jugador.club= data.club;
 			vm.jugador.naixement= vm.parseTime(data.naixement);
 			vm.jugador.email= data.email;
 			vm.jugador.telefon= data.telefon;
-			vm.jugador.dir= data.dir;
+			vm.jugador.dir= decodeURIComponent(escape(data.dir));
 			vm.jugador.cp= data.cp;
 			vm.jugador.poblacio= data.poblacio;
 			vm.jugador.dni= data.dni;
 			vm.jugador.sexe= data.sexe;
 			vm.jugador.foto= data.foto;
 			//vm.jugador.tipusfitxa= data.tipusfitxa;
-			vm.jugador.dataactiu= data.dataactiu;
-			vm.jugador.datasegur= data.datasegur;
+			vm.jugador.fitxa= [];
+			vm.jugador.dataactiu= vm.parseTime((new Date()).getFullYear()+'1231235959');
+			vm.jugador.datasegur= vm.parseTime((new Date()).getFullYear()+'1231235959');
 		}
 		
         vm.$http.get('/nomsclubs')

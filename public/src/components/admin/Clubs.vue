@@ -103,7 +103,7 @@ export default {
 	        });
 	    },
 	    clickCallback: function(pageNum) {
-	    	console.log(pageNum);
+
 	    	var vm=this;
 	    	vm.getData('club', pageNum);
 	    },

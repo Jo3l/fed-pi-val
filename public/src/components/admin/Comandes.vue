@@ -121,7 +121,7 @@ export default {
 	                //field: this.json && this.json.substr(0,0)=='{'?console.log(JSON.parse(this.json)):null,
 	                //field: 'JSON.parse(json).payment',
 	                field: 'payment',
-	                html: false,    
+	                html: false,
 	            },
 	            {
 	            	label: 'Estat',
@@ -130,9 +130,15 @@ export default {
 	            },
 	            {
 	                label: 'Codi resultat',
+	                //field: 'isNaN(resultat)?"<span style=color:red>"+resultat+"</span>":"<span style=color:green>"+resultat+"</span>"',
 	                field: 'resultat',
+	                html: true,    
+	            },
+	            {
+	                label: 'Comprador',
+	                field: 'comprador',
 	                html: false,    
-	            }
+	            }	            
 	        ],
 		    filterText:'',
 		}
@@ -176,6 +182,7 @@ export default {
 	  		vm.visibleOrder.codi = row.codi;
 	  		vm.visibleOrder.total = row.quantitat;
 	  		vm.visibleOrder.estat = row.estat;
+	  		vm.visibleOrder.data = obj.data;
 	  		vm.$refs.modal.open();
 	    },
 	    clickCallback: function(pageNum) {
@@ -199,8 +206,12 @@ export default {
 						var obj= JSON.parse(a.json);
 					} catch(e) { console.log(e); obj={}; }
 					a.payment= nomtipus[obj.payment]; 
+					a.comprador= obj.name+(obj.surname?' '+obj.surname:'');
 					a.estatdesc= vm.estats[a.estat];
-					if(!a.resultat && obj.payment=='online-pay') a.resultat = '!!! NO-COMPLETAT';
+					if(obj.payment=='online-pay') {
+						if (!isNaN(a.resultat) && a.resultat) a.resultat= '<span style="color:green">'+a.resultat+'</span>';
+						else a.resultat = '<span style="color:red">!!! NO-COMPLETAT</span>';
+					}
 					a.data= vm.diaMesAny( a.data ); 
 				} );
 	            vm.orders = response.data;
@@ -218,14 +229,14 @@ export default {
 		estat: function(que) {
 			var vm= this;
 			vm.visibleOrder.estat= que;
-			console.log(que, vm.visibleOrder.id)
-			this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"estat":que})
+			console.log(vm.visibleOrder.json,vm.visibleOrder.data)
+			//console.log(JSON.parse(vm.visibleOrder.json).data)
+			this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"data":vm.visibleOrder.data,"estat":que})
 			.catch( (e)=>console.log('error',e) );
 			vm.orders.forEach( (o)=> { if (o.id==vm.visibleOrder.id) { 
 				o.estat= que;
 				o.estatdesc= vm.estats[que];
 			} } );
-			console.log(vm.orders)
 		}
 	  },
 	  mounted: function() {

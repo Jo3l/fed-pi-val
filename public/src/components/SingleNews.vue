@@ -225,7 +225,6 @@ export default {
             this.$refs[ref].open();
         },
         acceptModal:function(ref) {
-        	console.log(this.selected.url);
         	VuePellEditor.components.pell.exec('insertImage', this.selected.url);
         	this.selected={};
             this.$refs[ref].close();
@@ -252,7 +251,7 @@ export default {
 			var vm = this;
 			var id = vm.news.id ? vm.news.id : '';
 			vm.publishedDate.setHours(parseInt(vm.hora.split(':')[0] | 0));
-			console.log(vm.publishedDate, vm.publishedDate.toString('yyyyMMddHHmmss'))
+
 			vm.$http.post('/noticia/'+id, 
 				{
 					idioma: vm.$i18n.locale,
@@ -289,7 +288,7 @@ export default {
 	            vm.destacada = n.destacada=='1';
 	            vm.publishedDate = new Date.parse(vm.fixDateForParse(n.publicacio||n.alta)) || new Date();
 	        	vm.hora = vm.publishedDate.toString('HH:mm');
-	            console.log(vm.publishedDate)
+
 	            vm.publishedDateText = vm.fixDate(n.publicacio||n.alta);
 	            vm.selectedTags = n.tags.split('|');
 	            vm.$emit('updateHead');

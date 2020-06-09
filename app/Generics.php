@@ -87,11 +87,14 @@ static public function generic_update(Request $request, Response $response, $par
 				."\nComentari: ".$data['comentari']
 				."----\nDelegat: ".$json['nomDelegat']." (llicencia ".$json['llicenciaDelegat']."). Contacte: ".$json['contacteDelegat'];
 			$msg.= "\n\n\n Si veus alguna cosa incorrecta, tens 48 hores (".date('H:i\\h \\d\\e\\l d/m/Y', strtotime('+2 days')).") per demanar una correcció a campionats@fedpival.es";
-			Fun::phpmailer($data['email'],$sub,$msg);
+//			if (!empty($data['email'])) Fun::phpmailer($data['email'],$sub,$msg);
 			//die("\n\n".$sub."\n\n".$msg);
 		}
-	} catch (Exception $e) { die($e->getMessage()); }
-	return;
+	} catch (Exception $e) {
+		Fun::phpmailer('alsanan@gmail.com','error_generic_update:94',$e->getMessage() );
+		die($e->getMessage()); 
+	}
+	return true;
 }
 
 
@@ -282,6 +285,15 @@ static public function generic_id(Request $request, Response $response, $params)
     $sql= "SELECT * FROM ".$tabla." where id=".$params['id'];
     $db->sql($sql);
     $data = $db->all();
+	/*if ($params['tabla']=='partida') {
+		$user= Auth::getUser($request,$response);
+		if ($user->data->rol>0) {
+			$club= $user->data->club;
+			$db->sql("select count(*) as cnt from equip where id in (".$data[0]['visitant'].",".$data[0]['local'].") and club=".$club.";");
+			$res= $db->all();
+			if ($res[0]['cnt']==0) die($response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"not authorized"}'));
+		}
+	}*/
 	if ($tabla=='producte') {
 		$a= $data[0]['json']; 
 		$a= json_decode($a,true); 

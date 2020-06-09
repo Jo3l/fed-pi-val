@@ -75,7 +75,7 @@ export default {
 	    	var vm=this;
 	    	vm.alert=a;
 	    	
-	    	console.log(vm.alert)
+
 	    	vm.$refs.alertModal.open()
 	    },
 	    doFunc: function() {
@@ -84,7 +84,7 @@ export default {
 	},
 	mounted: function () {
 		var vm=this;
-		console.log(vm.$refs)
+
 		vm.$eventHub.$on('alert', vm.alertEvent);
 	}
 }

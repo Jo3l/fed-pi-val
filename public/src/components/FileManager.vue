@@ -187,7 +187,7 @@ export default {
 		getData: function(relativePath) {
 	        var vm = this;
 	        vm.files={};
-	        vm.selected={};
+	        //vm.selected={};
 	        var auth = !this.$store.getters.isAuthenticatedWithRole(0);
 	        vm.$http.get('static/'+relativePath, { cache: auth })
 	        .then(function (response) {
@@ -198,6 +198,7 @@ export default {
                 relativePath='/'+relativePath;
 				vm.lastRelativePath = relativePath.replace(new RegExp("(.*\/)[^/]+$"),"$1").replace(/^\//, '').replace(/\/+$/, '');
 				vm.actualRelativePath = relativePath.replace(/^\//, '').replace(/\/+$/, '');
+				if(vm.selected!={}) vm.select(vm.files.results[0]);
 	        })
 	        .catch(function (error) {
 	        	vm.files={};
@@ -217,11 +218,15 @@ export default {
 </script>
 
 
-<style lang="less">
+<style lang="less" scoped>
 @import "../assets/less/defines.less";
 
 .ui-switch--color-fedpival.is-checked:not(.is-disabled) .ui-switch__thumb {
     background-color: @fedcolor;
+}
+
+.g-core-image-upload-form {
+	
 }
 
 .ui-switch--color-fedpival.is-checked:not(.is-disabled) .ui-switch__track {
@@ -244,9 +249,11 @@ export default {
     align-items: center;
     
 	.uploader {
-	    padding: 2% 19%;
+	    padding: 20px 50px;
 	    text-align: center;
 		margin-right:2%;
+		white-space: nowrap;
+		box-sizing:border-box;
 	    @media(max-width:@screenTablet) {
 
 		}

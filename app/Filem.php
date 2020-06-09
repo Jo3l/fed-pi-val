@@ -100,10 +100,21 @@ class Filem
 		if (!is_dir(Filem::$absolutePath.'/jugadors/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/jugadors/'.date('Y/m'));
 		if (!is_dir(Filem::$absolutePath.'/pdf/'.date('Y/m'))) mkdir(Filem::$absolutePath.'/pdf/'.date('Y/m'));
 		//echo is_dir($path)?1:0;
+		
+		function scandir_by_mtime($folder) {
+		  $dircontent = array_diff(scandir($folder), ['.','..']);
+		  foreach($dircontent as $id=>$v) $dircontent[$id]= $folder.'/'.$v;
+		  usort($dircontent, function($a,$b) { 
+		    return (filemtime($folder.''.$a) > filemtime($folder.''.$b) ) ? -1 : 1;		  	
+		  });
+		  foreach($dircontent as $id=>$v) $dircontent[$id]= substr($v,strrpos($v,'/')+1);
+		  return $dircontent;
+		}
+		
 		if (is_dir($path)) {
 			$directory = $path;
 			$result = [];
-			$files = array_diff(scandir($directory), ['.','..']);
+			$files = scandir_by_mtime($directory);
 		    foreach($files as $entry) 
 		    	if($entry !== basename(__FILE__))
 		    		if (!in_array(strtolower(pathinfo($entry, PATHINFO_EXTENSION)), Filem::$hidden_extensions)) {

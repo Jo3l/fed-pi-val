@@ -119,14 +119,14 @@ static public function login($json) /*use($app)*/ {
     $clau = (isset($json->clau)) ? trim($json->clau) : "";
     try {
         // query the database
-        $sql = "SELECT id, nom, pwd, email, rol FROM usuari WHERE email = '".$email."' limit 1;";
+        $sql = "SELECT id, nom, pwd, email, rol, null as club FROM usuari WHERE email = '".$email."' limit 1;";
         // Get DB Object
 		$db= new db();
         $res= $db->sql($sql);
         $result = $db->getResult();
         
         if(count($result)==0) {
-        	$res= $db->sql("select id,concat('club:',nom) as nom,pwd,email, 10 as rol FROM club where email='".$email."' limit 1;");
+        	$res= $db->sql("select id,concat('club:',nom) as nom,pwd,email, 10 as rol, id as club FROM club where email='".$email."' limit 1;");
         	$result= $db->getResult();
         }
         
@@ -145,13 +145,14 @@ static public function login($json) /*use($app)*/ {
             $id= $result['id'];
             $nom = $result['nom'];
             $rol = $result['rol'];
+            $club= $result['club'];
             
             if ($dbpwd==hash('sha256',$clau)) { // coincideix la clau
             
                 $secretKey = base64_decode(config::SECRET_KEY);
 			    // encode the array
 			    $jwt = JWT::encode(
-			        Auth::token(array('id'=>$id, 'nom'=>$nom, 'email'=>$email, 'rol'=>$rol)),
+			        Auth::token(array('id'=>$id, 'nom'=>$nom, 'email'=>$email, 'rol'=>$rol, 'club'=>$club)),
 			        $secretKey,
 			        'HS256'
 			    );

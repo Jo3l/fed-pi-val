@@ -60,7 +60,6 @@ const actions = {
       vueAuth.login(payload.user, payload.requestOptions).then(
       	
       	function (response) {
-      		console.log(54321,context,response,12345)
 	        return context.commit('isAuthenticated', {
 	          isAuthenticated: vueAuth.isAuthenticated()
 	        });

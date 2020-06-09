@@ -89,7 +89,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 @import "../assets/less/defines.less";
 
@@ -113,52 +113,53 @@ export default {
 		width:100%;
 		margin-right:2em;
 	}
-}
-.ui-icon { color: @fedcolor; }
-.result-container {
-	padding: 0 14em;
-	@media(max-width:@screenTablet){
-		padding: 0 2em;
-	}
-	ul {
-		list-style-type: none;
-		padding:0;
-		li {
-			padding: 5px 0;
-		    font-size: 110%;
-		    border-bottom: 1px dashed #ccc;
+	.ui-icon { color: @fedcolor; }
+	.result-container {
+		padding: 0 14em;
+		@media(max-width:@screenTablet){
+			padding: 0 2em;
+		}
+		ul {
+			list-style-type: none;
+			padding:0;
+			li {
+				padding: 5px 0;
+			    font-size: 110%;
+			    border-bottom: 1px dashed #ccc;
+			}
 		}
 	}
-}
-.lds-ring {
-	display: block;
-    width: 100%;
-    margin-left: ~"calc(50% - 7em)";
-    @media(max-width:@screenTablet){
-		display:none;
+	.lds-ring {
+		display: block;
+	    width: 100%;
+	    margin-left: ~"calc(50% - 7em)";
+	    @media(max-width:@screenTablet){
+			display:none;
+		}
+	}
+	.lds-ring div {
+	  box-sizing: border-box;
+	  display: block;
+	  position: absolute;
+	  width: 10em;
+	  height: 10em;
+	  margin: 2em;
+	  border: 2em solid @fedcolor;
+	  border-radius: 50%;
+	  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+	  border-color: @fedcolor transparent transparent transparent;
+	}
+	.lds-ring div:nth-child(1) {
+	  animation-delay: -0.45s;
+	}
+	.lds-ring div:nth-child(2) {
+	  animation-delay: -0.3s;
+	}
+	.lds-ring div:nth-child(3) {
+	  animation-delay: -0.15s;
 	}
 }
-.lds-ring div {
-  box-sizing: border-box;
-  display: block;
-  position: absolute;
-  width: 10em;
-  height: 10em;
-  margin: 2em;
-  border: 2em solid @fedcolor;
-  border-radius: 50%;
-  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  border-color: @fedcolor transparent transparent transparent;
-}
-.lds-ring div:nth-child(1) {
-  animation-delay: -0.45s;
-}
-.lds-ring div:nth-child(2) {
-  animation-delay: -0.3s;
-}
-.lds-ring div:nth-child(3) {
-  animation-delay: -0.15s;
-}
+
 @keyframes lds-ring {
   0% {
     transform: rotate(0deg);

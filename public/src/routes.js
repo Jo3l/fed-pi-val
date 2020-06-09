@@ -18,6 +18,7 @@ const clubsPublic = function(resolve) {require(['./components/ClubsPublic.vue'],
 const clubPublic = function(resolve) {require(['./components/ClubPublic.vue'], resolve)}
 const instalacionsPublic = function(resolve) {require(['./components/InstalacionsPublic.vue'], resolve)}
 const instalacioPublic = function(resolve) {require(['./components/InstalacioPublic.vue'], resolve)}
+const instalacio = function(resolve) {require(['./components/admin/Instalacio.vue'], resolve)}
 const Federat = function(resolve) {require(['./components/Federat.vue'], resolve)}
 
 //cms
@@ -38,6 +39,11 @@ const GClub = function(resolve) {require(['./components/gestio/Club.vue'], resol
 
 import productEditor from './components/admin/editor.vue'
 import Trofeu from './components/Tournament.vue'
+
+
+//test
+const editPartida = function(resolve) {require(['./components/gestio/UpdateResults.vue'], resolve)}
+
 
 import defaultHead from './config/defaultHeader'
 
@@ -247,6 +253,11 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
+	    path: '/admin/instalacio/:instalacioId',
+	    component: instalacio,
+	    meta: defaultHead
+	  },
+	  {
 	    path: '/val/federacio/installacions-esportives/:instalacioId',
 	    component: instalacioPublic,
 	    meta: defaultHead
@@ -348,7 +359,12 @@ const routes = [
 	    component: Login, 
 	    meta: defaultHead
 	  },
-	    {
+	  {
+	    path: '/admin/partida/:partidaId',
+	    component: editPartida,
+	    role: 0
+	  },
+	  {
 	    path: '/admin/jugadors',
 	    name: 'Jugadors',
 	    component: Jugadors,

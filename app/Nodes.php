@@ -142,12 +142,18 @@ static private function ranking($pars) {
 			$equips[$visitant['id']]['punts']+= $ppartida;
 			$equips[$visitant['id']]['pg']++;
 			$equips[$local['id']]['pp']++;
-			if($p['resultatlocal']>=$ptanteig) $equips[$local['id']]['punts']+= 1;
+			if($p['resultatlocal']>=$ptanteig) {
+				$equips[$local['id']]['punts']+= 1;
+				$equips[$visitant['id']]['punts']-= 1;
+			}
 		} else {
 			$equips[$local['id']]['punts']+= $ppartida;
 			$equips[$local['id']]['pg']++;
 			$equips[$visitant['id']]['pp']++;
-			if($p['resultatvisitant']>=$ptanteig) $equips[$visitant['id']]['punts']+= 1;
+			if($p['resultatvisitant']>=$ptanteig) {
+				$equips[$visitant['id']]['punts']+= 1;
+				$equips[$local['id']]['punts']-= 1;
+			}
 		}
 	}
 	usort($equips, function($a,$b) { return $b['punts']-$a['punts']; } );

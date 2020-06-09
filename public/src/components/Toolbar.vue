@@ -173,7 +173,7 @@ export default {
 		toggleCart: function() {
 			var vm= this;
 			vm.visibleCart=!vm.visibleCart;
-			console.log(vm.visibleCart)
+
 			window.document.querySelector('#intergramRoot').style.display= vm.visibleCart?'block':'none';
 		},
 		isMobileDevice: function() {

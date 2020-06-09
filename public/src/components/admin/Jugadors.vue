@@ -168,8 +168,8 @@ export default {
 		csv: function(listName) {
 	        window.location.href='/api/'+listName+'?csv=true';
 		},
-		parseTime: function(time) {
-			var str = time;
+		parseTime: function(str) {
+			console.log(str);
 			var year = str.substring(0, 4);
 			var month = str.substring(4, 6);
 			var day = str.substring(6, 8);
@@ -181,10 +181,10 @@ export default {
 			
 		},
 		timeToStr: function(time) {
-			return time.toISOString().replace(/[-T:\.Z]/g,'').substring(0,14);
+			if(time) return time.toISOString().replace(/[-T:\.Z]/g,'').substring(0,14);
 		},
 		diaMesAny: function(time) {
-			return time.substring(6,8)+'/'+time.substring(4,6)+'/'+time.substring(2,4);
+			if(time) return time.substring(6,8)+'/'+time.substring(4,6)+'/'+time.substring(2,4);
 		}
 		
 	},

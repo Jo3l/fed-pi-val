@@ -117,6 +117,7 @@ $app->post('/api/comprar', '\app\Fun::comprar');
 * Fi de traspas de control a passarel.la de pagament. He de rebre les dades de la transaccio i actuar en consequencia (redirect)
 */
 $app->get('/api/pagat', '\app\Fun::pagat');
+$app->get('/api/nopagat', '\app\Fun::pagat');
 $app->post('/api/pagat', '\app\Fun::pagat');
 
 /*

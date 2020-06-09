@@ -653,7 +653,7 @@ export default {
             this.$refs[ref].open();
         },
         acceptModal:function(ref) {
-        	console.log(this.selected.url);
+
         	if(window.recoverFocus) window.recoverFocus.focus(); //recuperem el focus definit al arxiu de config del pelleditor.
         	VuePellEditor.components.pell.exec('insertImage', this.selected.url);
         	this.selected={};
@@ -665,7 +665,7 @@ export default {
             this.$refs[ref].close();
         },
 		saveContent: function(element) {
-			console.log(element);
+
 			var vm = this;
 	        
 	        vm.$http.post('/node/'+this.nodeId, element)
@@ -680,7 +680,7 @@ export default {
 			
 		},
         openModalMatch(ref) {
-        	console.log(this,this.$refs)
+
             this.$refs[ref][0].open();
         },
         closeModalMatch(ref) {

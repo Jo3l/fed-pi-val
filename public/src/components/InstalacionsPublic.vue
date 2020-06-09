@@ -25,7 +25,12 @@
 					<th slot="headActions"></th>
 					<template slot="actions" scope="props">
 						<td class="actions">
-							<router-link :to="{ path: current+'/'+props.row.id }"><ui-button color="default" icon="visibility" icon-position="left" size="small" type="secondary">Info</ui-button></router-link>
+							<router-link :to="{ path: '/admin/instalacio/'+props.row.id }" v-if="$store.getters.isAuthenticatedWithRole(0)">
+								<ui-button color="default" icon="edit" icon-position="left" size="small" type="secondary">Edit</ui-button>
+							</router-link>
+							<router-link :to="{ path: current+'/'+props.row.id }" v-else>
+								<ui-button color="default" icon="visibility" icon-position="left" size="small" type="secondary">Info</ui-button>
+							</router-link>
 						</td>
 					</template>
 				</tablerone>

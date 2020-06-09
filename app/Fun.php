@@ -554,7 +554,7 @@ static public function participa(Request $request, Response $response, $params) 
 static public function partides(Request $request, Response $response, $params) {
 	$db= new db();
 	// compte: només lliste els que apareixen com a local
-	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+3 days'))."';");
+	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and baixa is null and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+3 days'))."';");
 	$data = $db->all();
 	foreach($data as $id=>$elm) {
 		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
@@ -874,7 +874,7 @@ static public function resum_calendari(Request $request, Response $response, $pa
 					echo '<table class="taulajor"><tr><td colspan="2">Jornada ',($numjor++),': ',$dies[date('N',$dia)],' ',date('j',$dia),'/',$mesos[date('n',$dia)-1],'</td><td colspan="2">Resultats</td></tr>';
 				}
 				//if ($grup!=$partida['grup']) { echo '<hr/>Grup ',$partida['grup'],'<hr/>'; $grup= $partida['grup']; }
-				echo '<tr><td>',$equips[$partida['local']],'</td><td>',$equips[$partida['visitant']],'</td><td class="casillares"></td><td class="casillares"></td></tr>';
+				echo '<tr><td class="casillaequip">',$equips[$partida['local']],'</td><td class="casillaequip">',$equips[$partida['visitant']],'</td><td class="casillares"></td><td class="casillares"></td></tr>';
 			}
 			echo '</table>';
 			$htmlpartides.= ob_get_contents();
@@ -887,9 +887,11 @@ static public function resum_calendari(Request $request, Response $response, $pa
 	?>
 	<style>
 		table tr:first-child td { border-bottom:1px solid gray; font-weight:bold; text-shadow: 0 0 2px black; } 
-		.taulajor{ margin-bottom:10px; border-bottom:1px solid black; border-right:1px solid black; border-spacing: 0; border-collapse: separate;}
+		.taulajor{ margin-bottom:10px; border-bottom:1px solid black; border-right:1px solid black; border-spacing: 0; border-collapse: separate; width:90%;}
 		.taulajor td { padding:0 3px; border-top:1px solid black; border-left:1px solid black; }
 		.taulaeq a { text-decoration:none; color:#44c; }
+		.casillaequip { width:40%; } 
+		.casillares { width:10%; }
 	</style>
 	<?php
 exit;
@@ -1081,8 +1083,6 @@ static public function comprar(Request $request, Response $response, $params) {
 	$fname= '../data/orders/'.substr($idstr,0,2).'/'.$idstr.'.json';
 	if (file_exists($fname)) $fname.= date('_YmdHis').'.json';
 	file_put_contents($fname,utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE)));
-	Fun::phpmailer('alsanan@gmail.com','json.'.$fname,utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE)));
-	//mail('alsanan@gmail.com','json_sin.'.$id,$json);
 	$jsonsensecart= $json;
 	$jsonsensecart['cart']=null;
 	Fun::$db->sql("insert into comanda(codi,quantitat) values('".$id."',".$preu.");"); // abans clavava tmb el json '".utf8_decode(json_encode($jsonsensecart,JSON_UNESCAPED_UNICODE))."',
@@ -1090,7 +1090,6 @@ static public function comprar(Request $request, Response $response, $params) {
 	if($json['payment']=='cash-on-delivery') {
 		//ABANS: //mail('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html,"MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8\r\nFrom:notificacions@fedpival.es");
 		Fun::phpmailer('botiga@fedpival.es','comanda contra-reemborsament : '.$id,$html,true);
-		Fun::phpmailer('alsanan@gmail.com','comanda contra-reemborsament : '.$id,$html,true);
 		Fun::phpmailer($email,'Comanda contra-reemborsament en Federació de Pilota : '.$id,$html.$legal,true);
 		return json_encode([ 
 			"tipus"=> 'contra-reemborsament',
@@ -1107,7 +1106,6 @@ static public function comprar(Request $request, Response $response, $params) {
 		//$html.= "\r\n\r\n El nostre número de compte per a fer la transferència és el IBAN ES67 2100 0700 1502 0099 9337 (La Caixa)\r\n<br/>\r\n";
 		$html.= "\r\n\r\n En breu rebràs un missatge amb la factura indicant el compte per fer efectiu l'ingrés.\r\n<br/>\r\n";
 		Fun::phpmailer('botiga@fedpival.es','comanda per transferència : '.$id,$html,true);
-		Fun::phpmailer('alsanan@gmail.com','comanda per transferència : '.$id,$html,true);
 		Fun::phpmailer($email,'Comanda per transferència en Federació de Pilota : '.$id,$html,true);
 		return json_encode([ 
 			"tipus"=> 'contra-reemborsament',
@@ -1122,6 +1120,8 @@ static public function comprar(Request $request, Response $response, $params) {
 
 	if($json['payment']=='online-pay') {
 	
+		Fun::phpmailer('alsanan@gmail.com','json.'.$fname,utf8_decode(json_encode($json,JSON_UNESCAPED_UNICODE)));
+
 		// Se crea Objeto
 		$miObj = new RedsysAPI;
 	
@@ -1131,7 +1131,9 @@ static public function comprar(Request $request, Response $response, $params) {
 		$moneda="978";
 		$trans = "0";
 		$url="https://fedpival.es";
-		$urlOKKO="https://fedpival.es/".(Fun::$idioma).(Fun::$idioma=='es'?'/tienda/comprado':'/botiga/comprat')."/";
+		//$urlOKKO="https://fedpival.es/".(Fun::$idioma).(Fun::$idioma=='es'?'/tienda/comprado':'/botiga/comprat')."/";
+		$urlOK="https://fedpival.es/api/pagat";
+		$urlKO="https://fedpival.es/api/nopagat";
 	
 		// Se Rellenan los campos
 		$miObj->setParameter("DS_MERCHANT_AMOUNT",round($preu*100));
@@ -1154,7 +1156,13 @@ static public function comprar(Request $request, Response $response, $params) {
 		$params = $miObj->createMerchantParameters();
 		$signature = $miObj->createMerchantSignature($kc);	
 	
-	
+		try {
+			Fun::$db->sql("update comanda set signature='".$signature."' where codi='".$id."';");
+			Fun::phpmailer('alsanan@gmail.com','pre redsys fun:1160','update comanda.codi='.$id.' set signature='.$signature,true);
+		} catch (Exception $e) {
+			Fun::phpmailer('alsanan@gmail.com','except fun:1161',$e->getMessage(),true);
+		}
+		Fun::phpmailer('botiga@fedpival.es','comanda abans de pagar amb targeta '.date('YmdHis'),$html,true);
 	
 		
 	/*<form name="frm" action="https://sis-t.redsys.es:25443/sis/realizarPago" method="POST">
@@ -1164,8 +1172,6 @@ static public function comprar(Request $request, Response $response, $params) {
 	*/	
 	
 		$fields_string='Ds_SignatureVersion='.$version.'&Ds_MerchantParameters='.$params.'&Ds_Signature='.$signature;
-		Fun::phpmailer('botiga@fedpival.es','comanda abans de pagar amb targeta '.date('YmdHis'),$html,true);
-		Fun::phpmailer('alsanan@gmail.com','comanda abans de pagar amb targeta '.date('YmdHis'),$html,true);
 		return json_encode([ 
 			//"url"=> 'https://sis-t.redsys.es:25443/sis/realizarPago', // PROVES
 			"url"=> 'https://sis.redsys.es/sis/realizarPago', // REAL
@@ -1206,23 +1212,43 @@ static public function comprar(Request $request, Response $response, $params) {
 * Fi de traspas de control a passarel.la de pagament. He de rebre les dades de la transaccio i actuar en consequencia (redirect)
 */
 static public function pagat(Request $request, Response $response, $params) {
-	$json= json_decode(file_get_contents("php://input"),true);
-	try{ Fun::phpmailer("alsanan@gmail.com",'pagat:1210',file_get_contents("php://input")); }catch(Exception $e){}
+	$input= file_get_contents("php://input");
+	if (empty($input)) $data= $request->getQueryParams();
+	else parse_str($input,$data);
+	$version = $data["Ds_SignatureVersion"];
+	$datos = $data["Ds_MerchantParameters"];
+	$signatureRecibida = $data["Ds_Signature"];
+	//slimframework.com/docs/v3/objects/request.html
+	$path= $request->getUri()->getPath();
+	// /api/nopagat o /api/pagat
+	
+	/*$json= json_decode(file_get_contents("php://input"),true);
 	$version = $json["Ds_SignatureVersion"];
 	$datos = $json["Ds_MerchantParameters"];
-	$signatureRecibida = $json["Ds_Signature"];
+	$signatureRecibida = $json["Ds_Signature"];*/
 
 	// Se crea Objeto
 	$miObj = new RedsysAPI;
 	
 	$decodec = $miObj->decodeMerchantParameters($datos);
+	$respuesta= $miObj->getParameter('Ds_Response');
+	$order= $miObj->getParameter('Ds_Order');
+	$amount= $miObj->getParameter('Ds_Amount');
+	// https://pagosonline.redsys.es/codigosRespuesta.html
+	// https://pagosonline.redsys.es/parametros-entrada-salida.html#entradaTable
+	// https://pagosonline.redsys.es/funcionalidades-preautenticacion.html
+	// Ds_Date,Ds_Hour,Ds_SecurePayment,Ds_Card_Type,Ds_Card_Country,Ds_Amount,Ds_Currency,Ds_Order,Ds_MerchantCode,Ds_Terminal,Ds_Response,Ds_MerchantData,Ds_TransactionType,Ds_ConsumerLanguage,Ds_AuthorisationCode,Ds_Card_Brand
 	//$kc = 'sq7HjrUOBfKmC576ILgskD5srU870gJ7';//Clave recuperada de CANALES (pruebas)
 	$kc = 'ioGUb1lc23Ua1LkQv176y4EP0sloCaDP';//Clave recuperada de CANALES (real)
 	$firma = $miObj->createMerchantSignatureNotif($kc,$datos);
 
+	try{ Fun::phpmailer("alsanan@gmail.com",'pagat params:1234',$path.' '.$firma.'?='.$signatureRecibida.' '.$respuesta.' '.file_get_contents("php://input").' '.$order.' €'.$amount.$decodec ); }catch(Exception $e){}
+
 	if ($firma === $signatureRecibida){
+		Fun::phpmailer('alsanan@gmail.com','exit pagament fun:1237',var_dump($decodec).json_decode($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 	} else {
-		Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1195 PERO SIGO',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+		Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1239 PERO SIGO',var_dump($decodec).json_decode($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+		die('Error de seguritat en la resposta de la passarel.la de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
 		//header("HTTP/1.0 402 Payment required");
 		//die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
 	}
@@ -1230,14 +1256,15 @@ static public function pagat(Request $request, Response $response, $params) {
 	$data= json_decode($decodec);
 
 	Fun::$db= new db();
-	Fun::$db->sql("update comanda set resultat='".($data->Ds_AuthorisationCode)."' where codi='".($data->Ds_Order)."';");
+	Fun::$db->sql("update comanda set resultat='".( $path=='/api/nopagat' ?'Error ':'Autoritzat ').($data->Ds_AuthorisationCode)."' where codi='".($data->Ds_Order)."';");
 	Fun::$db->sql("select json,quantitat from comanda where codi='".($data->Ds_Order)."';");
 
-	Fun::phpmailer('alsanan@gmail.com','resultat pagament fun:1216',var_dump($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+	Fun::phpmailer('alsanan@gmail.com','resultat pagament fun:1216',$decodec.'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 
-	if ($data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180') {
+	if ( $data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180' || $path=='/api/nopagat' ) {
 		Fun::phpmailer('alsanan@gmail.com','error en el pago fun:1239 PERO SIGO',$data->Ds_AuthorisationCode.'|'.$data->Ds_Response.json_encode($data));
 		//header("HTTP/1.0 402 Payment required");
+		die('Error de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
 		//die(json_encode(["error"=>'Error en el pago'])); // header reload
 	}
 
@@ -1294,8 +1321,8 @@ static public function pagat(Request $request, Response $response, $params) {
 
 	Fun::phpmailer('botiga@fedpival.es','Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
 	Fun::phpmailer($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
-	Fun::phpmailer('alsanan@gmail.com','Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
-	//Fun::email('botiga@fedpival.es,alsanan@gmail.com,'.$email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
+	Fun::phpmailer('alsanan@gmail.com','[online-pay] a fedpival.es : '.date('YmdHis'),$str,true);
+	die('Compra finalitzada. <a href="https://fedpival.es">Tornar</a>');
 	return json_encode($json);
 }
 

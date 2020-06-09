@@ -249,6 +249,8 @@
        
        
   		<ui-modal ref="updateResultats" size="large" title="Resultats" dismissOn="close-button">
+  			<update-results v-if="partida&&partida.id" :partidaId="partida.id"></update-results>
+  			<!--
 				<section class="score">
 					<p>Data: {{partida.date}}</p>
 					<p v-if="partida.lloc">Lloc: {{partida.lloc}}</p>
@@ -384,7 +386,8 @@
 					<ui-button size="small" @click="guardaPartida(partida)">{{ $t('common.save') }}</ui-button>
 					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
 				</div>
-
+				-->
+				
         </ui-modal>
         
         <ui-modal ref="error" title="">
@@ -407,10 +410,10 @@ import Table from '../custom/Table.vue';
 import Paginate from 'vuejs-paginate'
 import ClubEditar from './ClubEditar.vue';
 import ClubNouJugador from './ClubNouJugador.vue';
-
+import UpdateResults from './UpdateResults.vue';
 
 export default {
-  	components: { VuePellEditor, 'vue-core-image-upload': VueCoreImageUpload, 'tablerone':Table, 'paginate': Paginate, ClubEditar, ClubNouJugador },
+  	components: { VuePellEditor, 'vue-core-image-upload': VueCoreImageUpload, 'tablerone':Table, 'paginate': Paginate, ClubEditar, ClubNouJugador, UpdateResults },
 	data () {
 		return {
 			error:{},
@@ -630,8 +633,9 @@ export default {
 	    },
 	    modResultats:function(partida){
 			var vm=this;
+			console.log(partida)
 			vm.getInfoPartida(partida.id);
-			vm.$refs.updateResultats.open()
+			vm.$refs.updateResultats.open();
 	    },
 	    deSubscribe:function(champ, readonly=false){
 	    	var vm=this;
@@ -918,7 +922,7 @@ export default {
 	mounted: function () {
 		var vm=this;
 		if(vm.$store.getters.isAuthenticated) vm.getData();
-		
+		vm.$eventHub.$on('closeallmodals', this.closeAllModals);
 	},
 	created: function() {
 	    if (!this.$store.getters.isAuthenticated) {

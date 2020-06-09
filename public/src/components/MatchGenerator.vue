@@ -63,7 +63,11 @@
 			<h2 v-if="esTrofeu && equips.length==2">Final</h2-->
 			<h2 v-if="esTrofeu">Trofeu</h2>
 			<h2 v-else>Lliga</h2>
-			<h3 v-if="esTrofeu && ![2,4,8,16,32,64].includes(equips.length)"><ui-icon icon="sentiment_dissatisfied"></ui-icon> El número actual d'equips no permet emparellaments per a un trofeu</h3> 
+			<h3 v-if="esTrofeu && ![2,4,8,16,32,64].includes(equips.length)"><ui-icon icon="sentiment_dissatisfied"></ui-icon> El número actual d'equips no permet emparellaments per a un trofeu <!--ui-button @click="omplir">afegir elements fins omplir</ui-button--></h3> 
+			<!--
+			1. generar un botó de omplir fins 2^
+			2. crear botó de generar següent fase de trofeu amb els equips guanyadors
+			-->
 			<div id="lesdates">
 				
 				<div v-if="jornades && jornades.length" v-for="(jor,index) in jornades" class="jornada">
@@ -496,7 +500,6 @@ export default {
 
         },
 		openModal: function() {
-			console.log(window.kk= this)
             this.$refs.reubicaModal.open();
         },
         acceptModal:function(ref) {

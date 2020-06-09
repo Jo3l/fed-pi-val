@@ -48,7 +48,7 @@ export default {
 	},
 	mounted: function () {
 		var vm=this;
-		console.log(vm.insInici, vm.insFinal);
+		
 		if(vm.insInici=='') vm.insInici=new Date;
 		if(vm.insFinal=='') vm.insFinal=new Date;
 	},
