@@ -46,6 +46,7 @@ class Fun
     public static $idioma= 'val'; // idioma actual
     public static $idiomes= array('val','es'); // tots els idiomes disponibles
     private static $rowcount= null; 
+	private static $blackFriday= true;
 
 
     
@@ -61,8 +62,16 @@ static public function render($result,$doexit=false) {
 		header("Content-Disposition: attachment; filename=".date('YmdHis').".csv");
 		header("Pragma: no-cache");
 		header("Expires: 0");
-		fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
-		fputcsv($output, array_keys($result[0]),";");
+		//fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
+		if ($result[0]) $keys= array_keys($result[0]);
+		else {
+			//$keys== array_keys(array_values($result)[0]);
+			$r= array_pop($result);
+			$keys= array_keys($r);
+			array_push($result,$r);
+		}
+		fputcsv($output, $keys,";");
+
 		foreach($result as $row) {
 			$row= array_map("utf8_decode", $row );
 		    fputcsv($output, $row,";");
@@ -304,15 +313,32 @@ static public function generaPartides(Request $request, Response $response, $par
 	//	jerarquia	registreid	data	lloc	local	visitant	resultatlocal	resultatvisitant	alta
 	$sql='';
 	foreach($json as $jornada) {
-		foreach($jornada['enfrontaments'] as $partida)
-			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant,grup)values(%d,%d,'%s',%d,%d,'%s');",
+		foreach($jornada['enfrontaments'] as $partida) {
+		    $comentari='';
+		    $local= $partida[0]['id'];
+		    $visitant= $partida[1]['id'];
+	        $resultatlocal=0;
+	        $resultatvisitant=0;
+		    if ($local==0) :
+		        $resultatlocal=-1;
+		        $comentari="Omplit pel sistema";
+		    endif;
+		    if ($visitant==0) :
+		        $resultatvisitant=-1;
+		        $comentari="Omplit pel sistema";
+		    endif;
+			$sql.= sprintf("insert into partida(jerarquia,registreid,data,local,visitant,grup,resultatlocal,resultatvisitant,comentari)values(%d,%d,'%s',%d,%d,'%s',%s,%s,'%s');",
 				$request->getQueryParam('node'),
 				$request->getQueryParam('bloc'),
 				$jornada['datacurta'],
-				$partida[0]['id'],	
-				$partida[1]['id'],
-				$jornada['grup']
+				$local,
+				$visitant,
+				$jornada['grup'],
+				$resultatlocal,
+				$resultatvisitant,
+				$comentari
 			);
+		}
 	}
     //echo $sql;
     $db= new db();
@@ -565,6 +591,78 @@ static public function partides(Request $request, Response $response, $params) {
 		unset ($data[$id]['cami_val']);
 	}
 	Fun::render($data);
+}
+
+/*
+* @description
+* Obté totes les partides per confirmar de tots els clubs
+* URL: /api/totespartidesaconfirmar
+*/
+static public function totespartidesaconfirmar(Request $request, Response $response, $params) {
+	$db= new db();
+	// compte: només lliste els que apareixen com a local
+	$db->sql("select concat(mod(partida.id,10),TO_BASE64(partida.id)) as tag, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val,partida.* from partida,_camins where jerarquia=_camins.id and ifnull(confirmavisitant,0)<>1 and baixa is null");
+	$data = $db->all();
+	foreach($data as $id=>$elm) {
+		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
+		$data[$id]['cami']['es']= implode(' > ',array_splice(explode('/',$data[$id]['cami_es']),1));
+		unset ($data[$id]['cami_es']);
+		//$data[$id]['cami']['val']= str_replace('/',' > ',$data[$id]['cami_val']);
+		$data[$id]['cami']['val']= implode(' > ',array_splice(explode('/',$data[$id]['cami_val']),1));
+		unset ($data[$id]['cami_val']);
+	}
+	Fun::render($data);
+}
+
+/*
+* @description
+* Obté les partides per confirmar d'un club
+* URL: /api/partidesaconfirmar/[idclub]
+*/
+static public function partidesaconfirmar(Request $request, Response $response, $params) {
+	$db= new db();
+	// compte: només lliste els que apareixen com a local
+	$user= Auth::getUser($request,$response);
+	$club= $user->data->id;
+	if (!$club) die('Error obtenint el club.');
+	$db->sql("select concat(mod(partida.id,10),TO_BASE64(partida.id)) as tag, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val,partida.* from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=visitant)=".$club." and ifnull(confirmavisitant,0)<>1 and baixa is null");
+	$data = $db->all();
+	foreach($data as $id=>$elm) {
+		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
+		$data[$id]['cami']['es']= implode(' > ',array_splice(explode('/',$data[$id]['cami_es']),1));
+		unset ($data[$id]['cami_es']);
+		//$data[$id]['cami']['val']= str_replace('/',' > ',$data[$id]['cami_val']);
+		$data[$id]['cami']['val']= implode(' > ',array_splice(explode('/',$data[$id]['cami_val']),1));
+		unset ($data[$id]['cami_val']);
+	}
+	Fun::render($data);
+}
+
+
+
+/*
+* @description
+* Confirma una partida per part de l'equip visitant
+* URL: /api/confirmapartida/[idpartida_codificat]
+*/
+static public function confirmapartida(Request $request, Response $response, $params) {
+	$db= new db();
+	$partida= base64_decode(substr($params['partida'],1));
+	$check= substr($params['partida'],0,1);
+	if (!$partida || !is_numeric($partida)) {
+		Fun::phpmailer('alsanan@gmail.com','error decodificant : '.$params['partida'],' @Fun:597 ');
+		http_response_code(500);
+		die('Error');
+	}
+	if (($partida%10)!=$check) {
+		Fun::phpmailer('alsanan@gmail.com','error en check: '.$params['partida'],' @Fun:601 ');
+		http_response_code(500);
+		die('Error');
+	}
+	$sql= "update partida set confirmavisitant=1 where id=".$partida;
+	$db->sql($sql);
+	die('Resultat confirmat! Gràcies.');
+	// compte: només lliste els que apareixen com a local
 }
 
 //  //  //  //  //  //  //  //
@@ -841,13 +939,14 @@ static public function resum_calendari(Request $request, Response $response, $pa
 		}
 	$ids= array_keys($llistanodes);
 	//echo '<h1>',$llistanodes[$node],'</h1>';
-	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, competicio, delegat, telefon, lloc, diasem, hora, (select node.nom from _jerarquia_val node where node.id=competicio) as cat from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
+	//$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, competicio, delegat, telefon, lloc, diasem, hora, (select node.nom from _jerarquia_val node where node.id=competicio) as cat from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
+	$sql= "select (select grup from partida where jerarquia=competicio and local=equip.id limit 1) as grup, id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, competicio, delegat, telefon, lloc, diasem, hora, (select node.nom from _jerarquia_val node where node.id=competicio) as cat from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, grup, club";
 	$db->sql($sql);
 	$data2= $db->all();
 	$clubs=[];
 	$modalitats=[];
 	$equips= [];
-	foreach($data2 as $r) $equips[$r['id']]= $r['nom'];
+	foreach($data2 as $r) $equips[$r['id']]= ['nom'=>$r['nom']];
 	echo '<pre>';
 	$ara= null;
 	$dies=['Diumenge','Dilluns','Dimarts','Dimecres','Dijous','Divendres','Dissabte'];
@@ -861,7 +960,7 @@ static public function resum_calendari(Request $request, Response $response, $pa
 			ob_start();
 			$htmlpartides= $htmlequips='';
 			// trac ara els partits d'aquest node i els imprimisc
-			$sql= "select data, local, visitant, grup, lloc from partida where jerarquia=".$r['competicio']." order by data asc, grup";
+			$sql= "select data, local, visitant, grup, lloc from partida where baixa is null and jerarquia=".$r['competicio']." order by data asc, grup";
 			$db->sql($sql);
 			$ult= null;
 			$grup= null;
@@ -874,16 +973,16 @@ static public function resum_calendari(Request $request, Response $response, $pa
 					echo '<table class="taulajor"><tr><td colspan="2">Jornada ',($numjor++),': ',$dies[date('N',$dia)],' ',date('j',$dia),'/',$mesos[date('n',$dia)-1],'</td><td colspan="2">Resultats</td></tr>';
 				}
 				//if ($grup!=$partida['grup']) { echo '<hr/>Grup ',$partida['grup'],'<hr/>'; $grup= $partida['grup']; }
-				echo '<tr><td class="casillaequip">',$equips[$partida['local']],'</td><td class="casillaequip">',$equips[$partida['visitant']],'</td><td class="casillares"></td><td class="casillares"></td></tr>';
+				echo '<tr><td class="casillaequip">',chr(65+$partida['grup']),'. ',$equips[$partida['local']]['nom'],'</td><td class="casillaequip">',$equips[$partida['visitant']]['nom'],'</td><td class="casillares"></td><td class="casillares"></td></tr>';
+				$equips[$partida['local']]['grup']= $equips[$partida['visitant']]['grup']= chr(65+intval($partida['grup']));
 			}
 			echo '</table>';
 			$htmlpartides.= ob_get_contents();
 			ob_end_clean(); 
 		}
-		$htmlequips.= '<tr><td>'.trim(strtoupper($r['nomclub'])).'</td><td>'.$r['delegat'].'</td><td>&nbsp;<a href="tel:'.str_replace(' ', '',$r['telefon']).'">'.str_replace(' ', '',$r['telefon']).'</a>&nbsp;</td><td>'.$r['diasem'].' '.$r['hora'].' '.$r['lloc'].'</td></tr>';
+		$htmlequips.= '<tr><td>'.$equips[$r['id']]['grup'].'</td><td>'.$r['nom'].' ('.trim(strtoupper($r['nomclub'])).')</td><td>'.$r['delegat'].'</td><td>&nbsp;<a href="tel:'.str_replace(' ', '',$r['telefon']).'">'.str_replace(' ', '',$r['telefon']).'</a>&nbsp;</td><td>'.$r['diasem'].' '.$r['hora'].' '.$r['lloc'].'</td></tr>';
 	}
-	echo '<table class="taulaeq"><tr><td>Equip</td><td>Delegat</td><td>&nbsp;Telefon</td><td>Lloc</td></tr>',$htmlequips,'</table><hr/>',$htmlpartides;
-	
+	echo '<table class="taulaeq"><tr><td>Grup</td><td>Equip</td><td>Delegat</td><td>&nbsp;Telefon</td><td>Lloc</td></tr>',$htmlequips,'</table><hr/>',$htmlpartides;
 	?>
 	<style>
 		table tr:first-child td { border-bottom:1px solid gray; font-weight:bold; text-shadow: 0 0 2px black; } 
@@ -1039,9 +1138,11 @@ static public function comprar(Request $request, Response $response, $params) {
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
 
-// BLACKFRIDAY if ($preu<20) $enviament= 8.9; else $enviament=0;
-	$enviament= 8.9;
+	$enviament=0;
+	if (!Fun::$blackFriday) $enviament= 8.9;
+	if (Fun::$blackFriday && $preu < 30) $enviament= 8.9; 
 	$preu+= $enviament;
+	
 	$str= sprintf("<br><h2>Dades comanda</h2>Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br/>Comentari:%s<hr/>",
 		date('d-m-Y H:i:s'),
 		$name, $address, $tel, $email, $email,	$comentari
@@ -1295,10 +1396,11 @@ static public function pagat(Request $request, Response $response, $params) {
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
 
-
-// BLACKFRIDAY if ($preu<20) $enviament= 8.9; else $enviament=0;
-	$enviament= 8.9;
+	$enviament=0;
+	if (!Fun::$blackFriday) $enviament= 8.9;
+	if (Fun::$blackFriday && $preu < 30) $enviament= 8.9; 
 	$preu+= $enviament;
+
 	$str= sprintf("<br><h2>Dades comanda</h2>Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Comentari:%s<br/>Comanda %s pagada amb autorització %s<hr/>",
 		date('d-m-Y H:i:s'),
 		$name, $address, $tel, $email, $email,
@@ -1470,5 +1572,18 @@ static public function sitemap(Request $request, Response $response) {
 	<?php
 }
 
+/*
+* @description
+* Genera un bloc de contingut per a la nova fase d'un trofeu. Rep l'id del bloc anterior i la llista de guanyadors
+* URL: /api/nextphase/[idbloc]
+*/
+static public function nextphase(Request $request, Response $response, $params) {
+	$db= new db();
+	$guanyadors= file_get_contents("php://input");
+	// tinc en $params['bloc'] l'id del bloc a clonar i en $guanyadors la llista d'ids dels equips a apuntar en el nou node
+	//$db->sql("insert into pagina (tipus,jerarquia,ordre,slug,destacada,categoria,tags,idioma,alta) select tipus,jerarquia,ordre+1,slug,destacada,categoria,tags,idioma,'".date('YmdHis')."' from pagina where id=".$params['bloc']);
+	// done de baixa els equips eliminats per a que no apareguen en el nou bloc de fase
+	$db->sql("update equip set baixa='".date('YmdHis')."' where baixa is null and competicio=(select jerarquia from pagina where pagina.id=".$params['bloc'].") and id not in (".$guanyadors.");");
+}
 
 } // of class Fun

@@ -38,7 +38,355 @@
 				        	</div>
 
 							<h3>{{$i18n.t('cart.info')}}:</h3>
-							<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo')}} <a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
+							<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo')}} </p>
+							<details ref="mesinfo"><summary><ui-button color="fedpival" @click="$refs['mesinfo'].open=!$refs['mesinfo'].open;">Més informació</ui-button></summary><div style="margin:0 1em; padding:1em; box-shadow:0 0 5px 2px black;">
+
+<p ><b><span
+lang=ES >INFORMACIÓN BÁSICA SOBRE
+PROTECCIÓN DE DATOS</span></b></a></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 
+ >
+ <tr>
+  <td  colspan=2 valign=top >
+  <p align=center ><b><span lang=ES>INFORMACIÓN BÁSICA
+  SOBRE PROTECCIÓN DE DATOS</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top ><b><span lang=ES  ><br clear=all
+  >
+  </span></b>
+  <p ><b><span lang=ES>Responsable</span></b></p>
+  </td>
+  <td  valign=top >
+  <p ><span lang=ES>FEDERACION DE PILOTA VALENCIANA</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES>Finalidad</span></b></p>
+  </td>
+  <td  valign=top >
+  <p class=MsoNormal><span lang=ES >Tratamos datos de
+  carácter personal con la finalidad de: responder a las solicitudes
+  formuladas, gestionar el alta como usuario en la página web, enviar la
+  información que nos sea solicitada, así como cualquier prospección comercial
+  que pueda ser del interés para el usuario. Por último, tratamos sus datos para
+  llevar a cabo la gestión del proceso de compra que el interesado ha realizado
+  a través de la cesta de compra de la web.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES>Legitimación</span></b></p>
+  </td>
+  <td  valign=top >
+  <p ><span lang=ES >La base legal para el tratamiento
+  de sus datos es el consentimiento del interesado en un formulario digital</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES>Destinatarios</span></b></p>
+  </td>
+  <td  valign=top >
+  <p ><span lang=ES >Los datos se comunicarán a otras
+  entidades privadas o públicas, para fines administrativos y para la ejecución
+  de su solicitud. Podrán además ser comunicados a la administración y/o tribunales
+  para cumplir con la legislación vigente.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES>Derechos</span></b></p>
+  </td>
+  <td  valign=top >
+  <p ><span lang=ES>Tiene derecho a acceder, rectificar y suprimir los
+  datos, así</span></p>
+  <p ><span lang=ES>como otros derechos, como se explica en la información
+  adicional.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES>Información adicional</span></b></p>
+  </td>
+  <td  valign=top >
+  <p ><span lang=ES>Puede consultar la información adicional y detallada</span></p>
+  <p ><span lang=ES>sobre Protección de Datos en<b><span >:  <i>enlace a INFORMACION ADICIONAL</i></span></b></span></p>
+  </td>
+ </tr>
+</table>
+
+<p ><span lang=ES >&nbsp;</span></p>
+<p ><b><span lang=ES >&nbsp;</span></b></p>
+
+<p ><b><span lang=ES >INFORMACIÓN ADICIONAL SOBRE PROTECCIÓN DE DATOS</span></b></p>
+
+<p ><span lang=ES
+>&nbsp;</span></p>
+
+<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 
+ >
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Quién es el responsable del
+  tratamiento de sus datos?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Identidad:</span></b><span
+  lang=ES > </span><span lang=ES>FEDERACION DE PILOTA
+  VALENCIANA</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >CIF:</span></b><span lang=ES
+  > </span><span lang=ES>G-46374351</span></p>
+  </td>
+ </tr>
+ <tr >
+  <td  valign=top >
+  <p class=MsoNormal><b><span lang=ES >Dirección postal:</span></b><span
+  lang=ES >&nbsp; </span><span lang=ES>C/ Marqués de San
+  Juan, 32 bajo B - 46015 - Valencia </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Teléfono:</span></b><span
+  lang=ES >&nbsp; </span><span lang=ES>963 74 95 58</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p class=MsoNormal><b><span lang=ES >Correo electrónico:</span></b><span
+  lang=ES >&nbsp; </span><a href="mailto:info@fedpival.es"><span
+  lang=ES>info@fedpival.es</span></a><span lang=ES> </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Con qué finalidad tratamos sus
+  datos personales?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p class=MsoNormal><span lang=ES >En </span><span lang=ES>FEDERACION
+  DE PILOTA VALENCIANA</span><span lang=ES > </span><span lang=ES >tratamos datos de
+  carácter personal con la finalidad de: responder a las solicitudes
+  formuladas, gestionar el alta como usuario en la página web, enviar la
+  información que nos sea solicitada, así como cualquier prospección comercial
+  que pueda ser del interés para el usuario. Por último, tratamos sus datos
+  para llevar a cabo la gestión del proceso de compra que el interesado ha
+  realizado a través de la cesta de compra de la web.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Cómo dejar de recibir
+  comunicaciones comerciales</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p class=MsoNormal><span lang=ES >De conformidad con lo
+  establecido en la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de
+  la Información y del Comercio Electrónico, en el caso de que el usuario desee
+  dejar de recibir comunicaciones informativas o promocionales por parte de </span><span
+  lang=ES>FEDERACION DE PILOTA VALENCIANA</span><span lang=ES >, puede solicitar la baja del servicio enviando un correo electrónico
+  a la siguiente dirección: </span><a href="mailto:info@fedpival.es"><span
+  lang=ES>info@fedpival.es</span></a></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Por cuánto tiempo conservaremos
+  sus datos?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p class=MsoNormal><span lang=ES >Los datos personales
+  proporcionados se conservarán mientras se mantenga la relación </span><span
+  lang=ES>administrativa y no se solicite su supresión por el interesado. Una
+  vez concluida la relación administrativa <span >se
+  conservarán en estado de bloqueo durante el plazo legal establecido en
+  cumplimiento de las obligaciones legales y poder hacer frente a las posibles
+  responsabilidades o requerimientos de las Administraciones Públicas y/o
+  Tribunales.  Durante la suscripción al envío de nuestras comunicaciones,
+  hasta el momento que solicita el usuario la baja del servicio.</span></span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Cuál es la legitimación para el
+  tratamiento de sus datos?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p class=MsoNormal><span lang=ES >La base legal para el
+  tratamiento de sus datos es el consentimiento del interesado en un formulario
+  digital.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿A qué destinatarios se
+  comunicarán sus datos?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >Los datos se comunicarán a otras
+  entidades privadas o públicas, para fines administrativos y para la ejecución
+  de su solicitud. Podrán además ser comunicados a la administración y/o
+  tribunales para cumplir con la legislación vigente.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES > </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Cuáles son sus derechos cuando
+  nos facilita sus datos? </span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >Cualquier persona tiene derecho a
+  obtener confirmación sobre si en </span><span lang=ES>FEDERACION DE PILOTA
+  VALENCIANA</span><span lang=ES > estamos tratando datos
+  personales que les conciernan, o no. Las personas interesadas tienen derecho
+  a acceder a sus datos personales, así como a solicitar la rectificación de
+  los datos inexactos o, en su caso, solicitar su supresión cuando, entre otros
+  motivos, los datos ya no sean necesarios para los fines que fueron recogidos.
+  Tiene derecho a solicitar tutela de la Agencia Española de Protección de
+  Datos. En determinadas circunstancias y por motivos relacionados con su
+  situación particular, los interesados podrán oponerse al tratamiento de sus
+  datos. FEDERACION DE PILOTA VALENCIANA dejará de tratar los datos, salvo por
+  motivos legítimos imperiosos, o el ejercicio o la defensa de posibles
+  reclamaciones.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Cómo ejercer sus derechos?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >Pueden ejercer sus derechos
+  remitiendo escrito, adjuntando copia de documento oficial que le identifique
+  y concretando el derecho o derechos que desea ejercer, de cualquiera de los
+  medios siguientes:</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Correo electrónico:</span></b><span
+  lang=ES > </span><a href="mailto:info@fedpival.es"><span
+  lang=ES>info@fedpival.es</span></a><span lang=ES> </span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >¿Cómo hemos obtenido sus datos?</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >Los datos personales que tratamos
+  en </span><span lang=ES>FEDERACION DE PILOTA VALENCIANA</span><span lang=ES
+  > </span><span lang=ES >proceden
+  del interesado.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Obtenemos el consentimiento
+  cuando:</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >El interesado crear una cuenta de
+  usuario en nuestra web, marca la casilla destinada a la suscripción a
+  nuestras comunicaciones o cumplimenta un formulario en formato electrónico.</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >&nbsp;</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Las categorías de datos que se
+  tratan son:</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Datos identificativos:</span></b><span
+  lang=ES > nombre y apellidos, DNI</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Datos de contacto:</span></b><span
+  lang=ES > teléfono, dirección postal, Correo electrónico</span></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><b><span lang=ES >Datos de características
+  personales:</span></b></p>
+  </td>
+ </tr>
+ <tr>
+  <td  valign=top >
+  <p ><span lang=ES >No se tratan datos especialmente
+  protegidos.</span></p>
+  </td>
+ </tr>
+</table>
+</div>
+							
+							</details>
+							
+							<br>
+							<br>
+							
+							<a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
 						
 							<br>
 							
@@ -138,7 +486,8 @@
 									    </div>
 
 									</div>
-									<span class="finalPrice">+Despeses d'enviament 8,90€<br/><br/><strong>Total {{ (parseFloat(cartTotalPrice)+8.9).toFixed(2) }}€</strong></span>
+									<span v-if="!isBlackFriday || (isBlackFriday && cartTotalPrice < 30)" class="finalPrice">+Despeses d'enviament 8,90€</span><br/><br/>
+									<span class="finalPrice"><strong>Total {{ (parseFloat(cartTotalPrice)+( (!isBlackFriday || (isBlackFriday && cartTotalPrice < 30) )?8.9:0)).toFixed(2) }}€</strong></span>
 								</div>
 				            </div>
 				            
@@ -170,6 +519,7 @@ export default {
   data () {
     return {
     	resultDone:'',
+    	isBlackFriday: true,
     	buyButtonDisable: false,
     	shipping : [
 		    {
@@ -179,11 +529,11 @@ export default {
 		    {
 		        label: this.$t('cart.bankTransfer'),
 		        value: 'bank-transfer'
-		    },
+		    }/*,
 		    {
 		        label: this.$t('cart.onlinePay'),
 		        value: 'online-pay'
-		    }
+		    }*/
 		],
     	order:{
     		name:'',

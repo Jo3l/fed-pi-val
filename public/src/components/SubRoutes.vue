@@ -27,7 +27,7 @@
 		<node-content :nodeId="currentPageId" :disableBlock="propDisable"></node-content>
 		
 	
-		<ui-modal ref="insertNode" size="normal" v-bind:title="$t('node.insert_node')">
+		<ui-modal ref="insertNode" size="large" v-bind:title="$t('node.insert_node')">
 			<div class="ui-autocomplete__content" v-if="!newNode">
 				<label class="ui-autocomplete__label">
 					<input v-model="newNodeName.name" v-bind:placeholder="$t('node.write_node')" class="ui-autocomplete__input"> 
@@ -44,7 +44,7 @@
 			</div>
         </ui-modal>
 
-		<ui-modal ref="renameNode" size="normal" v-bind:title="$t('node.rename_node')">
+		<ui-modal ref="renameNode" size="large" v-bind:title="$t('node.rename_node')">
 			<div class="ui-autocomplete__content" v-if="!newNode">
 				<label class="ui-autocomplete__label">
 					<ui-textbox
@@ -58,7 +58,7 @@
 				</label> 
 				
 				
-				<div class="input2flex" v-if="currentNodeName.compNode">
+				<div class="input2flex-disabled" v-if="currentNodeName.compNode">
 						<ui-datepicker
 			                :placeholder="$i18n.t('calendar.dateTip')"
 			                :start-of-week="datePickerOptions.dow"
@@ -74,7 +74,7 @@
 			            >Data Final Inscripció:</ui-datepicker>
 				</div>
 				
-				<div class="input4flex" v-if="currentNodeName.compNode">
+				<div class="input4flex-disabled" v-if="currentNodeName.compNode">
 					<ui-textbox
 							    floating-label
 					            autocomplete="off"
@@ -116,7 +116,7 @@
 			</div>
         </ui-modal>
   
-  		<ui-modal ref="insertNodeCompeticio" size="normal" title="Insertar Node Competició">
+  		<ui-modal ref="insertNodeCompeticio" size="large" title="Insertar Node Competició">
 			<div class="ui-autocomplete__content" v-if="!newNode">
 				<label class="ui-autocomplete__label">
 					<ui-textbox
@@ -129,7 +129,7 @@
 					></ui-textbox>
 					
 
-					<div class="input2flex">
+					<div class="input2flex-disabled">
 							<ui-datepicker
 				                :placeholder="$i18n.t('calendar.dateTip')"
 				                :start-of-week="datePickerOptions.dow"
@@ -146,7 +146,7 @@
 					</div>
 				
 				
-					<div class="input4flex">
+					<div class="input4flex-disabled">
 						<ui-textbox
 								    floating-label
 						            autocomplete="off"

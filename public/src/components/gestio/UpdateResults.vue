@@ -87,7 +87,28 @@
                 @click="addPlayerVisitant(insertaJugador)"
             >Afegir jugador Visitant</ui-button>
 		</section>
-		<br>
+		<br/>
+
+		<section class="flex50" v-if="$store.getters.isAuthenticatedWithRole(0)">
+			<div>
+				<label><strong>Sanció equip local:</strong></label>
+	            <ui-select
+	                help="Selecciona els punts a sancionar"
+	                :options="['0','-1','-2','-3','-4']"
+	                v-model="partida.sanciolocal"
+	                type="basic" />
+			</div>
+			<div>
+				<label><strong>Sanció equip visitant:</strong></label>
+	            <ui-select
+	                help="Selecciona els punts a sancionar"
+	                :options="['0','-1','-2','-3','-4']"
+	                v-model="partida.sanciovisitant"
+	                type="basic" />
+			</div>
+		</section> 
+
+		<br/>
 		
 		<label><strong>Delegat / Jutge:</strong></label>
 		<div class="triple-flex">
@@ -114,8 +135,8 @@
 				type="text"
 	            v-model="partida.contacteDelegat"
 			 ></ui-textbox>
-		 </div>
-		 
+		</div>
+
 		<section class="overflow-hidden">
             <ui-textbox
                 enforce-maxlength
@@ -173,7 +194,12 @@ export default {
 	},
 	methods: {
 	    closeAllModals: function() {
-	    	this.$eventHub.$emit('closeallmodals', {});
+	    	var vm=this;
+			if(!vm.$route.params.partidaId) {
+				vm.$eventHub.$emit('closeallmodals', {});
+			} else {
+				vm.$router.go(-1)
+			}
 	    },
 		parseTime: function(time) {
 			if(typeof time !== 'string') return time;
@@ -210,6 +236,8 @@ export default {
 	        	res.imatge_visitant = res.imatge_visitant ? res.imatge_visitant : '/static/img/shield.png';
 	        	res.resultatlocal = res.resultatlocal ? res.resultatlocal : 0;
 	        	res.resultatvisitant = res.resultatvisitant ? res.resultatvisitant : 0;
+	        	res.sanciolocal = res.sanciolocal ? res.sanciolocal : 0;
+	        	res.sanciovisitant = res.sanciovisitant ? res.sanciovisitant : 0;
 	            vm.partida = res;
 	            vm.getJugadorsPartida(id);
 	        })
@@ -246,19 +274,19 @@ export default {
 			vm.$http.post('/partida/'+vm.partida.id, {
 				"resultatlocal":vm.partida.resultatlocal,
 				"resultatvisitant":vm.partida.resultatvisitant,
+				"sanciolocal":vm.partida.sanciolocal,
+				"sanciovisitant":vm.partida.sanciovisitant,
 				"comentari":vm.partida.comentari,
 				"nomDelegat":vm.partida.nomDelegat,
 				"llicenciaDelegat":vm.partida.llicenciaDelegat,
 				"contacteDelegat":vm.partida.contacteDelegat
-			})			
+			})
 	        .then(function (response) {
 
 				vm.$http.post('/participa/'+vm.partida.id,{"local":vm.equipLocal, "visitant":vm.equipVisitant})
 		        .then(function (response) {
 
-
-					vm.closeAllModals();
-
+						vm.closeAllModals();
 
 		        })
 		        .catch(function (error) {

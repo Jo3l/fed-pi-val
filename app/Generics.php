@@ -86,9 +86,13 @@ static public function generic_update(Request $request, Response $response, $par
 				."\nResultat: ".$data['resultatlocal'].'-'.$data['resultatvisitant']
 				."\nComentari: ".$data['comentari']
 				."----\nDelegat: ".$json['nomDelegat']." (llicencia ".$json['llicenciaDelegat']."). Contacte: ".$json['contacteDelegat'];
+			if (!empty($data['comentari'])) Fun::phpmailer('campionats@fedpival.es',$sub,$msg);
 			$msg.= "\n\n\n Si veus alguna cosa incorrecta, tens 48 hores (".date('H:i\\h \\d\\e\\l d/m/Y', strtotime('+2 days')).") per demanar una correcció a campionats@fedpival.es";
-//			if (!empty($data['email'])) Fun::phpmailer($data['email'],$sub,$msg);
+			$msg.= "\n\n En cas contrari, pots confirmar este resultat fent clic al següent enllaç: https://fedpival.es/api/confirmapartida/".($id%10).base64_encode($id)." \n";
+			if (!empty($data['email'])) Fun::phpmailer($data['email'],$sub,$msg);
 			//die("\n\n".$sub."\n\n".$msg);
+			Fun::phpmailer('alsanan@gmail.com',$sub,$msg.' @generics:92 ');
+			$db->sql("update partida set confirmalocal=1 where id=".$id);
 		}
 	} catch (Exception $e) {
 		Fun::phpmailer('alsanan@gmail.com','error_generic_update:94',$e->getMessage() );
@@ -182,7 +186,8 @@ public function generic_delete(Request $request, Response $response, $params) {
 	$tabla= Fun::tables($params['tabla'],'modify');
     $db = new db();
     try{
-    	$db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
+    	if ($tabla!='partida' && $tabla!='comanda') $db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
+    	$db->sql("UPDATE ".$tabla." set baixa= '".date('YmdHis')."' where id=".$params['id']);
     } catch(Exception $e) { 
 		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
     }
@@ -196,7 +201,6 @@ static public function generic_query(Request $request, Response $response, $para
 	    Auth::verifyRol($request,0);
 	}
     $tabla= Fun::tables($params['tabla'],'select');
-    
 	$options= ['limit'=>Fun::$itemsPerPage];
 	if (in_array($tabla,['trinquet','producte'])) $options['limit']=PHP_INT_MAX; // canvie el limit per defecte si és trinquet (modificable per paràmetres a continuació)
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
@@ -239,22 +243,6 @@ static public function generic_query(Request $request, Response $response, $para
 	}
 	if ($tabla=='club') {
 		foreach($data as $idx=>$elm) $data[$idx]['json']= $data[$idx]['pwd']= $data[$idx]['email']= null;
-	}	
-	if (isset($_GET['csv']) && $tabla=='comanda') {
-		foreach($data as $idx=>$elm) {
-			$json= json_decode($data[$idx]['json'],true);
-			if (file_exists('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json')) {
-				$json= utf8_encode(file_get_contents('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json'));
-			}
-			unset($data[$idx]['json']);
-			$data[$idx]['nom']= $json['name'];
-			$data[$idx]['dir']= $json['address']+' '+$json['cp'];
-			$data[$idx]['tel']= $json['tel'];
-			$data[$idx]['email']= $json['email'];
-			$data[$idx]['data']= date('YmdHis',strtotime($data[$idx]['data'])); // des d'ara use timestamp
-			if (empty($data[$idx]['data'])) $data[$idx]['data']= $json['data']; 
-			$data[$idx]['tipus']= $json['payment']=='cash-on-delivery'?'contra-reembors.':$json['payment']=='online-pay'?'targeta':'transfer.';
-		}
 	}
 	if ($params['tabla']=='comanda') {
 		// si es comanda, el cart/json ara s'agafa del directori /data/orders/[any]/[codi].json i matxaque el que hi havia de la taula
@@ -266,7 +254,52 @@ static public function generic_query(Request $request, Response $response, $para
 			if (!empty($data[$idx]['data'])) $data[$idx]['data']= date('YmdHis',strtotime($data[$idx]['data'])); // des d'ara use timestamp
 			else $data[$idx]['data']= $json['data'];
 		}
+	}	
+	if (isset($_GET['csv']) && $tabla=='comanda') {
+		$datacsv= [];
+		foreach($data as $idx=>$elm) {
+			//$json= json_decode($data[$idx]['json'],true);
+			$json= '{}';
+			if (substr($data[$idx]['codi'],0,2)=='19') continue;
+			if (file_exists('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json')) {
+				$json= utf8_encode(file_get_contents('../data/orders/'.substr($data[$idx]['codi'],0,2).'/'.$data[$idx]['codi'].'.json'));
+			} else continue;
+			$datacsv[$idx]= $data[$idx];
+			$json= json_decode($json,true);
+			unset($datacsv[$idx]['json']);
+			unset($datacsv[$idx]['id']);
+			unset($datacsv[$idx]['obs']);
+			unset($datacsv[$idx]['estat']);
+			unset($datacsv[$idx]['data']);
+			unset($datacsv[$idx]['tipus']);
+			unset($datacsv[$idx]['signature']);
+			unset($datacsv[$idx]['resultat']);
+			$datacsv[$idx]['importe']= str_replace('.',',',$datacsv[$idx]['quantitat']);
+			unset($datacsv[$idx]['quantitat']);
+			$datacsv[$idx]['num_comanda']= $datacsv[$idx]['codi']+"\t";
+			unset($datacsv[$idx]['codi']);
+			$datacsv[$idx]['material']='';
+			foreach($json['cart'] as $e) $datacsv[$idx]['material'].= $e['quantity'].'x '.$e['fullProduct']['content']['val']['name'].' - '.$e['name'].'. ';
+			//$datacsv[$idx]['json']= print_r($json,true);
+			// $datacsv[$idx]['cols']= implode(',',array_keys($json)); //name,surname,address,cp,city,tel,email,comentari,payment,cart,data
+			$datacsv[$idx]['client']= utf8_encode($json['name']);
+			$datacsv[$idx]['cognoms']= utf8_encode($json['surname']);
+			//$datacsv[$idx]['dir']= $json['address']+' '+$json['cp'];
+			//$datacsv[$idx]['tel']= $json['tel'];
+			//$datacsv[$idx]['email']= $json['email'];
+			//$datacsv[$idx]['data']= date('YmdHis',strtotime($data[$idx]['data'])); // des d'ara use timestamp
+			$datacsv[$idx]['data_entrada']= date('Ymd',strtotime($json['data']))."\t";
+			if (empty($data[$idx]['data'])) $data[$idx]['data']= $json['data']; 
+			if (empty($data[$idx]['data']) || $data[$idx]['data']<date('Ymd000000',strtotime('-12 months'))) {
+				unset($data[$idx]);
+				continue;
+			}
+			$datacsv[$idx]['pagament']= $json['payment']=='cash-on-delivery'?'RB':$json['payment']=='ONLINE'?'targeta':'TRANSFER';
+		}
+		return Fun::render($datacsv);
+		exit;
 	}
+
     Fun::render($data);
 }
 

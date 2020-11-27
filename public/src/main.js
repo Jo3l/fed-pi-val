@@ -50,6 +50,8 @@ new Vue({
 	    pageview: function(route){
 	      if (typeof dataLayer !== 'undefined') {
 	        dataLayer.push( Object.assign({ event: 'pageview' }, route) );
+	        if(fbq) fbq('track', 'PageView');
+	        console.log('pageview')
 	      }
 	    },
 	  },

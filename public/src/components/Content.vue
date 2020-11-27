@@ -14,7 +14,7 @@
 						<div v-html="nodeContent[key].contingut"></div>
 					</article>
 
-					<a v-if="element.tipus == 'F'" :href="element.url"><ui-icon icon="attach_file"></ui-icon><strong>{{element.titol}}</strong></a>
+					<a v-if="element.tipus == 'F'" :href="element.url"> <ui-icon icon="attach_file"></ui-icon> <strong>{{element.titol}}</strong> </a>
 					
 					<div v-if="element.tipus == 'M'" class="mapa">
 						<iframe :src="'/map.html?'+ element.json"></iframe>
@@ -25,6 +25,7 @@
 						<thead>
 							<tr>
 								<th></th>
+								<th></th>
 								<th>Equip</th>
 								<th>Punts</th>
 								<th title="Partits jugats">PJ</th>
@@ -34,11 +35,16 @@
 								<th title="Jocs en contra">JC</th>
 							</tr>
 						</thead>
-						<tbody>
-							<tr v-for="(rank, index)  in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
+						<tbody v-for="(group,groupindex) in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0">
+							<tr :class="[(groupindex%2)?'odd':'even']">
+								<th rowspan="99" >Grup {{String.fromCharCode(65+parseInt(groupindex))}}</th>
+							</tr>
+							<tr v-for="(rank, index) in group"  :class="[element.selected?'selected':'', (groupindex%2)?'odd':'even']">
 								<td><button class="ui-icon-button ui-icon-button--type-primary ui-icon-button--color-default ui-icon-button--size-mini"><div class="ui-icon-button__icon"><span>{{index+1}}</span></div></button></td>
 								<td>{{rank.nom}}</td>
-								<td>{{rank.punts}}</td>
+								<td>{{rank.punts}} 
+									<ui-icon v-if="rank.sancions<0" style="color:red;position:absolute; margin-left:6px;" :title="'sancionat amb '+rank.sancions+' punts'" icon="info_outline"></ui-icon>
+								</td>
 								<td>{{rank.pj}}</td>
 								<td>{{rank.pg}}</td>
 								<td>{{rank.pp}}</td>
@@ -59,14 +65,17 @@
 								<th>{{$i18n.t('common.visitor')}}</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody v-if="'partides' in nodeContent[key]">
 							<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[(element.grup%2)?'odd':'even']">
 								<td>{{ element.grup?String.fromCharCode(65+parseInt(element.grup)):'' }}</td>
 								<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
-								<td>{{element.local.nom}}</td>
+								<td :style="element.local.id==0?'color:lightgray':''">{{element.local.nom}}</td>
 								<td><span class="no-print">{{element.resultatlocal}}</span></td>
 								<td><span class="no-print">{{element.resultatvisitant}}</span></td>
-								<td>{{element.visitant.nom}}</td>
+								<td :style="element.visitant.id==0?'color:lightgray':''">
+									{{element.visitant.nom}}
+									<ui-icon v-if="element.confirmavisitant!=1" style="color:#f80;position:absolute; margin-left:6px;" title="Resultat no confirmat pel visitant" icon="info_outline"></ui-icon>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -133,11 +142,13 @@
 					<!-- Partida -->
 					<div class="partida" v-if="element.tipus == 'J'">
 						<div class="buttonContainer">
+							<ui-button color="red" icon="delete" size="small" type="secondary" @click="deleteAllMatches()">Esborrar totes les partides...</ui-button>
 							<ui-button color="red" icon="save" size="small" type="secondary" @click="generator=true">Generador Campionat/Copa</ui-button>
 						</div>
 						<table class="table results">
 							<thead>
 								<tr>
+									<th></th>
 									<th></th>
 									<th>Equip</th>
 									<th>Punts</th>
@@ -148,11 +159,28 @@
 									<th title="Jocs en contra">JC</th>
 								</tr>
 							</thead>
-							<tbody>
+							<!--tbody>
 								<tr v-for="(rank,index) in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
 									<td><button class="ui-icon-button ui-icon-button--type-primary ui-icon-button--color-default ui-icon-button--size-mini"><div class="ui-icon-button__icon"><span>{{index+1}}</span></div></button></td>
 									<td>{{rank.nom}}</td>
 									<td>{{rank.punts}}</td>
+									<td>{{rank.pj}}</td>
+									<td>{{rank.pg}}</td>
+									<td>{{rank.pp}}</td>
+									<td>{{rank.jf}}</td>
+									<td>{{rank.jc}}</td>
+								</tr>
+							</tbody-->
+							<tbody v-for="(group,groupindex) in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0">
+								<tr :class="[(groupindex%2)?'odd':'even']">
+									<th rowspan="99" >Grup {{String.fromCharCode(65+parseInt(groupindex))}}</th>
+								</tr>
+								<tr v-for="(rank, index) in group"  :class="[element.selected?'selected':'', (groupindex%2)?'odd':'even']">
+									<td><button class="ui-icon-button ui-icon-button--type-primary ui-icon-button--color-default ui-icon-button--size-mini"><div class="ui-icon-button__icon"><span>{{index+1}}</span></div></button></td>
+									<td>{{rank.nom}}</td>
+									<td>{{rank.punts}} 
+										<ui-icon v-if="rank.sancions<0" style="color:red;position:absolute; margin-left:6px;" :title="'sancionat amb '+rank.sancions+' punts'" icon="info_outline"></ui-icon>
+									</td>
 									<td>{{rank.pj}}</td>
 									<td>{{rank.pg}}</td>
 									<td>{{rank.pp}}</td>
@@ -172,29 +200,32 @@
 									<th>Res. {{$i18n.t('common.visitor')}}</th>
 									<th>{{$i18n.t('common.visitor')}}</th>
 									<th></th>
+									<th></th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody v-if="'partides' in nodeContent[key]">
 								<tr v-for="element in nodeContent[key].partides" v-if="nodeContent[key].partides && nodeContent[key].partides.length > 0" :class="[element.selected?'selected':'', (element.grup%2)?'odd':'even']">
 
 									<td>{{ String.fromCharCode(65+parseInt(element.grup)) }}</td>
 									<td>{{ parseTime(element.data).toString('d/M/yyyy') }}</td>
-									<td>{{element.local.nom}}</td>
+									<td :style="element.local.id==0?'color:lightgray':''">{{element.local.nom}}</td>
 									<td><span class="no-print">{{element.resultatlocal}}</span></td>
 									<td><span class="no-print">{{element.resultatvisitant}}</span></td>
-									<td>{{element.visitant.nom}}</td>
-
-									<th>
-										<!--<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>-->
-										<!--<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>-->
-									</th>
+									<td :style="element.visitant.id==0?'color:lightgray':''">{{element.visitant.nom}}</td>
+									<td>
+										<ui-icon-button icon="edit" size="small" type="secondary" @click="editMatch(element)"></ui-icon-button>
+										<ui-icon-button icon="delete" size="small" type="secondary" @click="deleteMatch(element)"></ui-icon-button>
+									</td>
 								</tr>
 							</tbody>
 						</table>
-						
+						<div class="buttonContainer" v-if="'partides' in nodeContent[key] && [2,4,8,16,32].indexOf(nodeContent[key].partides.length)>0">
+							<ui-button v-if="jugades(key)" color="red" icon="call_merge" size="small" type="secondary" @click="nextPhase(key)">Anular equips perdedors per generar partides de nova fase</ui-button>
+							<span v-else><ui-icon icon="warning"></ui-icon> El número de partides jugades no permet generar la següent fase</span>
+						</div>
 
+<!-- ARA ES REDIRIGEIX A EDICIÓ EN admin/partida/:ID
         				<ui-modal ref="matchedit" size="large"  title="Editar partida">
-
 							 <ui-datepicker
 				                placeholder="$i18n.t('calendar.dateTip')"
 				                :start-of-week="datePickerOptions.dow"
@@ -344,6 +375,7 @@
 							</div>
 
     					</ui-modal>
+-->
 
 						<div class="form" v-if="generator">
 							<match-generator :nodeId="element.jerarquia" :blockId="element.id"></match-generator>
@@ -481,6 +513,15 @@ export default {
 		}
 	},
 	methods: {
+		jugades(key) {
+			if (!'partides' in this.nodeContent[key]) return false;
+			var partides= this.nodeContent[key].partides;
+			console.log( this.nodeContent[key] );
+			if ([2,4,8,16,32].indexOf(partides.length)<0) return false;
+			var res= true;
+			// si cada partida té resultat distint de zero (jugada (>0) o amb equip nul(-1) )
+			return partides.reduce( (prev,curr)=>prev && (curr.resultatlocal+curr.resultatvisitant)!=0 , true );
+		},
 		deletePlayer:function(player, source){
 			var vm = this;
 			var partida = vm.newGame;
@@ -688,6 +729,11 @@ export default {
         },		
 		editMatch: function(element) {
 			var vm=this;
+			console.log(element)
+			vm.$router.push('/admin/partida/'+element.id);
+			return;/*
+			
+			// antic code d'edició de partida. Ara es redirigeix a pàgina dedicada amb totes les opcions.
 			
 			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
 			  element.selected=undefined;
@@ -710,7 +756,7 @@ export default {
 	        })
 	        .catch(function (error) {
 	            console.log(error);
-	        });
+	        });*/
 		},
 		getNode: function(){
 			
@@ -763,6 +809,7 @@ export default {
 	            console.log(error);
 	        });
 		},
+		/* /// sense us
 		resetMatch: function() {
 			var vm = this;
 			
@@ -785,6 +832,7 @@ export default {
 			vm.closeModalMatch('matchedit');
 			
 		},
+		*/
 		saveBlock: function(block){
 			
 			var vm = this;
@@ -801,6 +849,7 @@ export default {
 	        });
 
 		},
+		/* /// sense us
 		saveMatch: function(){
 			var vm = this;
 			
@@ -831,10 +880,12 @@ export default {
 			
 			
 			vm.resetMatch(vm.newGame);
-		},
+		},*/
 		deleteMatch: function(element) {
+			
+			if (!confirm("COMPTE !!! \n¿Estas totalment segur de voler esborrar aquesta partida?")) return;
 
-			var vm=this;
+			var vm= this;
 
 			vm.$http.delete('/partida/'+element.id)
 	        .then(function (response) {
@@ -849,25 +900,31 @@ export default {
 	        
 	        
 		},
+		deleteAllMatches() {
+			if(!confirm("estas segur d'esborrar totes les partides?")) return;
+			if(!confirm("estas absolutament segur de voler esborrar totes les partides i resultats per poder tornar-les a generar?")) return;
+			var vm=this;
+			var blockPartida = vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; });
+			console.log(blockPartida);
+			if (blockPartida) blockPartida.partides.forEach( ({id,...args})=>{
+				vm.$http.delete('/partida/'+id).catch( err=>console.log(err) );
+			} )
+			blockPartida.partides= [];
+			alert('Partides anul.lades...')
+		},
 		removeContent: function(element) {
 
 			var vm=this;
 
-
-			var r = confirm("Confirma acció d'esborrar");
-			if (r == true) {
-				
-	  			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
-		        .then(function (response) {
-		            vm.nodeContent = response.data;
-		        })
-		        .catch(function (error) {
-		            console.log(error);
-		        });
-		        
-			} else {
-			  
-			}
+			if (!confirm("Confirma acció d'esborrar")) return;
+			
+  			vm.$http.delete('/node/'+vm.nodeId+'/element/'+element.id)
+	        .then(function (response) {
+	            vm.nodeContent = response.data;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
 
 		},
 		setOrder: function(initial){
@@ -955,7 +1012,27 @@ export default {
 	    },
 	    taula_calendari:function() {
 	    	window.open('/api/resumcalendari/'+this.nodeContent[0].jerarquia)
-	    }
+	    },
+	    nextPhase(key) {
+
+	    	/* procediment de creació del bloc de la següent fase */
+	    	/*  1. cree un nou bloc de contingut J */
+	    	/*  2. seleccione equips guanyadors */
+	    	
+	    	var guanyadors= [];
+	    	var vm= this;
+		    if (!'partides' in vm.nodeContent[key]) return false;
+	    	vm.nodeContent[key].partides.forEach( pt=> guanyadors.push( (pt.resultatlocal>pt.resultatvisitant) ? parseInt(pt.local.id) : parseInt(pt.visitant.id) ) );
+			vm.$http.post('/nextphase/'+vm.nodeContent[key].id, guanyadors.join(',') )
+	        .then(function (response) {
+	            //vm.$router.go(); // reload
+	            vm.generator= true;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+	    	
+	    },
 		
 	},
 	mounted: function () {

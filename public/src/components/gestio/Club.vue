@@ -53,7 +53,23 @@
 					</div>
 					
                 </ui-tab>
-
+                
+                <ui-tab title="Confirmacions">
+					<br>
+					
+					<div class="vuetableContainer">
+						<tablerone :tableList="confirmResult" :tableColumns="columnsResultats">
+							<th slot="headActions"></th>
+							<template slot="actions" scope="props">
+								<td class="actions">
+									<ui-button color="default" icon="check" icon-position="left" size="small" type="secondary" @click="confResultats(props.row.tag)">Confirmar</ui-button>
+								</td>
+							</template>
+						</tablerone>
+					</div>
+					
+                </ui-tab>
+                
                 <ui-tab title="Demanar registre jugador" id="nou">
                     
 					<club-nou-jugador></club-nou-jugador>
@@ -510,6 +526,7 @@ export default {
 		    noResults:false,
 			poblacions: [],
 			mapa: null,
+			confirmResult:[],
 		    /*club:{
 			      nom: null,
 			      fundacio: new Date(),
@@ -747,6 +764,7 @@ export default {
 	            vm.getResultats(vm.$store.getters.userId);
 	            vm.getInscripcions();
 	            vm.getJugadors(vm.$store.getters.userId);
+	            vm.getConfirmList();
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -780,6 +798,27 @@ export default {
 				}
 
 	            vm.inscripcions = inscripcions;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+		},
+		getConfirmList: function(){
+	        var vm = this;
+	        vm.$http.get('/partidesaconfirmar', { cache: false })
+	        .then(function (response) {
+	        	vm.confirmResult=response.data;
+	        	console.log(response.data)
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+		},
+		confResultats: function(tag){
+			var vm = this;
+	        vm.$http.get('/confirmapartida/'+tag, { cache: false })
+	        .then(function (response) {
+	            vm.getConfirmList();
 	        })
 	        .catch(function (error) {
 	            console.log(error);

@@ -45,7 +45,7 @@ $app->add(function ($req, $res, $next) {
         //->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Origin', 'http://fedpival.indiza.com')
         ->withHeader('Access-Control-Allow-Headers', 'X-Auth-Token, X-Requested-With, Content-Type, Accept, Origin, Authorization')
-        ->withHeader('Accgeess-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
 
@@ -346,6 +346,12 @@ $app->get('/api/soci/{num:[0-9]+}', '\app\Fun::soci'); // buscar
 $app->post('/api/equip/genera', '\app\Fun::generaPartides'); // buscar
 $app->post('/api/inscripcions/genera', '\app\Fun::generaPartides'); // buscar
 
+/*
+* @description
+* Genera un bloc de contingut per a la nova fase d'un trofeu. Rep l'id del bloc anterior i la llista de guanyadors
+* URL: /api/nextphase/[idbloc] POST 1,2,3,... // string amb ids d'equips guanyadors
+*/
+$app->post('/api/nextphase/{bloc:[0-9]+}', '\app\Fun::nextphase');
 
 /*
 * @description
@@ -368,6 +374,28 @@ $app->post('/api/jugador/registre', '\app\Fun::demanajugador');
 * URL: /api/participa/[idpartida]
 */
 $app->get('/api/participa/{partida:[0-9]+}', '\app\Fun::participants'); 
+
+/*
+* @description
+* Obté les partides per confirmar d'un club
+* URL: /api/partidesaconfirmar
+*/
+$app->get('/api/partidesaconfirmar', '\app\Fun::partidesaconfirmar'); 
+
+/*
+* @description
+* Obté les partides per confirmar de tots els clubs
+* URL: /api/totespartidesaconfirmar/
+*/
+$app->get('/api/totespartidesaconfirmar', '\app\Fun::totespartidesaconfirmar'); 
+
+
+/*
+* @description
+* Confirma una partida per part de l'equip visitant
+* URL: /api/confirmapartida/[idpartida_codificat]
+*/
+$app->get('/api/confirmapartida/{partida:[A-Za-z0-9=]+}', '\app\Fun::confirmapartida');
 
 /*
 * @description
@@ -398,7 +426,7 @@ ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}/{id:[0-9]+}', '\app\Generics::generic_id');
+$app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda|error}/{id:[0-9]+}', '\app\Generics::generic_id');
 
 /*
 * @description
@@ -406,7 +434,7 @@ $app->get('/api/{tabla:postal|partida|club|equip|inscripcio|jugador|producte|jer
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}/{id:[0-9]+}', '\app\Generics::generic_delete');
+$app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda|error}/{id:[0-9]+}', '\app\Generics::generic_delete');
 
 /*
 * @description
@@ -414,7 +442,7 @@ $app->delete('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarqu
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal/46680
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}/{id:[0-9]+}', '\app\Generics::generic_update');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda|error}/{id:[0-9]+}', '\app\Generics::generic_update');
 
 /*
 * @description
@@ -423,7 +451,7 @@ $app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia
 * Taules: postal|partida|club|equip|jugador|producte|jerarquia|noticia|acte|usuari
 * URL: /api/postal
 */
-$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda}[/]', '\app\Generics::generic_insert');
+$app->post('/api/{tabla:partida|club|equip|inscripcio|jugador|producte|jerarquia|noticia|acte|usuari|trinquet|comanda|error}[/]', '\app\Generics::generic_insert');
 
 /*
 * @description

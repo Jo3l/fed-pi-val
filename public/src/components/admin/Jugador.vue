@@ -116,6 +116,14 @@
 			            v-model="jugador.poblacio"
 			        ></ui-textbox>
 
+					<ui-textbox
+					    floating-label
+			            autocomplete="off"
+			            label="Última factura"
+						type="text"
+			            v-model="jugador.ultimafactura"
+			        ></ui-textbox>
+
 					<!--div class="contentFlex intern">
 						<div class="left50">
 							<ui-switch v-model="jugador.actiu">Actiu</ui-switch>
@@ -375,7 +383,7 @@ export default {
 	            vm.jugador.dataactiu = vm.jugador.dataactiu ? vm.parseTime(vm.jugador.dataactiu) : new Date();
 	            if (isNaN(vm.jugador.tipusfitxa)) vm.jugador.tipusfitxa = 0;
 	            //if (!vm.jugador.fitxa) vm.jugador.fitxa = [];
-	            console.log('split',vm.jugador.fitxa)
+	            //console.log('split',vm.jugador.fitxa)
 	            vm.jugador.fitxa= vm.jugador.fitxa ? vm.jugador.fitxa.split(',') : [];
 	            //vm.jugador.fitxa.forEach( (e,idx)=> vm.jugador.fitxa[idx]= '"'+e+'"' )
 
@@ -388,6 +396,10 @@ export default {
 		        .catch(function (error) {
 		            console.log(error);
 		        });*/
+		        if (vm.clubs) {
+		        	vm.clubs.forEach( a=> { if (a.value==vm.jugador.club) vm.clubName = a.label; } );
+		        	console.log(vm.jugador.club, vm.clubName);
+		        }
 		        
 	        })
 	        .catch(function (error) {
@@ -415,6 +427,7 @@ export default {
 			vm.jugador.dir= decodeURIComponent(escape(data.dir));
 			vm.jugador.cp= data.cp;
 			vm.jugador.poblacio= data.poblacio;
+			vm.jugador.ultimafactura= data.ultimafactura;
 			vm.jugador.dni= data.dni;
 			vm.jugador.sexe= data.sexe;
 			vm.jugador.foto= data.foto;
@@ -427,7 +440,9 @@ export default {
         vm.$http.get('/nomsclubs')
         .then( function (response) {
         	vm.clubs.push( { 'label': 'cap', 'value': 0 } ); // afegir un en blanc. a la api ja ho canvie a null
-        	response.data.forEach( (clb)=> vm.clubs.push( { 'label':clb.nom, 'value':clb.id } ) );
+        	response.data.forEach( (clb)=> {
+        		vm.clubs.push( { 'label':clb.nom, 'value':clb.id } );
+        	});
             vm.clubName = vm.returnClubNamefromId(vm.jugador.club);
         } )
         .catch(function (error) {

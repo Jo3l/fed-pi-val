@@ -29,7 +29,7 @@
 					<template slot="actions" scope="props">
 						<td class="actions">
 							<ui-button color="default" icon="description" icon-position="left" size="small" type="secondary" @click="view(props.row)">Detalls</ui-button>
-							<!--ui-button color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="confirmAction(remove, props.row)">Borrar</ui-button-->
+							<ui-button v-show="props.row.repetit" color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="confirmAction(remove, props.row)" title="S'ha detectat una comanda repetida posterior">Eliminar</ui-button>
 						</td>
 					</template>
 				</tablerone>
@@ -49,6 +49,7 @@
 	            <div class="list">
 					<dl>
 					  <dt><strong>Pagament:</strong> {{visibleOrder.payment}}</dt>
+					  <dt><strong>Data:</strong> {{diaMesAny(visibleOrder.data)}}</dt>
 					  <dt><strong>{{ $i18n.t('cart.orderNumber') }}:</strong> {{visibleOrder.codi}}</dt>
 					  <dt><strong>{{ $i18n.t('cart.name') }}:</strong> {{visibleOrder.name+' '+visibleOrder.surname}}</dt>
 					  <dt><strong>Email:</strong> {{visibleOrder.email}}</dt>
@@ -74,6 +75,23 @@
 						:options="[{value:'N',label:'No llegit'},{value:'L',label:'Llegit'},{value:'P',label:'Preparat'},{value:'E',label:'Enviat'}]"
 						v-model="visibleOrder.estat"
 		            >Estat</ui-radio-group><br>
+		            <ui-textbox
+		            	floating-label
+		                label="Factura"
+		                placeholder="Pose el numero de factura associat"
+		                type="text"
+		                v-model="visibleOrder.factura"
+		                @blur="factura"
+		            ></ui-textbox>
+		            <ui-textbox
+		            	floating-label
+		                label="Observacions"
+		                placeholder="Especifica un text curt sobre aquesta comanda"
+		                type="text"
+		                v-model="visibleOrder.obs"
+		                @blur="obs"
+		            ></ui-textbox>
+
 				</div>
 	           
 	        </ui-modal>
@@ -167,7 +185,7 @@ export default {
 		/*getTipus: function(row) { return JSON.parse(row.json).payment; },*/
 		confirmAction: function(func, item) {
 
-			if(confirm( this.$i18n.t('common.confirm') )) {
+			if(confirm( this.$i18n.t('common.confirm'))) {
 				func(item);
 			}
 
@@ -183,6 +201,8 @@ export default {
 	  		vm.visibleOrder.total = row.quantitat;
 	  		vm.visibleOrder.estat = row.estat;
 	  		vm.visibleOrder.data = obj.data;
+	  		if (!vm.visibleOrder.factura) vm.visibleOrder.factura = row.factura;
+	  		if (!vm.visibleOrder.obs) vm.visibleOrder.obs = row.obs;
 	  		vm.$refs.modal.open();
 	    },
 	    clickCallback: function(pageNum) {
@@ -201,16 +221,20 @@ export default {
 	        page+= '/o/codi-';
 	        this.$http.get(apiUrl+page, { cache: false }
 			).then(function (response) {
+				var last= {quantitat:0};
 				response.data.forEach( (a)=>{ 
 					try {
-						var obj= JSON.parse(a.json);
+						var obj= JSON.parse(a.json) || {};
 					} catch(e) { console.log(e); obj={}; }
 					a.payment= nomtipus[obj.payment]; 
 					a.comprador= obj.name+(obj.surname?' '+obj.surname:'');
+					a.repetit=false;
+					if (a.quantitat==last.quantitat) a.repetit= true;
+					last.quantitat= a.quantitat;
 					a.estatdesc= vm.estats[a.estat];
 					if(obj.payment=='online-pay') {
 						if (!isNaN(a.resultat) && a.resultat) a.resultat= '<span style="color:green">'+a.resultat+'</span>';
-						else a.resultat = '<span style="color:red">!!! NO-COMPLETAT</span>';
+						else a.resultat = '<span style="color:red">INCOMPLET!!!</span>';
 					}
 					a.data= vm.diaMesAny( a.data ); 
 				} );
@@ -224,19 +248,72 @@ export default {
 	        
 	    },
 		csv: function(listName) {
-	        window.location.href='/api/'+listName+'?csv=true';
+			this.$http.get(
+					'/'+listName+'?csv=true',
+			        { 
+			        	withCredentials: true,
+			        	credentials: 'include'
+			        }
+			)
+			  // /*JA NO VA*/ .then(resp => {console.log(resp.data);resp.blob();})
+			  .then(blob => {
+			  	var encodedUri = encodeURI(blob.data);
+				var link = document.createElement("a");
+				link.setAttribute("href", 'data:text/csv,'+encodedUri);
+				link.setAttribute("download", "comandes.csv");
+				link.setAttribute("target", "_blank");
+				document.body.appendChild(link);
+				link.innerText= Math.random();
+				link.click();
+				alert('Arxiu descarregat!'); // or you know, something with better UX...
+			  	/*blob= new Blob(blob, {type: "text/csv"});
+			    const url = window.URL.createObjectURL(blob);
+			    const a = document.createElement('a');
+			    a.style.display = 'none';
+			    a.href = url;
+			    // the filename you want
+			    a.download = 'comandes.csv';
+			    document.body.appendChild(a);
+			    a.click();
+			    window.URL.revokeObjectURL(url);*/
+			  })
+			  .catch( e=> alert('ops! problema: '+e));
+		},
+		remove: function(que) {
+			console.log(que);
+			this.$http.delete( '/comanda/'+que.id )
+			.then(res => res.json())
+			.then(res => {
+				//delete que;
+				vm.orders= vm.orders.filter( (value, index, arr)=>value.id!=que.id );
+				console.log(res);
+			});
 		},
 		estat: function(que) {
 			var vm= this;
 			vm.visibleOrder.estat= que;
 			console.log(vm.visibleOrder.json,vm.visibleOrder.data)
 			//console.log(JSON.parse(vm.visibleOrder.json).data)
-			this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"data":vm.visibleOrder.data,"estat":que})
+			this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"data":vm.visibleOrder.data,"estat":que })
 			.catch( (e)=>console.log('error',e) );
 			vm.orders.forEach( (o)=> { if (o.id==vm.visibleOrder.id) { 
 				o.estat= que;
 				o.estatdesc= vm.estats[que];
 			} } );
+		},
+		factura: function(que) {
+		  	var vm= this;
+		  	var fac= vm.visibleOrder.factura;
+		  	vm.orders.find( a=>a.id==vm.visibleOrder.id ).factura=fac;
+		  	this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"factura":fac})
+		  	.catch( e=>console.error(e) );
+		},
+		obs() {
+		  	var vm= this;
+		  	var obser= vm.visibleOrder.obs;
+		  	vm.orders.find( a=>a.id==vm.visibleOrder.id ).obs=obser;
+		  	this.$http.post('/comanda/'+vm.visibleOrder.id, {"id":vm.visibleOrder.id,"obs":obser})
+		  	.catch( e=>console.error(e) );
 		}
 	  },
 	  mounted: function() {

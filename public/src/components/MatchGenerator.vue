@@ -63,7 +63,10 @@
 			<h2 v-if="esTrofeu && equips.length==2">Final</h2-->
 			<h2 v-if="esTrofeu">Trofeu</h2>
 			<h2 v-else>Lliga</h2>
-			<h3 v-if="esTrofeu && ![2,4,8,16,32,64].includes(equips.length)"><ui-icon icon="sentiment_dissatisfied"></ui-icon> El número actual d'equips no permet emparellaments per a un trofeu <!--ui-button @click="omplir">afegir elements fins omplir</ui-button--></h3> 
+			<h3 v-if="esTrofeu && ![2,4,8,16,32,64].includes(equips.length)">
+				<ui-icon icon="sentiment_dissatisfied"></ui-icon> El número actual d'equips no permet emparellaments per a un trofeu 
+				<ui-button @click="omplir()">corregir amb equips nuls</ui-button>
+			</h3> 
 			<!--
 			1. generar un botó de omplir fins 2^
 			2. crear botó de generar següent fase de trofeu amb els equips guanyadors
@@ -136,6 +139,7 @@ export default {
 		return {
 			/// http://tournamentscheduler.net
 			roundrobin: {
+				/*
 				1: {},
 				2:{
 					0:[[0,1]]
@@ -225,6 +229,96 @@ export default {
 				  7:[[2,1],[5,8],[6,3],[4,9],[7,0]],
 				  8:[[2,3],[8,9],[1,0],[5,7],[6,4]]
 				}
+				*/
+				1: {},
+				2:{
+					0:[[0,1]]
+				},
+				//3 equips, 3 partides 3 jornades
+				3:{
+					0:[[0,1]],
+					1:[[2,0]],
+					2:[[1,2]]
+				},
+				//4 equips, 6 partides 3 jornades
+				4:{
+					0:[[0,1],[2,3]],
+					1:[[3,0],[1,2]],
+					2:[[0,2],[1,3]]
+				},
+				//5 equips, 10 partides 5 jornades
+				5:{
+					0:[[0,1],[2,3]],
+					1:[[1,2],[3,4]],
+					2:[[0,4],[3,1]],
+					3:[[0,3],[4,2]],
+					4:[[2,0],[1,4]]
+				},
+				//6 equips, 15 partides 5 jornades
+				6:{
+					0:[[0,1],[2,3],[4,5]],
+					1:[[5,0],[1,2],[3,4]],
+					2:[[0,4],[3,1],[2,5]],
+					3:[[0,3],[4,2],[5,1]],
+					4:[[2,0],[1,4],[3,5]]
+				},
+				//7 equips, 21 partides 7 jornades
+				'6b':{
+					0:[[1,0],[3,2],[5,4]],
+					1:[[0,5],[2,1],[4,3]],
+					2:[[4,0],[1,3],[5,2]],
+					3:[[3,0],[2,4],[1,5]],
+					4:[[0,2],[4,1],[5,3]]
+				},
+				7:{
+					0:[[0,1],[2,3],[4,5]],
+					1:[[1,2],[3,4],[5,6]],
+					2:[[0,3],[2,5],[4,7]],
+					3:[[1,4],[3,6],[5,0]],
+					4:[[0,2],[4,6],[1,3]],
+					5:[[6,0],[2,4],[3,5]],
+					6:[[4,0],[2,6],[5,1]]
+				},
+				8:{
+					0:[[0,1],[2,3],[4,5],[6,7]],
+					1:[[1,2],[3,4],[5,6],[7,0]],
+					2:[[0,3],[2,5],[4,7],[6,1]],
+					3:[[1,4],[3,6],[5,0],[7,2]],
+					4:[[0,2],[4,6],[1,3],[5,7]],
+					5:[[6,0],[2,4],[3,5],[7,1]],
+					6:[[4,0],[2,6],[5,1],[7,3]]
+				},
+				'8b':{
+					0:[[1,0],[3,2],[5,4],[7,6]],
+					1:[[2,1],[4,3],[6,5],[0,7]],
+					2:[[3,0],[5,2],[7,4],[1,6]],
+					3:[[4,1],[3,6],[5,0],[7,2]],
+					4:[[0,2],[4,6],[1,3],[5,7]],
+					5:[[6,0],[2,4],[3,5],[7,1]],
+					6:[[4,0],[2,6],[5,1],[7,3]]
+				},
+				9:{
+					0:[[1,4],[0,3],[7,2],[6,8]],
+					1:[[1,7],[6,0],[2,4],[3,5]],
+					2:[[1,6],[8,7],[2,0],[5,4]],
+					3:[[1,8],[2,6],[3,7],[5,0]],
+					4:[[1,3],[5,2],[4,8],[0,7]],
+					5:[[1,0],[6,4],[8,5],[2,3]],
+					6:[[1,2],[3,8],[5,6],[4,7]],
+					7:[[1,5],[4,3],[0,8],[7,6]],
+					8:[[0,4],[7,5],[6,3],[8,2]]
+				},
+				10:{
+					0:[[2,6],[4,5],[7,1],[0,8],[9,3]],
+					1:[[2,9],[3,0],[8,7],[1,4],[5,6]],
+					2:[[2,8],[1,3],[5,9],[6,0],[4,7]],
+					3:[[2,5],[6,1],[4,8],[7,3],[0,9]],
+					4:[[2,4],[7,6],[0,5],[9,1],[3,8]],
+					5:[[2,0],[9,7],[3,4],[8,6],[1,5]],
+					6:[[2,7],[0,4],[9,6],[3,5],[8,1]],
+					7:[[2,1],[5,8],[6,3],[4,9],[7,0]],
+					8:[[2,3],[8,9],[1,0],[5,7],[6,4]]
+				}				
 			},
 			inici: new Date(),
 			loading:false,
@@ -356,6 +450,22 @@ export default {
 			jornada++;
 			if (vm.tornades) vm.jornades[jornada] = { data: new Date(), enfrontaments: tornades, grup: grup };
 		},
+		omplir: function() {
+			// casuistica: 2-16 equips. cas de potències de dos està clar. en aquesta funció inserte nous equips participants falsos fins omplir 2-4-8-16
+			var vm= this;
+			var l= vm.equips.length;
+			var next= this.seeding(l).length;
+			console.log(next);
+			var rec= { id:0, club: null, grup: 0, json: null, nom: "- - -", nomclub: "_ EQUIP NUL _" }
+			while (l<next) {
+				vm.equips.push( { ...rec } );
+				l++;
+			}
+			var numjornades= vm.roundrobin[vm.equips.length].length || 1;
+			vm.jornades.length= numjornades*2;
+			this.genera();
+			return;
+		},
 		lliga: function(eqs) {
 			// generació de partides de lliga (tots contra tots, anada i tornada) amb taula pregenerada :
 			var vm= this;
@@ -470,8 +580,8 @@ export default {
         	var vm= this;
         	vm.jornades.forEach(function(a){ 
         		a.datacurta= (new Date(a.data)).toISOString().substring(0,10).replace(/-/g,'');
-        		//window.enf= a.enfrontaments;
-        		if (a.enfrontaments) a.enfrontaments= a.enfrontaments.filter(function(a){ return a[0].id!=0 && a[1].id!=0 });
+        		//if (a.enfrontaments) a.enfrontaments= a.enfrontaments.filter(function(a){ console.log(a); return a[0].id!=0 && a[1].id!=0 });
+        		/// alsanan june2020 elimine filtre anterior perquè invalida enfrontaments amb equips nuls (omplits per a trofeu)
         	})
         	vm.jornades.bloc= vm.blockID;
         	vm.jornades.node= vm.nodeId;
@@ -491,6 +601,7 @@ export default {
 	        .then(function (response) {
 	            
 	            vm.equips = response.data;
+				if([2,4,8,16,32].indexOf(vm.equips.length)>=0) { vm.esTrofeu= true; vm.tornades= false; }
 				vm.genera(); // afegit per a que genere partides amb els equips ja existents al iniciar el component
 	            
 	        })

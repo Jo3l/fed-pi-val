@@ -23,6 +23,7 @@
 			<a href="https://labolata.com/" target="_blank"><img src="/static/img/footer/bolata.jpg" alt="La Bolata" title="La Bolata" loading="lazy"></a>
 			<a href="http://www.intersport.es/" target="_blank"><img src="/static/img/footer/intersport.jpg" alt="Intersport" title="Intersport" loading="lazy"></a>
 			<a href="https://www.aon.com" target="_blank"><img src="/static/img/footer/aon.jpg" alt="Aon" title="Aon" loading="lazy"></a>
+			<a href="https://www.sgs.es/es-es/news/2015/11/iso-9001-2015" target="_blank"><img src="/static/img/footer/SGS_ISO 9001_TCL_HR.jpg" alt="iso 9001" title="iso 9001" loading="lazy"></a>
 			<!--img src="/static/img/footer/iso.jpg" alt="ISO 9001" title="ISO 9001" loading="lazy">
 			<a href="http://lacaixa.es/" target="_blank"><img src="/static/img/footer/lacaixa.jpg" alt="La Caixa" title="La Caixa" loading="lazy"></a>
 			<a href="http://twitter.com/fedpival" target="_blank"><img src="/static/img/footer/tw.png" alt="Twitter" title="Twitter" loading="lazy"></a>

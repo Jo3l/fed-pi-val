@@ -63,8 +63,9 @@ public function getUser(Request $request, Response $response)
 * i per tant si té accés. En cas contrari genera excepció i casca
 */
 static public function verifyRol($request,$rolneeded) {
+	//die(str_replace('[',"<br>[",print_r($request,true)));
     $token= str_replace('Bearer ','',$request->getServerParam('HTTP_AUTHORIZATION'));
-    if (empty($token)) throw new UnauthorizedException('Invalid Token');
+    if (empty($token)) throw new UnauthorizedException('Empty Token');
     Auth::extend($token);
     $data= Auth::getUserByToken($token,$rolneeded);
     //$rolauth= $data->data->rol;

@@ -124,12 +124,136 @@ static private function ranking($pars) {
 	$equips= [];
 	$ppartida= 3; // asumisc que si no es posen, seran 3 punts
 	$ptanteig= $pars[0]['puntstanteig']?:1; // asumisc que si no es posen, seran 1 punt
+	if (empty($pars[0]['partides'])) return $equips; // si no hi ha partides, no hi ha ranking
+	foreach($pars[0]['partides'] as $p) {
+		if ($p['baixa']) continue;
+		if ($p['resultatlocal']==0 && $p['resultatvisitant']==0) continue;
+		$grup= $p['grup'];
+		$local= $p['local'];
+		$visitant= $p['visitant'];
+		if ($visitant['id']==0 || $local['id']==0) continue;
+		if (!isset($equips[$grup][$local['id']])) $equips[$grup][$local['id']]= [ "id"=>$local['id'], "nom"=> $local['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 , "jf"=>0, "jc"=>0 ];
+		if (!isset($equips[$grup][$visitant['id']])) $equips[$grup][$visitant['id']]= [ "id"=>$visitant['id'], "nom"=> $visitant['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0, "jf"=>0, "jc"=>0 ];
+		$equips[$grup][$local['id']]['pj']++;
+		$equips[$grup][$visitant['id']]['pj']++;
+		$equips[$grup][$local['id']]['jf']+= $p['resultatlocal'];
+		$equips[$grup][$local['id']]['jc']+= $p['resultatvisitant'];
+		$equips[$grup][$visitant['id']]['jf']+= $p['resultatvisitant'];
+		$equips[$grup][$visitant['id']]['jc']+= $p['resultatlocal'];
+		// contabilitze dades per a possibles desempats
+		if (empty( $equips[$grup][$local['id']][$visitant['id']] )) $equips[$grup][$local['id']][$visitant['id']]= ['partides'=>0, 'jocs'=>0];
+		if (empty( $equips[$grup][$visitant['id']][$local['id']] )) $equips[$grup][$visitant['id']][$local['id']]= ['partides'=>0, 'jocs'=>0];
+
+		if ($p['resultatlocal']<$p['resultatvisitant']) { // mai seran iguals, només en 0-0 i ja s'ha descartat dalt
+			$equips[$grup][$visitant['id']]['punts']+= $ppartida;
+			$equips[$grup][$visitant['id']]['pg']++;
+			$equips[$grup][$local['id']]['pp']++;
+			$equips[$grup][$visitant['id']][$local['id']]['partides']-=1;
+			$equips[$grup][$local['id']][$visitant['id']]['partides']+=1;
+			$equips[$grup][$visitant['id']][$local['id']]['jocs']+= $p['resultatlocal']-$p['resultatvisitant'] ;
+			$equips[$grup][$local['id']][$visitant['id']]['jocs']+= $p['resultatvisitant']-$p['resultatlocal'] ;
+
+			if($p['resultatlocal']>=$ptanteig) {
+				$equips[$grup][$local['id']]['punts']+= 1;
+				$equips[$grup][$visitant['id']]['punts']-= 1;
+			}
+		} else {
+			$equips[$grup][$local['id']]['punts']+= $ppartida;
+			$equips[$grup][$local['id']]['pg']++;
+			$equips[$grup][$visitant['id']]['pp']++;
+			
+			$equips[$grup][$local['id']][$visitant['id']]['partides']-=1;
+			$equips[$grup][$visitant['id']][$local['id']]['partides']+=1;
+			$equips[$grup][$local['id']][$visitant['id']]['jocs']+= $p['resultatvisitant']-$p['resultatlocal'] ;
+			$equips[$grup][$visitant['id']][$local['id']]['jocs']+= $p['resultatlocal']-$p['resultatvisitant'] ;
+			
+			if($p['resultatvisitant']>=$ptanteig) {
+				$equips[$grup][$visitant['id']]['punts']+= 1;
+				$equips[$grup][$local['id']]['punts']-= 1;
+			}
+		}
+	//echo '<li>',$p['resultatlocal']<$p['resultatvisitant']?'P ':'G ',$local['id'],' ',$p['resultatlocal'],'-',$visitant['id'],' ',$p['resultatvisitant'],': ',$equips[$grup][$local['id']][$visitant['id']]['partides'],' ... ',$equips[$grup][$visitant['id']][$local['id']]['partides'],'<hr>';
+		// contabilitze possibles sancions (per defecte = 0, però pot ser fins i tot de -4)
+		$equips[$grup][$local['id']]['punts']+= $p['sanciolocal'];
+		$equips[$grup][$visitant['id']]['punts']+= $p['sanciovisitant'];
+		$equips[$grup][$local['id']]['sancions']+= $p['sanciolocal'];
+		$equips[$grup][$visitant['id']]['sancions']+= $p['sanciovisitant'];
+	}
+	
+	//die(json_encode($equips));
+	
+	foreach($equips as $grup=>$tots)
+		usort($equips[$grup], function($a,$b) {
+			if ($b['punts']!=$a['punts']) return $b['punts']-$a['punts'];
+			// casuistica desempats
+			// 1. Primer es miren les partides guanyades només entre els equips implicats en l'empat. per tant compare les partides jugades entre eixos dos equips i desempate amb qui tinga més partides guanyades dels dos
+			if ( $b[$a['id']]['partides']>0 ) return 1;
+			if ( $a[$b['id']]['partides']>0 ) return -1;
+			// si es zero és que han empatat en partides entre ells
+			// 2. Segon es miren la diferència de jocs d'eixes partides només entre els implicats. per tant compare les partides jugades entre eixos dos equips i desempate amb qui tinga més jocs guanyats
+			if ( $b[$a['id']]['jocs']>0 ) return -1;
+			if ( $a[$b['id']]['jocs']>0 ) return 1;
+			// 3. Tercer es miren les partides guanyades de tota la competició. per tant desempate amb qui tinga més partides guanyades en total
+			if ( $b['pg']-$b['pp'] > $a['pg']-$a['pp'] ) return 1;
+			if ( $b['pg']-$b['pp'] < $a['pg']-$a['pp'] ) return -1;
+			// si he arribat ací és que empaten en partides guanyades
+			// 4. Quart es mira la diferencia de jocs de totes les partides. per tant desempat a qui tinga més jocs guanyats en total
+			if ( $b['jf']-$b['jc'] > $a['jf']-$a['jc'] ) return 1;
+			if ( $b['jf']-$b['jc'] < $a['jf']-$a['jc'] ) return -1;
+			return 0;
+			/*
+			$cada= [ $a['id']=>0, $b['id']=>0 ];
+			$desempat= [ 'partides'=>$cada, 'jocs'=>$cada, 'partides2'=>$cada, 'jocs2'=>$cada ];
+			foreach($a['partides'] as $p) {
+				if ( ($p['local']['id']==$a['id'] && $p['visitant']['id']==$b['id']) || ($p['local']['id']==$b['id'] && $p['visitant']['id']==$a['id']) ) {
+					// si aquesta juguen entre ells
+					if ( $p['resultatlocal']>$p['resultatvisitant'] ) {
+						$desempat['partides2'][$p['local']['id']]++;
+						$desempat['jocs2'][$p['local']['id']]+= $p['resultatlocal']-$p['resultatvisitant'];
+					} else {
+						$desempat['partides2'][$p['visitant']['id']]++;
+						$desempat['jocs2'][$p['visitant']['id']]+= $p['resultatvisitant']-$p['resultatlocal'];
+					}
+				}
+				// si ha jugat l'equip a:
+				if ( $p['local']['id']==$a['id'] || $p['visitant']['id']==$a['id'] ) {
+					if ( $p['local']['id']==$a['id'] ) {
+						$desempat['jocs'][$a['id']]+= $p['resultatlocal']-$p['resultatvisitant'];
+					}
+					if ( $p['visitant']['id']==$a['id'] ) {
+						$desempat['jocs'][$a['id']]+= $p['resultatvisitant']-$p['resultatlocal'];
+					}
+					if ( $p['local']['id']==$a['id'] && $p['resultatlocal']>$p['resultatvisitant'] ) $desempat['partides'][$a['id']]++;
+					if ( $p['visitant']['id']==$a['id'] && $p['resultatvisitant']>$p['resultatlocal'] ) $desempat['partides'][$a['id']]++;
+				}
+				// si ha jugat l'equip b:
+				if ( $p['local']['id']==$b['id'] || $p['visitant']['id']==$b['id'] ) {
+					if ( $p['local']['id']==$b['id'] ) {
+						$desempat['jocs'][$b['id']]+= $p['resultatlocal']-$p['resultatvisitant'];
+					}
+					if ( $p['visitant']['id']==$b['id'] ) {
+						$desempat['jocs'][$b['id']]+= $p['resultatvisitant']-$p['resultatlocal'];
+					}
+					if ( $p['local']['id']==$b['id'] && $p['resultatlocal']>$p['resultatvisitant'] ) $desempat['partides'][$b['id']]++;
+					if ( $p['visitant']['id']==$b['id'] && $p['resultatvisitant']>$p['resultatlocal'] ) $desempat['partides'][$b['id']]++;
+				}
+				
+			}*/
+			
+		} );
+	return $equips;
+}
+static private function rankingold($pars) {
+	$equips= [];
+	$ppartida= 3; // asumisc que si no es posen, seran 3 punts
+	$ptanteig= $pars[0]['puntstanteig']?:1; // asumisc que si no es posen, seran 1 punt
 	if (empty($pars[0]['partides'])) return $equips;
 	foreach($pars[0]['partides'] as $p) {
 		if ($p['baixa']) continue;
 		if ($p['resultatlocal']==0 && $p['resultatvisitant']==0) continue;
 		$local= $p['local'];
 		$visitant= $p['visitant'];
+		if ($visitant['id']==0 || $local['id']==0) continue;
 		if (!isset($equips[$local['id']])) $equips[$local['id']]= [ "nom"=> $local['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0 , "jf"=>0, "jc"=>0];
 		if (!isset($equips[$visitant['id']])) $equips[$visitant['id']]= [ "nom"=> $visitant['nom'], "punts"=>0, "pg"=>0, "pp"=>0, "pj"=>0, "jf"=>0, "jc"=>0 ];
 		$equips[$local['id']]['pj']++;
