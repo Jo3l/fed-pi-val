@@ -519,7 +519,7 @@ export default {
   data () {
     return {
     	resultDone:'',
-    	isBlackFriday: true,
+    	isBlackFriday: false,
     	buyButtonDisable: false,
     	shipping : [
 		    {
@@ -529,11 +529,11 @@ export default {
 		    {
 		        label: this.$t('cart.bankTransfer'),
 		        value: 'bank-transfer'
-		    }/*,
+		    },
 		    {
 		        label: this.$t('cart.onlinePay'),
 		        value: 'online-pay'
-		    }*/
+		    }
 		],
     	order:{
     		name:'',

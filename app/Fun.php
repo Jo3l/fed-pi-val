@@ -46,7 +46,7 @@ class Fun
     public static $idioma= 'val'; // idioma actual
     public static $idiomes= array('val','es'); // tots els idiomes disponibles
     private static $rowcount= null; 
-	private static $blackFriday= true;
+	private static $blackFriday= false;
 
 
     
@@ -873,7 +873,7 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	$db->sql("select id,pare,nom from _jerarquia_val");
 	$data= $db->all();
 	//$llistanodes[$node]= 'arrel';
-	for ($i=5; $i>0; $i--)
+	for ($i=8; $i>0; $i--)
 		foreach($data as $elm) {
 			if ($elm['id']==$node) $llistanodes[$node]= $elm['nom'];
 			if (in_array($elm['pare'],array_keys($llistanodes)))
@@ -1231,7 +1231,7 @@ static public function comprar(Request $request, Response $response, $params) {
 		$terminal="001";
 		$moneda="978";
 		$trans = "0";
-		$url="https://fedpival.es";
+		$url="https://fedpival.es/api/pagat";
 		//$urlOKKO="https://fedpival.es/".(Fun::$idioma).(Fun::$idioma=='es'?'/tienda/comprado':'/botiga/comprat')."/";
 		$urlOK="https://fedpival.es/api/pagat";
 		$urlKO="https://fedpival.es/api/nopagat";
@@ -1244,9 +1244,9 @@ static public function comprar(Request $request, Response $response, $params) {
 		$miObj->setParameter("DS_MERCHANT_CURRENCY",$moneda);
 		$miObj->setParameter("DS_MERCHANT_TRANSACTIONTYPE",$trans);
 		$miObj->setParameter("DS_MERCHANT_TERMINAL",$terminal);
-		$miObj->setParameter("DS_MERCHANT_MERCHANTURL",$urlOKKO);
-		$miObj->setParameter("DS_MERCHANT_URLOK",$urlOKKO);
-		$miObj->setParameter("DS_MERCHANT_URLKO",$urlOKKO);
+		$miObj->setParameter("DS_MERCHANT_MERCHANTURL",$url);
+		$miObj->setParameter("DS_MERCHANT_URLOK",$urlOK);
+		$miObj->setParameter("DS_MERCHANT_URLKO",$urlKO);
 	
 		//Datos de configuración
 		$version="HMAC_SHA256_V1";
@@ -1316,6 +1316,10 @@ static public function pagat(Request $request, Response $response, $params) {
 	$input= file_get_contents("php://input");
 	if (empty($input)) $data= $request->getQueryParams();
 	else parse_str($input,$data);
+	try{
+		Fun::phpmailer('alsanan@gmail.com','pagat '.date('YmdHis'),var_dump($data));
+		//file_get_contents('http://vlc.wiki/fedpival/sendmemail.php?'.var_dump($data));
+	} catch(Exception $e) {}
 	$version = $data["Ds_SignatureVersion"];
 	$datos = $data["Ds_MerchantParameters"];
 	$signatureRecibida = $data["Ds_Signature"];
@@ -1343,16 +1347,18 @@ static public function pagat(Request $request, Response $response, $params) {
 	$kc = 'ioGUb1lc23Ua1LkQv176y4EP0sloCaDP';//Clave recuperada de CANALES (real)
 	$firma = $miObj->createMerchantSignatureNotif($kc,$datos);
 
-	try{ Fun::phpmailer("alsanan@gmail.com",'pagat params:1234',$path.' '.$firma.'?='.$signatureRecibida.' '.$respuesta.' '.file_get_contents("php://input").' '.$order.' €'.$amount.$decodec ); }catch(Exception $e){}
+	try{ 
+		Fun::phpmailer("alsanan@gmail.com",'pagat params:1234',$path.' '.var_dump($firma).'?='.$signatureRecibida.' '.$respuesta.' '.file_get_contents("php://input").' '.$order.' €'.$amount.$decodec ); 
+		if ($firma === $signatureRecibida){
+			Fun::phpmailer('alsanan@gmail.com','exit pagament fun:1237',var_dump($decodec).json_decode($decodec).'_firma_'.var_dump($firma).'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+		} else {
+			Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1239 PERO SIGO',var_dump($decodec).json_decode($decodec).'_firma_'.var_dump($firma).'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+			//die('Error de seguritat en la resposta de la passarel.la de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
+			//header("HTTP/1.0 402 Payment required");
+			//die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
+		}
+	}catch(Exception $e){}
 
-	if ($firma === $signatureRecibida){
-		Fun::phpmailer('alsanan@gmail.com','exit pagament fun:1237',var_dump($decodec).json_decode($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
-	} else {
-		Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1239 PERO SIGO',var_dump($decodec).json_decode($decodec).'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
-		die('Error de seguritat en la resposta de la passarel.la de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
-		//header("HTTP/1.0 402 Payment required");
-		//die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
-	}
 
 	$data= json_decode($decodec);
 
@@ -1365,7 +1371,7 @@ static public function pagat(Request $request, Response $response, $params) {
 	if ( $data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180' || $path=='/api/nopagat' ) {
 		Fun::phpmailer('alsanan@gmail.com','error en el pago fun:1239 PERO SIGO',$data->Ds_AuthorisationCode.'|'.$data->Ds_Response.json_encode($data));
 		//header("HTTP/1.0 402 Payment required");
-		die('Error de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
+		//die('Error de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
 		//die(json_encode(["error"=>'Error en el pago'])); // header reload
 	}
 

@@ -35,7 +35,7 @@
 								<th title="Jocs en contra">JC</th>
 							</tr>
 						</thead>
-						<tbody v-for="(group,groupindex) in nodeContent[key].ranking" v-if="nodeContent[key].ranking && nodeContent[key].ranking.length > 0">
+						<tbody v-for="(group,groupindex) in nodeContent[key].ranking" v-if="nodeContent[key].ranking && Object.keys(nodeContent[key].ranking).length > 0">
 							<tr :class="[(groupindex%2)?'odd':'even']">
 								<th rowspan="99" >Grup {{String.fromCharCode(65+parseInt(groupindex))}}</th>
 							</tr>

@@ -29,7 +29,7 @@
 					<template slot="actions" scope="props">
 						<td class="actions">
 							<ui-button color="default" icon="description" icon-position="left" size="small" type="secondary" @click="view(props.row)">Detalls</ui-button>
-							<ui-button v-show="props.row.repetit" color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="confirmAction(remove, props.row)" title="S'ha detectat una comanda repetida posterior">Eliminar</ui-button>
+							<ui-button v-show_DISABLED="props.row.repetit" color="red" icon="delete" icon-position="left" size="small" type="secondary" @click="confirmAction(remove, props.row)" title_DISABLED="S'ha detectat una comanda repetida posterior">Eliminar</ui-button>
 						</td>
 					</template>
 				</tablerone>
