@@ -233,7 +233,7 @@ export default {
 					last.quantitat= a.quantitat;
 					a.estatdesc= vm.estats[a.estat];
 					if(obj.payment=='online-pay') {
-						if (!isNaN(a.resultat) && a.resultat) a.resultat= '<span style="color:green">'+a.resultat+'</span>';
+						if (a.resultat && a.resultat.substring(0,10)=='Autoritzat') a.resultat= '<span style="color:green">'+a.resultat+'</span>';
 						else a.resultat = '<span style="color:red">INCOMPLET!!!</span>';
 					}
 					a.data= vm.diaMesAny( a.data ); 
@@ -280,11 +280,12 @@ export default {
 			  .catch( e=> alert('ops! problema: '+e));
 		},
 		remove: function(que) {
+			var vm= this;
 			console.log(que);
 			this.$http.delete( '/comanda/'+que.id )
-			.then(res => res.json())
 			.then(res => {
 				//delete que;
+				window.alert('Esborrat correctament. '+que.id);
 				vm.orders= vm.orders.filter( (value, index, arr)=>value.id!=que.id );
 				console.log(res);
 			});

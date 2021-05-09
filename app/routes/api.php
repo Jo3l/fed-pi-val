@@ -201,6 +201,13 @@ $app->get('/api/resuminscrits/{id:[0-9]+}', '\app\Fun::resum_inscrits');
 
 /*
 * @description
+* Obté els nums de soci de jugadors ja inscrits en un node de competició indicat
+* URL: /api/jugadorsinscrits/17
+*/
+$app->get('/api/jugadorsinscrits/{id:[0-9]+}', '\app\Fun::jugadors_inscrits');
+
+/*
+* @description
 * Obté una taula amb el calendari de la competició, i categories d'un node de competició indicat
 * URL: /api/resumcalendari/17
 */
@@ -228,6 +235,13 @@ $app->post('/api/canvicateg', '\app\Fun::canvi_categ');
 */
 $app->post('/api/node/{id:[0-9]+}', '\app\Nodes::insert_element'); // jerarquia federacio o competicions
 
+/*
+* @description
+* Inverteix la visualització (public/privat) d'un element/bloc d'un node
+* Exemple de paràmetre: true
+* URL: /api/togglepartides/19039
+*/
+$app->post('/api/togglepartides/{id:[0-9]+}', '\app\Nodes::togglepartides');
 
 /*
 * @description
@@ -515,6 +529,13 @@ $app->get('/api/static{path:/.+}', '\app\Filem::list'); // obtindre un cami
 * URL: /api/static/uploadimgjugador
 */
 $app->post('/api/static/uploadimgjugador', '\app\Filem::uploadimgjugador'); // guardar imatge jugador
+
+/*
+* @description
+* Pujar/guardar/upload d'una imatge d'acta'
+* URL: /api/static/uploadacta
+*/
+$app->post('/api/static/uploadacta', '\app\Filem::uploadacta'); // guardar imatge acta partida
 
 /*
 * @description

@@ -24,7 +24,7 @@
 		
 		<hr v-if="!$store.getters.isAuthenticatedWithRole(0)">
 		
-		<node-content :nodeId="currentPageId" :disableBlock="propDisable"></node-content>
+		<node-content v-if="currentPageId" :nodeId="currentPageId" :disableBlock="propDisable"></node-content>
 		
 	
 		<ui-modal ref="insertNode" size="large" v-bind:title="$t('node.insert_node')">

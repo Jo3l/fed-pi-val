@@ -26,11 +26,12 @@ $app = new App($config);
 
 if (config::EN_PRODUCCIO) {
 	$c = $app->getContainer();
-	$c['errorHandler'] = function ($c) {
+	$c['errorHandler'] = $c['phpErrorHandler'] = function ($c) {
 	    return function ($request, $response, $exception) use ($c) {
+	    	file_put_contents('errors_php.txt',"\n---\n".date('YmdHis')."\n".json_encode($exception)."\n".json_encode($request),FILE_APPEND);
 	        return $response->withStatus(500)
 	            ->withHeader('Content-Type', 'text/html')
-	            ->write('error!'.var_dump($response));
+	            ->write("Apunta este codi. Error: ".date('YmdHis'));
 	    };
 	};
 }

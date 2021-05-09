@@ -166,7 +166,7 @@ static public function equipsdeclub(Request $request, Response $response, $param
 	$club= $params['club'];
 	$options= array();
 	//$sql= "SELECT id,nom,competicio,json FROM equip WHERE club=".$club;
-	$sql= "SELECT equip.id,nom,competicio,delegat,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE baixa is null and _camins.id=competicio and club=".$club;
+	$sql= "SELECT equip.id,nom,competicio,delegat,jutge,telefon,lloc,diasem,hora,json,(select fi from jerarquia where jerarquia.id=competicio) as fi,(select minimjugadors from jerarquia where jerarquia.id=competicio) as minimjugadors, cami_es,cami_val FROM equip,_camins WHERE baixa is null and _camins.id=competicio and club=".$club;
 	if (!isset($params['o'])) $params['o']='id-';
 	$sql.= " order by ".str_replace('-',' desc',$params['o']);
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
@@ -213,7 +213,7 @@ static public function inscrits(Request $request, Response $response, $params) {
     $db = new db();
 	$equip= $params['equip'];
 	$options= array();
-	$sql= "SELECT id,numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador,pertany WHERE pertany.jugador=jugador.id and equip=".$equip;
+	$sql= "SELECT id,numsoci,nom /*concat(nom,' ',substring(cognoms,1,1),'.') as nom*/, dataactiu,datasegur,cognoms FROM jugador,pertany WHERE pertany.jugador=jugador.id and equip=".$equip;
 	if (isset($params['p'])) $sql.= " limit ".($params['p']*Fun::$itemsPerPage).','.Fun::$itemsPerPage;
 	if (isset($params['o'])) $sql.= " order by ".str_replace('-',' desc',$params['o']);
 	$db->sql($sql);
@@ -293,7 +293,7 @@ static public function jugadorsdeclub(Request $request, Response $response, $par
 static public function soci(Request $request, Response $response, $params) {
     $db = new db();
 	$num= $params['num'];
-	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom FROM jugador WHERE numsoci=".$num;
+	$sql= "SELECT id, numsoci, concat(nom,' ',substring(cognoms,1,1),'.') as nom, dataactiu FROM jugador WHERE numsoci=".$num;
 	$db->sql($sql);
 	$data= $db->all();
 	if (count($data)==0) {
@@ -580,7 +580,7 @@ static public function participa(Request $request, Response $response, $params) 
 static public function partides(Request $request, Response $response, $params) {
 	$db= new db();
 	// compte: només lliste els que apareixen com a local
-	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and baixa is null and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+3 days'))."';");
+	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and baixa is null and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+3 days'))."'  and (select pagina.baixa from pagina where id=partida.registreid) is null;");
 	$data = $db->all();
 	foreach($data as $id=>$elm) {
 		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
@@ -873,7 +873,7 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	$db->sql("select id,pare,nom from _jerarquia_val");
 	$data= $db->all();
 	//$llistanodes[$node]= 'arrel';
-	for ($i=8; $i>0; $i--)
+	for ($i=8; $i>0; $i--) // fins a vuit nivells
 		foreach($data as $elm) {
 			if ($elm['id']==$node) $llistanodes[$node]= $elm['nom'];
 			if (in_array($elm['pare'],array_keys($llistanodes)))
@@ -882,7 +882,7 @@ static public function resum_inscrits(Request $request, Response $response, $par
 		}
 	$ids= array_keys($llistanodes);
 	//echo '<h1>',$llistanodes[$node],'</h1>';
-	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, /*competicio,*/ (select node.nom from _jerarquia_val node where node.id=competicio) as cat from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
+	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, /*competicio,*/ (select node.nom from _jerarquia_val node where node.id=competicio) as cat, str_to_date(creacio, '%Y%m%d%H%i%s') as creacio from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
 	$db->sql($sql);
 	$data= $db->all();
 	$clubs=[];
@@ -894,16 +894,18 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	header("Pragma: no-cache");
 	header("Expires: 0");
 	fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
-	fputcsv($output, array_keys($result[0]),";");
 	$output = fopen("php://output",'w') or die("Error: Can't open php://output");
+	fputcsv($output, ["id","nom","cognoms","actiu","neixement","equip","club","competicio","creacio"],";");
 	foreach($data as $r) {
 		//if ($ara!=$r['cat']) echo '<h1>', $ara=$r['cat'], '</h1>';
 		//echo '<b>',$r['nomclub'], '</b><br/>';
 		$db->sql("select convert(numsoci,UNSIGNED) as numsoci,nom,cognoms,if(DATEDIFF(dataactiu,CURRENT_TIMESTAMP)<0,'inactiu','ACTIU') as estat, substring(naixement,1,4) as neix from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
 		//foreach($db->all() as $rr) echo $r['nomclub'],' ',$r['nomclub'],': ',$rr['qui'],' (',$rr['neix'],')<br/>';
 		foreach($db->all() as $rr) {
+			$rr['nomequip']= $r['nom'];
 			$rr['nomclub']= $r['nomclub'];
 			$rr['competicio']= $r['cat'];
+			$rr['creacio']= $r['creacio'];
 			$rr= array_map("utf8_decode", $rr );
 	    	fputcsv($output, $rr,";");
 		}
@@ -915,6 +917,20 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	
 	
 exit;
+}
+
+/*
+* @description
+* Obté els nums de soci de jugadors ja inscrits en un node de competició indicat
+* URL: /api/jugadorsinscrits/17
+*/
+static public function jugadors_inscrits(Request $request, Response $response, $params) {
+	$node= $params['id'];
+	$db = new db();
+	$db->sql("select numsoci from equip, pertany, jugador where pertany.jugador=jugador.id and pertany.equip=equip.id and equip.baixa is null and equip.competicio=".$node);
+	$data= [];
+	foreach($db->all() as $i=>$r) array_push($data,$r['numsoci']);
+	Fun::render($data);
 }
 
 //  //  //  //  //  //  //  //
@@ -1104,7 +1120,7 @@ static public function phpmailer($to,$sub,$text,$html=false){
 		} else {
 			return true;
 		}
-	} catch(Exception $e) { die($e->getMessage()); }
+	} catch(Exception $e) { echo($e->getMessage()); }
 }
 
 
@@ -1317,8 +1333,8 @@ static public function pagat(Request $request, Response $response, $params) {
 	if (empty($input)) $data= $request->getQueryParams();
 	else parse_str($input,$data);
 	try{
-		Fun::phpmailer('alsanan@gmail.com','pagat '.date('YmdHis'),var_dump($data));
-		//file_get_contents('http://vlc.wiki/fedpival/sendmemail.php?'.var_dump($data));
+		Fun::phpmailer('alsanan@gmail.com','pagat '.date('YmdHis'),print_r($data,true));
+		//file_get_contents('http://vlc.wiki/fedpival/sendmemail.php?'.print_r($data,true));
 	} catch(Exception $e) {}
 	$version = $data["Ds_SignatureVersion"];
 	$datos = $data["Ds_MerchantParameters"];
@@ -1348,16 +1364,16 @@ static public function pagat(Request $request, Response $response, $params) {
 	$firma = $miObj->createMerchantSignatureNotif($kc,$datos);
 
 	try{ 
-		Fun::phpmailer("alsanan@gmail.com",'pagat params:1234',$path.' '.var_dump($firma).'?='.$signatureRecibida.' '.$respuesta.' '.file_get_contents("php://input").' '.$order.' €'.$amount.$decodec ); 
-		if ($firma === $signatureRecibida){
-			Fun::phpmailer('alsanan@gmail.com','exit pagament fun:1237',var_dump($decodec).json_decode($decodec).'_firma_'.var_dump($firma).'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+		Fun::phpmailer("alsanan@gmail.com",'pagat params:1234',$path.' '.print_r($firma,true).'?='.$signatureRecibida.' '.$respuesta.' '.file_get_contents("php://input").' '.$order.' €'.$amount.$decodec ); 
+		if ($firma == $signatureRecibida){
+			Fun::phpmailer('alsanan@gmail.com','exit pagament fun:1237',print_r($decodec,true));//.json_decode($decodec).'_firma_'.print_r($firma,true).'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 		} else {
-			Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1239 PERO SIGO',var_dump($decodec).json_decode($decodec).'_firma_'.var_dump($firma).'_rebuda_'.$signatureRecibida.' '.json_encode($json));
+			Fun::phpmailer('alsanan@gmail.com','problema pagament fun:1239 PERO SIGO',print_r(json_decode($decodec),true).'_firma_'.print_r($firma,true).'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 			//die('Error de seguritat en la resposta de la passarel.la de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
 			//header("HTTP/1.0 402 Payment required");
 			//die(json_encode(["error"=>"Problema con los datos recibidos"])); // mail
 		}
-	}catch(Exception $e){}
+	} catch(Exception $e) { echo $e->getMessage(); }
 
 
 	$data= json_decode($decodec);
@@ -1369,7 +1385,9 @@ static public function pagat(Request $request, Response $response, $params) {
 	Fun::phpmailer('alsanan@gmail.com','resultat pagament fun:1216',$decodec.'_firma_'.$firma.'_rebuda_'.$signatureRecibida.' '.json_encode($json));
 
 	if ( $data->Ds_AuthorisationCode=='++++++' || $data->Ds_Response=='0180' || $path=='/api/nopagat' ) {
-		Fun::phpmailer('alsanan@gmail.com','error en el pago fun:1239 PERO SIGO',$data->Ds_AuthorisationCode.'|'.$data->Ds_Response.json_encode($data));
+		try{
+			Fun::phpmailer('alsanan@gmail.com','error en el pago fun:1239 PERO SIGO',$data->Ds_AuthorisationCode.'|'.$data->Ds_Response.json_encode($data));
+		} catch(Exception $e) { echo $e->getMessage(); }
 		//header("HTTP/1.0 402 Payment required");
 		//die('Error de pagament. <a href="https://fedpival.es/val/botiga">Tornar</a>');
 		//die(json_encode(["error"=>'Error en el pago'])); // header reload
@@ -1377,7 +1395,10 @@ static public function pagat(Request $request, Response $response, $params) {
 
 	$row= Fun::$db->all();
 	$json= json_decode($row[0]['json']);
-	
+	$fname= '../data/orders/'.substr($data->Ds_Order,0,2).'/'.$data->Ds_Order.'.json';
+	$json= json_decode(utf8_encode(file_get_contents($fname)));
+	if (!$json) echo json_last_error_msg();
+
 	$email= $json->email;
 	$name= ($json->name).' '.($json->surname);
 	$address= ($json->address).' '.($json->cp).' '.$json->city;
@@ -1387,19 +1408,20 @@ static public function pagat(Request $request, Response $response, $params) {
 	$json->comanda = $data->Ds_Order;
 	$json->authcode = $data->Ds_AuthorisationCode;
 	$json->preu = $row[0]['quantitat'];
-	$jsonarr= json_decode($row[0]['json'],true);
+	//$jsonarr= json_decode($row[0]['json'],true);
+	$cart= $json->cart;
 
 	$html='---';
-	foreach($jsonarr['cart'] as $elm) {
-		$prod= $elm['name'];
-		foreach($elm['fullProduct']['types'] as $tipo) { 
-			if ($tipo['name']==$prod) {
-				$preuprod= $tipo['price']['amount'];
-				$preu+= $preuprod*$elm['quantity'];
-				$html.= '<tr style="border-top:1px solid black;"><td>'.$elm['fullProduct']['content']['val']['name'].'</td><td>'.$prod.'</td><td>x'.$elm['quantity'].'</td><td><b>'.($preuprod*$elm['quantity']).'&euro;</b></td></tr>';
+	foreach($cart as $elm) {
+		$prod= $elm->name;
+		foreach($elm->fullProduct->types as $tipo) { 
+			if ($tipo->name==$prod) {
+				$preuprod= $tipo->price->amount;
+				$preu+= $preuprod*$elm->quantity;
+				$html.= '<tr style="border-top:1px solid black;"><td>'.$elm->fullProduct->content->val->name.'</td><td>'.$prod.'</td><td>x'.$elm->quantity.'</td><td><b>'.($preuprod*$elm->quantity).'&euro;</b></td></tr>';
 			}
 		}
-		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
+		array_push($carro,array('Producte: '.$elm->fullProduct->content->val->name.' '.$prod,'Quantitat: '.$elm->quantity,$preuprod.' euros'));
 	}
 
 	$enviament=0;
@@ -1425,12 +1447,13 @@ static public function pagat(Request $request, Response $response, $params) {
 		oposició, enviant una sol.licitut per escrit, amb una còpia del DNI a la\n
 		següent adreça: FEDERACION DE PILOTA VALENCIANA Carrer Marqués de San\n
 		Juan, 32 baix B, Valencia, 46015";
-	$html= $str.'<h2>Contingut comanda</h2><table style="border-top:4px solid black;">'.$html.'</table><hr/>Despeses d\'enviament: '.$enviament.' euros<br>%s<br/><b>Total: '.$preu.' euros</b><hr>'.$legal;
+	$html= $str.'<h2>Contingut comanda</h2><table style="border-top:4px solid black;">'.$html.'</table><hr/>Despeses d\'enviament: '.$enviament.' euros<br><br/><b>Total: '.$preu.' euros</b><hr>'.$legal;
 
 	Fun::phpmailer('botiga@fedpival.es','Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
 	Fun::phpmailer($email,'Nova compra a fedpival.es : '.date('YmdHis'),$str,true);
 	Fun::phpmailer('alsanan@gmail.com','[online-pay] a fedpival.es : '.date('YmdHis'),$str,true);
-	die('Compra finalitzada. <a href="https://fedpival.es">Tornar</a>');
+	if($path=='/api/pagat') die('Compra finalitzada. <a href="https://fedpival.es">Tornar</a><script>location.href="https://fedpival.es/val/botiga/comprat/OK"</script>');
+	else die('Compra NO finalitzada. <a href="https://fedpival.es">Tornar</a><script>location.href="https://fedpival.es/val/botiga/comprat/KO"</script>');
 	return json_encode($json);
 }
 

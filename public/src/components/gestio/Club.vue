@@ -186,6 +186,22 @@
                 >Demanar registre jugador nou</ui-button>
 
 				<br>
+
+				<ui-textbox
+					id="jutge"
+					required
+		            error="Numero de soci del jutge requerit"
+		            :invalid="jutge.length === 0"
+				    floating-label
+		            autocomplete="off"
+		            label="Jutge"
+					type="number"
+		            v-model="jutge"
+		            :disabled="readonly === true"
+		            @keyup.native="searchJudge()"
+		        ></ui-textbox>
+		        
+		        <span id="nomjutge" v-text="jutgenom"></span>
 				
 				<ui-textbox
 					required
@@ -252,7 +268,7 @@
 					<ui-button 
 					size="small" 
 		            v-if="readonly === false"
-					:disabled="subscribeName=='' || equip.length<minimjugadors || hora=='' || diasem=='' || lloc=='' || telefon=='' || delegat==''" 
+					:disabled="subscribeName=='' || equip.length<minimjugadors || hora=='' || diasem=='' || lloc=='' || telefon=='' || jutge=='' || delegat==''" 
 					@click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
 					
 					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
@@ -407,7 +423,7 @@
         </ui-modal>
         
         <ui-modal ref="error" title="">
-            {{error.response && error.response.data.error?error.response.data.error:error.response}}
+            {{error.response && error.response.data.error?error.response.data.error:error.response  }}
 	        <div slot="footer">
 	            <ui-button @click="closeModal('error')">Ok</ui-button>
 	        </div>
@@ -437,6 +453,7 @@ export default {
 		    inscripcions:[],
 		    equips:[],
 		    jugadorsclub:[],
+		    jugadorsjainscrits:[],
 		    subscribeName:'',
 		    subscribeId:'',
 		    readonly:false,
@@ -452,7 +469,9 @@ export default {
 		    hora:'', 
 		    diasem:'', 
 		    lloc:'', 
-		    telefon:'', 
+		    telefon:'',
+		    jutge:'',
+		    jutgenom:'',
 		    delegat:'',
 		    columnsInscripcions:[
 	            {
@@ -560,9 +579,23 @@ export default {
 		refreshTab: function(tab) {
 			console.log(tab)	
 		},
+		searchJudge: function() {
+			var vm = this;
+			vm.$http.get('/soci/'+vm.jutge)
+	        .then(function (response) {
+				vm.jutgenom= response.data.nom;
+	        })
+		},
 		addPlayer: function(player){
 			var vm = this;
-			console.log(player)
+			if (vm.jugadorsjainscrits.indexOf(player)>=0) {
+			    	vm.error={};
+			    	vm.error.response = {};
+			    	vm.error.response.data = {};
+			    	vm.error.response.data.error="Jugador ja inscrit en altre equip per a aquesta competició";
+					vm.$refs.error.open();
+			        return false;
+			}
 			for(var i = 0; i < vm.equip.length; i++) {
 			    if( parseInt(vm.equip[i].numsoci) == parseInt(player) ) {
 			    	vm.error={};
@@ -576,6 +609,14 @@ export default {
 			
 			vm.$http.get('/soci/'+player)
 	        .then(function (response) {
+				const ara= (new Date()).toISOString().replace(/[-TZ:.]/g,'').substring(0,14);
+				if (response.data.dataactiu<ara) {
+			    	vm.error={};
+			    	vm.error.response = {};
+			    	vm.error.response.data = {};
+			    	vm.error.response.data.error="El jugador no està en actiu. En breu no deixarem afegir jugadors no actius.";
+					vm.$refs.error.open();
+				}
 				vm.equip.push(response.data);
 	        })
 	        .catch(function (error) {
@@ -669,6 +710,7 @@ export default {
 			console.log(champ,1)
 			vm.subscribeName = champ.nom;
 			vm.subscribeId = champ.id;
+			vm.jutge= champ.jutge || '';
 			vm.delegat= champ.delegat || '';
 			vm.telefon= champ.telefon || '';
 			vm.lloc= champ.lloc || '';
@@ -680,6 +722,7 @@ export default {
 		subscribe: function(champ){
 			var vm=this;
 			vm.currChamp=champ.id;
+			vm.getJugadorsJaInscrits(champ.id);
 			vm.equip= []
 			vm.minimjugadors=champ.minimjugadors;
 			vm.maximjugadors=champ.maximjugadors;
@@ -689,33 +732,28 @@ export default {
 		},
 		doModSubscribe:function(id){
 			var vm=this;
-			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null), "hora":vm.hora, "diasem":vm.diasem, "lloc":vm.lloc, "telefon":vm.telefon, "delegat":vm.delegat } )
+			vm.$http.post('/equip'+(id?'/'+id:''), {"nom":vm.subscribeName, "club":vm.$store.getters.userId, "competicio":vm.currChamp, "id":(id?id:null), "hora":vm.hora, "diasem":vm.diasem, "lloc":vm.lloc, "telefon":vm.telefon, "jutge":vm.jutge, "delegat":vm.delegat } )
 			.then( function(response) {
 				
-				if(response.data.exception){
-					vm.error=response.data.error;
-					vm.$refs.error.open()
-					console.log(vm.error);
-				} else {
 					vm.$http.post('/inscrits/'+(id?id:response.data[0].id), vm.equip)
 					.then( function(response) {
 						vm.closeAllModals();
 						window.location.reload();
 					})
 					.catch( function (error) { 
-						vm.error=error;
+						vm.error={...error, ...{alerta:'Error inscrivint jugador'}};
+						// ací donava un error de la api però la inscripció la acabava fent
+						// ho canvie per a que recarregue la página igual que quan té éxit :
+						//vm.closeAllModals();
+						//window.location.reload();
 						vm.$refs.error.open()
 						console.log(vm.error);
 						console.log(error);
 					} );
-					
-
-				}
-				
 
 			})
 			.catch( function (error) { 
-				vm.error=error;
+				vm.error={...error, ...{alerta:'Error creant equip'}};
 				vm.$refs.error.open()
 				console.log(vm.error);
 				console.log(error);
@@ -883,6 +921,14 @@ export default {
 	        })
 	        .catch(function (error) {
 	            console.log(error);
+	        });
+		},
+		getJugadorsJaInscrits:function(competicio) {
+	        var vm = this;
+	        vm.$http.get('/jugadorsinscrits/'+competicio, { cache: false })
+	        .then(function (response) {
+	        	console.log('jugadors ja inscrits',response.data);
+	        	vm.jugadorsjainscrits= response.data;
 	        });
 		},
 		getInfoPartida:function(id){
@@ -1083,4 +1129,12 @@ export default {
 	}
 	
 }
+
+#nomjutge { 
+	margin-left: 25%;
+	margin-top: -40px !important;
+	position: absolute;
+}
+#jutge { width:25%; }
+
 </style>

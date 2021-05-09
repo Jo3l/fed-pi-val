@@ -131,8 +131,169 @@
 					</vue-core-image-upload>
 				</template>
 			</div>
+			
+			<br/>
+			<details ref="mesinfo2">
+				<summary><ui-button color="fedpival" @click="$refs['mesinfo2'].open=!$refs['mesinfo2'].open;">Cl&aacute;usula informativa</ui-button> 
+				<ui-alert type="warning" v-show="!acceptaClausula" :dismissible="false">Ha d'acceptar primer la clàusula per demanar el registre...</ui-alert>
+				</summary><div style="margin:0 1em; padding:1em; box-shadow:0 0 5px 2px black;">
+
+<table width="605">
+<tbody>
+<tr>
+<td width="605">
+<p><strong>&iquest;Qui&eacute;n es el responsable del tratamiento de sus datos?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Identidad:</strong> FEDERACION DE PILOTA VALENCIANA con <strong>CIF:</strong> G-46374351</p>
+<p><strong>Direcci&oacute;n postal:</strong>&nbsp; C/ Marqu&eacute;s de San Juan, 32 baix B - 46015 &ndash; Valencia</p>
+<p><strong>Tel&eacute;fono:</strong>&nbsp; 963 74 95 58&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>Correo electr&oacute;nico:</strong> <a href="mailto:secretari@fedpival.es">secretari@fedpival.es</a></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Delegado de Protecci&oacute;n de Datos: </strong>MEDINALEON CONSULTORES ASOCIADOS SL</p>
+<p><strong>Contacto DPD: </strong>Pedro Medina&nbsp;&nbsp; <strong>Correo electr&oacute;nico:</strong> <a href="mailto:fedpival@dpddigital.com">dpd@ml-asociados.es</a> &nbsp;</p>
+<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;Con qu&eacute; finalidad tratamos sus datos personales?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>tratamos datos de car&aacute;cter personal con la finalidad de tramitar las solicitudes de alta en la federaci&oacute;n recibidas, responder a las consultas realizadas y llevar a cabo la prestaci&oacute;n de servicio acordada. Asimismo, se podr&aacute; tomar y utilizar im&aacute;genes para publicitar las actividades de la federaci&oacute;n a trav&eacute;s de la p&aacute;gina web de la misma y las redes sociales.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>C&oacute;mo dejar de recibir comunicaciones comerciales</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>De conformidad con lo establecido en cumplimento de la legislaci&oacute;n vigente en materia de protecci&oacute;n de datos, en el caso de que el usuario desee dejar de recibir comunicaciones comerciales o promocionales puede solicitar la baja del servicio enviando un correo electr&oacute;nico a&nbsp; <a href="mailto:secretari@fedpival.es">secretari@fedpival.es</a></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;Por cu&aacute;nto tiempo conservaremos sus datos?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>Mientras se mantenga la relaci&oacute;n administrativa y no se solicite su supresi&oacute;n por el interesado. Las im&aacute;genes que se incorporen a redes sociales se mantendr&aacute;n hasta que se solicite su cancelaci&oacute;n.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;Cu&aacute;l es la legitimaci&oacute;n para el tratamiento de sus datos?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>La base legal para el tratamiento de sus datos es el consentimiento del interesado o de los tutores legales del menor, en cualquier caso, el tutor firmante declara haber obtenido el consentimiento del otro. El uso de im&aacute;genes de los participantes es obligatorio por lo que no podr&aacute; participar si no acepta este uso.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;A qu&eacute; destinatarios se comunicar&aacute;n sus datos?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>Los datos se comunicar&aacute;n a entidades colaboradoras necesarias para llevar a cabo la prestaci&oacute;n del servicio.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;Cu&aacute;les son sus derechos cuando nos facilita sus datos? </strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>Cualquier persona tiene derecho a obtener confirmaci&oacute;n sobre si estamos tratando datos personales que les conciernan, o no. Las personas interesadas tienen derecho a acceder a sus datos personales, as&iacute; como a solicitar la rectificaci&oacute;n de los datos inexactos o, en su caso, solicitar su supresi&oacute;n cuando, entre otros motivos, los datos ya no sean necesarios para los fines que fueron recogidos. En determinadas circunstancias y por motivos relacionados con su situaci&oacute;n particular, los interesados podr&aacute;n oponerse al tratamiento de sus datos. Dejaremos de tratar los datos, salvo por motivos leg&iacute;timos imperiosos, o el ejercicio o la defensa de posibles reclamaciones.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;C&oacute;mo ejercer sus derechos?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>Pueden ejercer sus derechos remitiendo escrito, adjuntando copia de documento oficial que le identifique y concretando el derecho o derechos que desea ejercer, al Delegado de Protecci&oacute;n de Datos</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>&iquest;C&oacute;mo hemos obtenido sus datos?</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>Los datos personales que tratamos en proceden del interesado o su representante legal</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Obtenemos el consentimiento cuando:</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p>El interesado cumplimenta un formulario en formato papel o electr&oacute;nico.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Las categor&iacute;as de datos que se tratan son:</strong></p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Datos identificativos:</strong> nombre y apellidos, DNI</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Datos de contacto:</strong> tel&eacute;fono, direcci&oacute;n postal, Correo electr&oacute;nico</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><strong>Datos de caracter&iacute;sticas personales: </strong>No se tratan datos especialmente protegidos.</p>
+</td>
+</tr>
+<tr>
+<td width="605">
+<p><ui-checkbox v-model="acceptaClausula"> Declaro que he le&iacute;do y acepto el contenido de la cl&aacute;usula informativa.</ui-checkbox></p>
+<!--
+<p>☐SI ☐NO Acepto recibir comunicaciones comerciales sobre productos o servicios.</p>
+<p>☐SI ☐NO Acepto el uso de fotos de m&iacute; como jugador del equipo para redes sociales, promoci&oacute;n, etc. Con ocasi&oacute;n de eventos deportivos.</p>
+<p>☐ D./D&ntilde;a________________________________________________________con NIF______________ declaro como tutor legal del menor______________________________ que he le&iacute;do y acepto el contenido de la cl&aacute;usula informativa</p>
+<p>Firma:</p>
+<p>&nbsp;</p>
+-->
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+				
+			</div></details>
+			<hr/>
 		
-			<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">Demanar registre</ui-button>
+			<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()" :disabled="!acceptaClausula">Demanar registre</ui-button>
 
 	</div>
 
@@ -154,6 +315,7 @@ export default {
 			poblacions: [],
 			mapa: null,
 			club:{},
+			acceptaClausula:false,
 		    noujugador:{
 			      nom: '',
 			      cognoms: '',

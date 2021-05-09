@@ -148,6 +148,37 @@
                 :maxlength="2048"
                 v-model="partida.comentari"
             ></ui-textbox>
+        </section>
+        
+        <section>
+        	
+        	<a :href="actaImg" target="_blank">{{actaImg}}</a>
+			<vue-core-image-upload
+			    text="Pujar Imatge Acta"
+			    class="uploader"
+				compress="50"
+			    url="/api/static/uploadacta"
+				@imageuploaded="getPhotoActa"
+			    :data="{do:'uploadacta'}"
+			    extensions="jpg,jpeg"
+			    inputAccept	="image/jpg,image/jpeg"
+			>
+			</vue-core-image-upload>
+		</section>	
+        <section>
+        	
+        	<a :href="equipsImg" target="_blank">{{equipsImg}}</a>
+			<vue-core-image-upload
+			    text="Pujar Imatge Equip"
+			    class="uploader"
+				compress="50"
+			    url="/api/static/uploadacta"
+				@imageuploaded="getPhotoEquips"
+			    :data="{do:'uploadequip'}"
+			    extensions="jpg,jpeg"
+			    inputAccept	="image/jpg,image/jpeg"
+			>
+			</vue-core-image-upload>
 		</section>	
 		<br>
 		<div class="buttonGroupRight">
@@ -158,8 +189,11 @@
 </template>
 
 <script>
+
+import VueCoreImageUpload from 'vue-core-image-upload'
+
 export default {
-  	components: {},
+  	components: { 'vue-core-image-upload': VueCoreImageUpload},
   	props: ['partidaId'],
 	data () {
 		return {
@@ -190,6 +224,8 @@ export default {
 		    noResults:false,
 			poblacions: [],
 			mapa: null,
+			actaImg: null,
+			equipsImg: null
 		}
 	},
 	methods: {
@@ -213,6 +249,14 @@ export default {
 		
 			return new Date(year, month-1, day, hour, minute, second);	
 			
+		},
+		getPhotoActa:function(res) {
+			var vm=this;
+			vm.actaImg = '/static'+res.file;
+		},
+		getPhotoEquips:function(res) {
+			var vm=this;
+			vm.equipsImg = '/static'+res.file;
 		},
 		getJugadorsPartida:function(idPartida){
 	        var vm = this;
@@ -279,7 +323,9 @@ export default {
 				"comentari":vm.partida.comentari,
 				"nomDelegat":vm.partida.nomDelegat,
 				"llicenciaDelegat":vm.partida.llicenciaDelegat,
-				"contacteDelegat":vm.partida.contacteDelegat
+				"contacteDelegat":vm.partida.contacteDelegat,
+				"actaImg":vm.actaImg,
+				"equipsImg":vm.equipsImg
 			})
 	        .then(function (response) {
 

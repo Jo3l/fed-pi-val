@@ -40,10 +40,10 @@
 							<h3>{{$i18n.t('cart.info')}}:</h3>
 							<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo')}} </p>
 							<details ref="mesinfo"><summary><ui-button color="fedpival" @click="$refs['mesinfo'].open=!$refs['mesinfo'].open;">Més informació</ui-button></summary><div style="margin:0 1em; padding:1em; box-shadow:0 0 5px 2px black;">
-
+<!--
 <p ><b><span
 lang=ES >INFORMACIÓN BÁSICA SOBRE
-PROTECCIÓN DE DATOS</span></b></a></p>
+PROTECCIÓN DE DATOS</span></b></p>
 
 <table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 
  >
@@ -144,8 +144,10 @@ PROTECCIÓN DE DATOS</span></b></a></p>
  </tr>
  <tr>
   <td  valign=top >
-  <p ><b><span lang=ES >CIF:</span></b><span lang=ES
-  > </span><span lang=ES>G-46374351</span></p>
+  <p><b><span lang=ES >CIF:</span></b>
+  <span lang=ES> </span>
+  <span lang=ES>G-46374351</span>
+  </p>
   </td>
  </tr>
  <tr >
@@ -379,14 +381,175 @@ PROTECCIÓN DE DATOS</span></b></a></p>
   </td>
  </tr>
 </table>
+-->
+
+
+
+
+<p><strong>CLAUSULA INFORMATIVA</strong></p>
+<p></p>
+<table>
+<tbody>
+<tr>
+<td class="pregunta">
+<p><strong>Qui &eacute;s el responsable de les seues dades?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Identitat:</strong> FEDERACI&Oacute; DE PILOTA VALENCIANA</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>CIF:</strong> G-46374351</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Direcci&oacute; postal:</strong> C/ Marqu&eacute;s de Sant Joan, 32 baix B - 46015 - Val&egrave;ncia</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Tel&egrave;fon:</strong> 963 74 95 58 <strong>Correu electr&ograve;nic:</strong> <a href="mailto:secretari@fedpival.es">secretari@fedpival.es</a></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Delegat de Protecci&oacute; de Dades: </strong>MEDINALEON CONSULTORES ASOCIADOS SL</p>
+<p><strong>Contacte DPD: </strong>Pedro Medina <strong>Correu electr&ograve;nic:</strong> <a href="mailto:fedpival@dpddigital.com">dpd@ml-asociados.es</a> </p>
+<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>&iquest;Amb quina finalitat tractem les seues dades personals?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>En FEDERACI&Oacute; DE PILOTA VALENCIANA tractem dades de car&agrave;cter personal amb la finalitat de: respondre a les Sol&middot;licituds formulades, gestionar l'alta com a usuari a la p&agrave;gina web, enviar la informaci&oacute; que ens sigui sol&middot;licitada, aix&iacute; com qualsevol prospecci&oacute; comercial que puga ser d'inter&egrave;s per a l'usuari. Finalment, tractem sobre dades per treure la gesti&oacute; del Proc&eacute;s de compra que l'Interessat ha realitzat a trav&eacute;s de la cistella de compra del web.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Com deixar de rebre comunicacions comercials</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>De conformitat amb el que estableix la Llei 34/2002, de 11 de juliol, de Serveis de la Societat de la Informaci&oacute; i de Comer&ccedil; Electr&ograve;nic, en el cas que l'usuari desitge deixar de rebre comunicacions informatives o promocionals per part de FEDERACI&Oacute; DE PILOTA VALENCIANA, pot demanar la baixa del servei enviant un correu electr&ograve;nic a la seg&uuml;ent adre&ccedil;a: secretari@fedpival.es</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Per quant de temps conservarem les seues dades?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Les dades personals proporcionades es conservaran mentre es mantinga la relaci&oacute; administrativa i no se sol&middot;licite la seua supressi&oacute; per l'interessat. Un cop conclosa la relaci&oacute; administrativa es conservaran en estat de bloqueig durant el termini legal establert en compliment de les obligacions legals i poder fer front a les possibles responsabilitats o requeriments de les administracions p&uacute;bliques i / o tribunals. Durant la subscripci&oacute; a l'enviament de les nostres comunicacions, fins al moment que sol&middot;licita l'usuari la baixa del servei.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Quina &eacute;s la legitimaci&oacute; per al tractament de les seves dades?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>La base legal per al tractament de les seues dades &eacute;s el consentiment de l'interessat en un formulari digital.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>A qu&egrave; destinataris es comunicaran les seues dades?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Les dades es comunicaran a altres entitats privades o p&uacute;bliques, per a fins administratius i per a l'execuci&oacute; de la seua sol&middot;licitud. Podran a m&eacute;s de ser comunicats a l'administraci&oacute; i / o tribunals per complir amb la legislaci&oacute; vigent.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Quins s&oacute;n els seus drets quan ens facilita les seues dades?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Qualsevol persona t&eacute; dret a obtenir confirmaci&oacute; sobre si en FEDERACI&Oacute; DE PILOTA VALENCIANA estem tractant dades personals que els concerneixen, o no. Les persones interessades tenen dret a accedir a les seues dades personals, aix&iacute; com a sol&middot;licitar la rectificaci&oacute; de les dades inexactes o, si escau, sol&middot;licitar la seva supressi&oacute; quan, entre d'altres motius, les dades ja no siguen necessaries per als fins que van ser recollides. T&eacute; dret a sol&middot;licitar tutela de l'Ag&egrave;ncia Espanyola de Protecci&oacute; de Dades. En determinades circumst&agrave;ncies i per motius relacionats amb la seua situaci&oacute; particular, els interessats podran oposar-se a el tractament de les seues dades. FEDERACI&Oacute; DE PILOTA VALENCIANA deixar&agrave; de tractar les dades, excepte per motius leg&iacute;tims imperiosos, o l'exercici o la defensa de possibles reclamacions.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Com exercir els seus drets?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Podeu exercir els seus drets enviant escrit, adjuntant c&ograve;pia de document oficial que li identifiqui i concretant el dret o drets que desitja exercir, de qualsevol dels mitjans seg&uuml;ents:</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Com hem obtingut les seues dades?</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>Les dades personals que tractem en FEDERACI&Oacute; DE PILOTA VALENCIANA procedeixen de l'interessat.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Obtenim el consentiment quan:</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p>L'interessat crea un compte d'usuari al nostre web, marca la casella destinada a la subscripci&oacute; a les nostres comunicacions o emplena un formulari en format electr&ograve;nic.</p>
+</td>
+</tr>
+<tr>
+<td class="pregunta">
+<p><strong>Les categories de dades que es tracten s&oacute;n:</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Dades identificatives: </strong>nom i cognoms, DNI</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Dades de contacte: </strong>tel&egrave;fon, adre&ccedil;a postal, correu electr&ograve;nic</p>
+</td>
+</tr>
+<tr>
+<td>
+<p>No es tracten dades especialment protegides.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+
+
 </div>
-							
+
 							</details>
 							
 							<br>
 							<br>
 							
-							<a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
+							<p><a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
 						
 							<br>
 							
@@ -675,6 +838,8 @@ export default {
 <style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
+
+.pregunta { background-color: #ddeeff; }
 
 .item-quantity {
 	width:2em;

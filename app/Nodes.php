@@ -185,6 +185,10 @@ static private function ranking($pars) {
 	foreach($equips as $grup=>$tots)
 		usort($equips[$grup], function($a,$b) {
 			if ($b['punts']!=$a['punts']) return $b['punts']-$a['punts'];
+			// han empatat a punts, però i a partides guanyades?
+			if ($b['pg']!=$a['pg']) return $b['pg']-$a['pg'];
+			// han empatat a punts i a partides, però i a jocs a favor?
+			if ($b['jf']!=$a['jf']) return $b['jf']-$a['jf'];
 			// casuistica desempats
 			// 1. Primer es miren les partides guanyades només entre els equips implicats en l'empat. per tant compare les partides jugades entre eixos dos equips i desempate amb qui tinga més partides guanyades dels dos
 			if ( $b[$a['id']]['partides']>0 ) return 1;
@@ -479,6 +483,19 @@ static public function contingutnode($id) {
 		}
 	}
     return $result;
+}
+
+
+/*
+* @description
+* Inverteix la visualització (public/privat) d'un element/bloc d'un node
+* Exemple de paràmetre: true
+* URL: /api/togglepartides/19039
+*/
+static public function togglepartides(Request $request, Response $response, $params) {
+    $db= new db();
+	$sql= "UPDATE pagina set json='".file_get_contents("php://input")."' where id=".$params['id'];
+	$db->sql($sql);
 }
 
 //  //  //  //  //  //  //  //

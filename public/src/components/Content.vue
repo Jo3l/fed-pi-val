@@ -20,7 +20,7 @@
 						<iframe :src="'/map.html?'+ element.json"></iframe>
 					</div>
 					
-					<div class="partida" v-if="element.tipus == 'J'">
+					<div class="partida" v-if="element.tipus == 'J' && ( !element.json || JSON.parse(element.json).public != false)">
 					<table class="table results">
 						<thead>
 							<tr>
@@ -94,8 +94,26 @@
 		</div>
 		<!-- aço es admin -->
 		<div class="nodeContentEditable" v-if="$store.getters.isAuthenticatedWithRole(0)">
+			
+			<table class="table results" v-if="!containsCompetitionNode && teams">
+				<thead>
+					<tr>
+						<th>Equip</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr  v-for="(element, key) in teams" >
+						<td>{{element.nom}}</td>
+						<td>
+							<ui-button @click="$router.push('/admin/editequip/'+element.id);" size="small" icon="edit"> editar </ui-button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
 			<draggable v-model="nodeContent"  :options="{handle:'.drag',chosenClass:'floating'}" @end="setOrder()" preventOnFilter="true">
-				<div class="nodeContentElement" v-for="(element, key) in nodeContent" v-if="nodeContent!=null">
+				<div class="nodeContentElement" v-for="(element, key) in nodeContent" v-if="true || nodeContent!=null">
 					
 					<!-- drag -->
 					<i class="remove" @click="removeContent(element)"></i>
@@ -141,6 +159,7 @@
 					
 					<!-- Partida -->
 					<div class="partida" v-if="element.tipus == 'J'">
+						<ui-checkbox :value="isCompetitionVisible" @change="toggleVisibleCompetition(element)">Competició visible</ui-checkbox>
 						<div class="buttonContainer">
 							<ui-button color="red" icon="delete" size="small" type="secondary" @click="deleteAllMatches()">Esborrar totes les partides...</ui-button>
 							<ui-button color="red" icon="save" size="small" type="secondary" @click="generator=true">Generador Campionat/Copa</ui-button>
@@ -224,159 +243,6 @@
 							<span v-else><ui-icon icon="warning"></ui-icon> El número de partides jugades no permet generar la següent fase</span>
 						</div>
 
-<!-- ARA ES REDIRIGEIX A EDICIÓ EN admin/partida/:ID
-        				<ui-modal ref="matchedit" size="large"  title="Editar partida">
-							 <ui-datepicker
-				                placeholder="$i18n.t('calendar.dateTip')"
-				                :start-of-week="datePickerOptions.dow"
-				                v-model="newGame.data"
-				                :lang="datePickerOptions"
-				            >Data</ui-datepicker>
-							 
-							 <input type="hidden" v-model="newGame.id">
-							 
-							<ui-select
-				                has-search
-				                floating-label
-				                label="Lloc"
-				                :keys="{ label: 'nom'}"
-				                :options="places"
-				                v-model="newGame.lloc"
-				                error="This field is required"
-				                :invalid="textbox_lloc && newGame.lloc.length === 0"
-				                @touch="textbox_lloc = true"
-				                searchPlaceholder=""
-				            ></ui-select>
-				            
-							<ui-select
-				                has-search
-				                floating-label
-				            	placeholder="Busca l'equip local"
-		                		search-placeholder="Escriu el nom de l'equip"
-				                label="Local"
-				                :keys="{ label: 'nom'}"
-				                :options="local"
-				                v-model="newGame.local"
-				                error="This field is required"
-				                :invalid="textbox_local && newGame.local.length === 0"
-				                @touch="textbox_local = true"
-				                @query-change="onQueryChangeLocal"
-				            ></ui-select>
-				            
-				            
-				           <ui-select
-				                has-search
-				                floating-label
-				                placeholder="Busca l'equip visitant"
-		                		search-placeholder="Escriu el nom de l'equip"
-				                label="Visitant"
-				                :keys="{ label: 'nom'}"
-				                :options="visitant"
-				                v-model="newGame.visitant"
-				                error="This field is required"
-				                :invalid="textbox_visitant && newGame.visitant.length === 0"
-				                @touch="textbox_visitant = true"
-				        		@query-change="onQueryChangeVisitant"
-				            ></ui-select>
-				            
-				            <div class="subForm" v-if="newGame.selected">
-							    <table class="table results">
-									<thead>
-										<tr>
-											<th>Jugador Local</th>
-											<th>Població</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr v-for="element in equipLocal">
-											<td>{{element.nom}} {{element.cognoms}}</td>
-											<td>{{element.id}}</td>
-											<th>
-												<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element, 'local')"></ui-icon-button>
-											</th>
-										</tr>
-									</tbody>
-								</table>
-						
-							    <table class="table results">
-									<thead>
-										<tr>
-											<th>Jugador Visitant</th>
-											<th>Població</th>
-											<th></th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr v-for="element in equipVisitant">
-											<td>{{element.nom}} {{element.cognoms}}</td>
-											<td>{{element.id}}</td>
-											<th>
-												<ui-icon-button icon="delete" size="small" type="secondary" @click="deletePlayer(element, 'visitant')"></ui-icon-button>
-											</th>
-										</tr>
-									</tbody>
-								</table>
-							<section>
-								<ui-select
-					                has-search
-					                floating-label
-					            	placeholder="Afegir jugador local"
-			                		search-placeholder="Escriu Nom o Dni"
-					                label="Jugador local"
-					                :keys="{ label: 'nomcomplet'}"
-					                :options="buscadorJugadorLocal"
-					                v-model="jugadorLocal"
-					                @query-change="onQueryChangePlayerLocal"
-					            ></ui-select>
-								<ui-fab color="primary" icon="add" size="small" @click="addPlayer(jugadorLocal, 'local')" v-if="jugadorLocal"></ui-fab>
-							</section>
-							<section>	
-								<ui-select
-					                has-search
-					                floating-label
-					            	placeholder="Afegir jugador visitant"
-			                		search-placeholder="Escriu Nom o Dni"
-					                label="Jugador visitant"
-					                :keys="{ label: 'nomcomplet'}"
-					                :options="buscadorJugadorVisitant"
-					                v-model="jugadorVisitant"
-					                @query-change="onQueryChangePlayerVisitant"
-					            ></ui-select>
-					            <ui-fab color="primary" icon="add" size="small" @click="addPlayer(jugadorVisitant, 'visitant')" v-if="jugadorVisitant"></ui-fab>
-							</section>	
-				            </div>
-			
-							 <ui-textbox
-								v-if="newGame.selected"
-							    floating-label
-				                autocomplete="off"
-				                error="This field is required"
-				                label="Resultat local"
-								type="number"
-								:min="0"
-				                v-model="newGame.resultatlocal"
-				            ></ui-textbox>
-				            
-							 <ui-textbox
-								v-if="newGame.selected"
-							    floating-label
-				                autocomplete="off"
-				                error="This field is required"
-				                label="Resultat visitant"
-				                :min="0"
-								type="number"
-				                v-model="newGame.resultatvisitant"
-				            ></ui-textbox>
-				            
-							<div class="buttonContainer">
-								<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="saveMatch(newGame)">{{$i18n.t('node.save_game')}}</ui-button>
-								<ui-button color="red" icon="save" size="small" type="secondary" @click="resetMatch()">Cancelar</ui-button>
-							</div>
-
-    					</ui-modal>
--->
-
 						<div class="form" v-if="generator">
 							<match-generator :nodeId="element.jerarquia" :blockId="element.id"></match-generator>
 						</div>
@@ -454,6 +320,7 @@ export default {
 	data () {
 		return {
 			dataMap:'',
+			isCompetitionVisible: false,
 			generator:false,
 			selected:{},
 			loading:false,
@@ -508,15 +375,13 @@ export default {
 			jugadorLocal:'',
 			jugadorVisitant:'',
 			equipLocal:[],
-			equipVisitant:[]
-			
+			equipVisitant:[],
 		}
 	},
 	methods: {
 		jugades(key) {
 			if (!'partides' in this.nodeContent[key]) return false;
 			var partides= this.nodeContent[key].partides;
-			console.log( this.nodeContent[key] );
 			if ([2,4,8,16,32].indexOf(partides.length)<0) return false;
 			var res= true;
 			// si cada partida té resultat distint de zero (jugada (>0) o amb equip nul(-1) )
@@ -686,7 +551,6 @@ export default {
 				}
 			}
 		},
-
 		openModal:function(ref, object, cancel, tipo) {
 			this.$refs.upload.activate(tipo);
 			this.selectedCancel = cancel;
@@ -711,14 +575,12 @@ export default {
 	        
 	        vm.$http.post('/node/'+this.nodeId, element)
 	        .then(function (response) {
-	            
-	
+
 	        })
 	        .catch(function (error) {
 	            console.log(error);
 	        });
-			
-			
+
 		},
         openModalMatch(ref) {
 
@@ -729,34 +591,8 @@ export default {
         },		
 		editMatch: function(element) {
 			var vm=this;
-			console.log(element)
 			vm.$router.push('/admin/partida/'+element.id);
-			return;/*
-			
-			// antic code d'edició de partida. Ara es redirigeix a pàgina dedicada amb totes les opcions.
-			
-			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
-			  element.selected=undefined;
-			});
-			
-			vm.equipLocal=[];
-			vm.equipVisitant=[];
-			element.selected=true;
-			var auth = !this.$store.getters.isAuthenticatedWithRole(0);
-			vm.$http.get('/participa/'+element.id, { cache: auth })
-	        .then(function (response) {
-
-				vm.openModalMatch('matchedit');
-	            vm.equipLocal = response.data.filter(function(obj){ return obj.equip === element.local.id});
-	            vm.equipVisitant = response.data.filter(function(obj){ return obj.equip === element.visitant.id});
-				
-				vm.newGame = element;
-				vm.newGame.data = vm.parseTime(element.data);
-			
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });*/
+			return;
 		},
 		getNode: function(){
 			
@@ -768,6 +604,8 @@ export default {
 
 	            vm.nodeContent = response.data;
 	            vm.addNewGame(vm.nodeContent);
+				var competitionNode = vm.nodeContent.find(node => node.tipus == "J") || {};
+				vm.isCompetitionVisible = !competitionNode.json || JSON.parse(competitionNode.json).public == true;
 				
 	        })
 	        .catch(function (error) {
@@ -787,10 +625,10 @@ export default {
 		},
 		getTeams: function(){
 	        var vm = this;
-	        vm.$http.get('equip')
+	        vm.$http.get('inscripcionsdecompeticio/'+vm.nodeId)
+	        //vm.$http.get('equip')
 	        .then(function (response) {
-	            vm.teams = response.data.data;
-
+	            vm.teams = response.data;
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -804,6 +642,18 @@ export default {
 	        vm.$http.get(listName, { cache: auth })
 	        .then(function (response) {
 	            vm.searchList = response.data;
+	        })
+	        .catch(function (error) {
+	            console.log(error);
+	        });
+		},
+		toggleVisibleCompetition: function(element){
+			var vm = this;
+
+	        vm.$http.post('/togglepartides/'+element.id, {public:!vm.isCompetitionVisible})
+	        .then(function (response) {
+				
+				vm.isCompetitionVisible = !vm.isCompetitionVisible
 	        })
 	        .catch(function (error) {
 	            console.log(error);
@@ -849,38 +699,6 @@ export default {
 	        });
 
 		},
-		/* /// sense us
-		saveMatch: function(){
-			var vm = this;
-			
-			var blockPartida = vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; });
-			if(blockPartida.partides == null) blockPartida.partides = [];
-			
-
-			vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; }).partides.forEach(function(element) {
-				element.selected = undefined;
-			});
-			
-
-			vm.newGame.data = vm.newGame.data.toString('yyyyMMddHHmmss');
-			vm.newGame.selected = undefined;
-			
-			
-			vm.$http.post('/partida/'+ (vm.newGame.id ? vm.newGame.id :''), vm.newGame)
-	        .then(function (response) {
-
-	            vm.getNode();
-        		vm.setOrder(true);
-        		vm.closeModalMatch('matchedit');
-        		
-	        })
-	        .catch(function (error) {
-	            console.log(error);
-	        });
-			
-			
-			vm.resetMatch(vm.newGame);
-		},*/
 		deleteMatch: function(element) {
 			
 			if (!confirm("COMPTE !!! \n¿Estas totalment segur de voler esborrar aquesta partida?")) return;
@@ -905,7 +723,6 @@ export default {
 			if(!confirm("estas absolutament segur de voler esborrar totes les partides i resultats per poder tornar-les a generar?")) return;
 			var vm=this;
 			var blockPartida = vm.nodeContent.find(function (obj) { return obj.tipus === 'J'; });
-			console.log(blockPartida);
 			if (blockPartida) blockPartida.partides.forEach( ({id,...args})=>{
 				vm.$http.delete('/partida/'+id).catch( err=>console.log(err) );
 			} )
@@ -1040,14 +857,18 @@ export default {
 			this.getTeams();
 			this.getPlaces();
     	}
-    	
+		
+
     	var vm=this;
+		vm.getNode();
     	vm.$eventHub.$on('setMapData', vm.setMap);
     	
 	},
 	watch: { 
       	nodeId: function(newVal, oldVal) {
+		  this.teams = [];
           this.getNode();
+		  this.getTeams();
           this.setOrder(true);
           this.generator=false;
         },
@@ -1064,6 +885,9 @@ export default {
 	 		var root = this.$route.path.split('/')[2];
 	 		var vm=this;
 	 		return root == vm.disableBlock;
+	 	},
+	 	containsCompetitionNode: function() {
+	 		return this.nodeContent.filter( e=>e.tipus=='J' ).length>0;
 	 	},
 	 	authOn: function() {
 	 		return this.$store.getters.isAuthenticatedWithRole(0);

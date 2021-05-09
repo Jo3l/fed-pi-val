@@ -20,7 +20,7 @@
 
 			<div class="newsEditor">
 				
-		        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
+		        <ui-button color="blueButtonToRight" icon="cloud_upload" size="small" type="secondary" @click="$refs.titular.focus();openModal('uploadModal', news, news.url, 'img')">{{$i18n.t('image.selectImage')}}</ui-button>
 	            
 				<ui-datepicker
 	                placeholder="$i18n.t('calendar.dateTip')"
@@ -52,6 +52,7 @@
 	                autocomplete="off"
 	                error="This field is required"
 					type="text"
+					ref="titular"
 	                v-model="news.titol"
 				></ui-textbox>
 
@@ -70,7 +71,7 @@
 		    		<ui-checkbox-group :options="tags" v-model="selectedTags"></ui-checkbox-group>
 				</div> 
 				
-				<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" @click="SaveNews()">{{$i18n.t('common.save')}}</ui-button>
+				<ui-button color="blueButtonToRight" icon="save" size="small" type="secondary" :disabled="!readyToSave" @click="SaveNews()">{{$i18n.t('common.save')}}</ui-button>
 				<ui-button v-if="news.id" color="blue" icon="delete" size="small" type="secondary" @click="deleteNews(news.id)">Borrar noticia ID:{{news.id}}</ui-button>
 			
 			</div>
@@ -154,6 +155,7 @@ export default {
   	components: {VueGoodshareFacebook,VueGoodshareTwitter,VueGoodshareWhatsapp,VueGoodshareTelegram, 'NewsCarousel' : NewsCarousel, VuePellEditor, 'filemanager':FileManager,'vue-core-image-upload': VueCoreImageUpload},
 	data () {
 		return {
+			saving:false,
 			localesArray:[],
 			viewTags:false,
 		    tags:[],
@@ -166,6 +168,7 @@ export default {
 		    publishedDateText: '',
 		    publishedDate: '',
 		    unPublishedDate: '',
+		    document: document,
 			menuOptions: [
 			    {
 			        label: 'Borrar',
@@ -251,7 +254,7 @@ export default {
 			var vm = this;
 			var id = vm.news.id ? vm.news.id : '';
 			vm.publishedDate.setHours(parseInt(vm.hora.split(':')[0] | 0));
-
+			vm.saving=true;
 			vm.$http.post('/noticia/'+id, 
 				{
 					idioma: vm.$i18n.locale,
@@ -270,6 +273,7 @@ export default {
 				}	
 			).then(function (response) {
 				vm.news = response.data[0];
+				vm.saving=false;
 	            alert('Noticia guardada');
 	            //window.location.href = '/'+vm.$i18n.locale+'/'+vm.$i18n.t('common.newss');
 	        })
@@ -361,6 +365,11 @@ export default {
 	watch: {
 		destacada: function(old, newv){
 			this.news.destacada=newv?false:true;
+		}
+	},
+	computed:{
+		readyToSave(){
+			return this.news.titol.length > 5 && this.news.contingut.length > 5 && this.news.url.length > 5 && !this.saving
 		}
 	},
 	beforeRouteUpdate (to, from, next) {

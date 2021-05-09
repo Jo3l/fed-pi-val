@@ -4,14 +4,18 @@
 
 			<h1>Jugadors</h1>
 			
-			<span class="button-right">
+			<span class="button-right" v-if="!$route.params.equipId">
 		        <ui-button icon="table_chart" icon-position="left" size="big" @click="csv('jugadors')">CSV</ui-button>
 				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Jugador</ui-button>
 			</span>
 			
+			<span class="button-right" v-else>
+		        <ui-button icon="table_chart" icon-position="left" size="big" @click="tornar()">Vore tots els jugadors</ui-button>
+			</span>
+			
 			<div class="vuetableContainer">
 				
-				<div class="searchFilter">
+				<div class="searchFilter" v-if="!$route.params.equipId">
 				 <ui-textbox
 				    floating-label
 	                autocomplete="off"
@@ -23,6 +27,8 @@
 	            <ui-icon-button color="default" icon="search" type="secondary" @click="getData('jugador')"></ui-icon-button>
 	            <ui-icon-button color="default" icon="clear" type="secondary" @click="filterText='';getData('jugador')"></ui-icon-button>
 				</div>
+				
+				<br v-else>
 
 				<tablerone :tableList="list" :tableColumns="columns">
 					<th slot="headActions"></th>
@@ -53,7 +59,7 @@
 					
 				</tablerone>
 
-				<paginate
+				<paginate v-if="!$route.params.equipId"
 				    :page-count="Math.ceil(list.total / list.per_page)"
 					:clickHandler="clickCallback"
     				:margin-pages=0
@@ -114,6 +120,10 @@ export default {
 		}
 	},
 	methods: {
+		tornar: function() {
+			this.$router.push({ path: '/admin/jugadors/' });
+			this.getData('jugador');
+		},
 		confirmAction: function(func, item) {
 
 			if(confirm( this.$i18n.t('common.confirm') )) {
@@ -142,11 +152,18 @@ export default {
 	    	vm.getData('jugador', pageNum);
 	    },
 		getData: function(listName, page=1){
-	        var vm = this;
-	        var searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
-	        var searchPage = '/p/' + (parseInt(page) - 1);
+	        var vm = this, equip, searchFilter, searchPage;
+	        if(listName==='inscrits'){
+	        	equip = '/'+vm.$route.params.equipId;
+	        	searchFilter = '';
+		        searchPage = '';
+	        } else {
+	        	equip = '';
+	        	searchFilter = vm.filterText!='' ? '/search/'+vm.filterText : '';
+	        	searchPage = '/p/' + (parseInt(page) - 1);
+	        }
 	        
-	        vm.$http.get(listName+searchFilter+searchPage, { cache: false })
+	        vm.$http.get(listName+equip+searchFilter+searchPage, { cache: false })
 	        .then(function (response) {
 	            vm.list = response.data;
 	        })
@@ -190,7 +207,8 @@ export default {
 	},
 	mounted: function () {
 		var vm=this;
-		vm.getData('jugador');
+		if(vm.$route.params.equipId >= 0) vm.getData('inscrits');
+		else vm.getData('jugador');
 	},
 	created: function() {
 	    if (!this.$store.getters.isAuthenticatedWithRole(1)) {

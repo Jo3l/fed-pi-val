@@ -30,9 +30,11 @@ const Jugador = function(resolve) {require(['./components/admin/Jugador.vue'], r
 const Clubs = function(resolve) {require(['./components/admin/Clubs.vue'], resolve)}
 const Club = function(resolve) {require(['./components/admin/Club.vue'], resolve)}
 const Equip = function(resolve) {require(['./components/admin/Equip.vue'], resolve)}
+const Equips = function(resolve) {require(['./components/admin/Equips.vue'], resolve)}
 const adminProductes = function(resolve) {require(['./components/admin/Products.vue'], resolve)}
 const adminProducte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
 const adminComandes = function(resolve) {require(['./components/admin/Comandes.vue'], resolve)}
+const EditEquip = function(resolve) {require(['./components/admin/EditEquip.vue'], resolve)}
 
 //gestio
 const GClub = function(resolve) {require(['./components/gestio/Club.vue'], resolve)}
@@ -253,11 +255,6 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/admin/instalacio/:instalacioId',
-	    component: instalacio,
-	    meta: defaultHead
-	  },
-	  {
 	    path: '/val/federacio/installacions-esportives/:instalacioId',
 	    component: instalacioPublic,
 	    meta: defaultHead
@@ -312,12 +309,6 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
-	    path: '/admin/editor',
-	    name: 'editor',
-	    component: productEditor, 
-	    role: 0	    
-	  },
-	  {
 	    path: '/trofeu',
 	    name: 'trofeu',
 	    component: Trofeu, 
@@ -360,6 +351,24 @@ const routes = [
 	    meta: defaultHead
 	  },
 	  {
+	    path: '/admin/editor',
+	    name: 'editor',
+	    component: productEditor, 
+	    role: 0	    
+	  },
+	  {
+	    path: '/admin/instalacio/:instalacioId',
+	    component: instalacio,
+	    meta: defaultHead,
+	    role: 0
+	  },
+	  {
+	    path: '/admin/editequip/:equipId',
+	    component: EditEquip,
+	    meta: defaultHead,
+	    role: 0
+	  },
+	  {
 	    path: '/admin/partida/:partidaId',
 	    component: editPartida,
 	    role: 0
@@ -367,6 +376,12 @@ const routes = [
 	  {
 	    path: '/admin/jugadors',
 	    name: 'Jugadors',
+	    component: Jugadors,
+	    role: 0
+	  },
+	  {
+	    path: '/admin/jugadors/equip/:equipId',
+	    name: 'JugadorsEquip',
 	    component: Jugadors,
 	    role: 0
 	  },
@@ -410,6 +425,12 @@ const routes = [
 	    path: '/admin/clubs',
 	    name: 'Clubs',
 	    component: Clubs,
+	    role: 0
+	  },
+	  {
+	    path: '/admin/equips',
+	    name: 'Equips',
+	    component: Equips,
 	    role: 0
 	  },
 	  {

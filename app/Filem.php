@@ -273,6 +273,8 @@ class Filem
 	
 	static public function uploadimgjugador(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'jugadors'); }
 	
+	static public function uploadacta(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'actes'); }
+	
 	static public function uploadimgproducte(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'productes'); }
 	
 	static public function uploadimg(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'upload'); }

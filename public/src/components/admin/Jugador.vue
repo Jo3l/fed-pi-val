@@ -231,7 +231,7 @@ export default {
 			      fitxa: null,
 			      club: null,
 			      datasegur: new Date(),
-			      dataactiu: new Date()
+			      dataactiu: new Date(),
 		    },
 		    jugadorOpcions:['Profesional','Amateur','Jutge','Trinqueter','Feridor','Escolar','Monitor'],
 		    clubName:'',
@@ -335,7 +335,11 @@ export default {
 		        	fitxa: vm.jugador.fitxa ? vm.jugador.fitxa.join(',') : ''
 		        }
 	        }).then(function (response) {
-	        	if (response.status==409) return alert('Error, DNI existent');
+				//console.log(response.data)
+	        	//if (response.status==409) return alert('Error, DNI existent');
+	        	//if (response.status==406) return alert('Error, numero de soci existent');
+				if (response.data && response.data.error) return alert(response.data.error);
+				if (response.data && response.data.ERROR) return alert(response.data.ERROR);
 	            vm.$router.push({ path: `/admin/jugadors/`});
 	        })
 	        .catch(function (error) {
@@ -433,8 +437,8 @@ export default {
 			vm.jugador.foto= data.foto;
 			//vm.jugador.tipusfitxa= data.tipusfitxa;
 			vm.jugador.fitxa= [];
-			vm.jugador.dataactiu= vm.parseTime((new Date()).getFullYear()+'1231235959');
-			vm.jugador.datasegur= vm.parseTime((new Date()).getFullYear()+'1231235959');
+			vm.jugador.dataactiu= '20200101010101';//vm.parseTime((new Date()).getFullYear()+'1231235959'); // ERROR! al crea un predefinit es posa la data de cap d'any, o siga s'activa automàticament
+			vm.jugador.datasegur= '20200101010101';//vm.parseTime((new Date()).getFullYear()+'1231235959'); // ERROR! al crea un predefinit es posa la data de cap d'any, o siga s'activa automàticament
 		}
 		
         vm.$http.get('/nomsclubs')

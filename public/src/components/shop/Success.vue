@@ -71,6 +71,9 @@ export default {
 	  		return;
 	  	}
 	  	
+		/*
+		// abans reviem control de passarel.la per ací. ara va directe a /api/pagat aixi que nomes he de mostrar resultat indicat
+		
 		vm.$http.post('/pagat', vm.$route.query)
         .then(function (response) {
         	
@@ -82,7 +85,16 @@ export default {
 	        vm.error=error.response.data.error;
 			vm.$refs.error.open();
         });
-        
+        */
+        vm.datos= vm.$route.query;
+        if(res=='OK') {
+    	    vm.error= 'Compra realizada con éxito';
+        	this.$store.dispatch('deleteCart');
+        } else {
+    	    vm.error= 'Problema al procesar el pago';
+        }
+	    vm.$refs.error.open();
+
   }
 
 }

@@ -129,7 +129,12 @@ public function generic_insert(Request $request, Response $response, $params) {
 	if ($tabla=='jugador') {
 		$db->sql("select count(*) as c from jugador where dni='".$json['dni']."';");
 		$all= $db->all();
-		if ($all[0]['c']>0) die($response->withStatus(409)->withHeader('Content-Type', 'application/json')->write('{"ERROR":"Ya existe ese DNI"}'));
+		if ($all[0]['c']>0) die('{"ERROR":"Ja existeix eixe DNI"}');
+		//if ($all[0]['c']>0) die($response->withStatus(409)->withHeader('Content-Type', 'application/json')->write('{"error":"Ja existeix eixe DNI"}'));
+		$db->sql("select count(*) as c from jugador where numsoci='".$json['numsoci']."';");
+		$all= $db->all();
+		if ($all[0]['c']>0) die('{"ERROR":"Ja existeix el Numero de soci"}');
+		//if ($all[0]['c']>0) die($response->withStatus(406)->withHeader('Content-Type', 'application/json')->write('{"error":"Ja existeix el Numero de soci"}'));
 	}
 	if ($tabla=='producte') {
 		$jsonobj= json_decode($json['json'],true);
@@ -163,6 +168,10 @@ public function generic_insert(Request $request, Response $response, $params) {
 		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
 	}
 	$id= $id[0]['id'];
+	if (in_array($tabla,['equip','jugador','club']))
+		try {
+			$db->sql("update ".$tabla." set creacio=FROM_UNIXTIME(UNIX_TIMESTAMP())+0 where id=".$id);
+		} catch (Exception $e) {}
 	if (in_array($tabla,Generics::$taules_amb_idioma)) Generics::insert_idioma($params,$id,$json);
 	$params['id']= $id;
 	// en cas de guardar una partida, he de tornar els blocs :
@@ -186,8 +195,9 @@ public function generic_delete(Request $request, Response $response, $params) {
 	$tabla= Fun::tables($params['tabla'],'modify');
     $db = new db();
     try{
-    	if ($tabla!='partida' && $tabla!='comanda') $db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
+    	//if ($tabla!='partida' && $tabla!='comanda') $db->sql("DELETE FROM ".$tabla." where id=".$params['id']);
     	$db->sql("UPDATE ".$tabla." set baixa= '".date('YmdHis')."' where id=".$params['id']);
+	    if ($tabla=='equip') $db->sql("UPDATE pertany set baixa='".date('YmdHis')."' WHERE equip=".$params['id']);
     } catch(Exception $e) { 
 		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
     }
@@ -210,6 +220,11 @@ static public function generic_query(Request $request, Response $response, $para
     $tabla= Fun::tables($params['tabla'],'select'); // ho faig una segona vegada perquè la taula on fer consuulta depen de l'idioma
 
     try {
+		// taules que han de considerar borrats per a no apareixer
+		if (in_array($tabla,['producte','comanda'])) { 
+			if (!isset($options['wheres'])) $options['wheres']=[]; 
+			array_push($options['wheres'],'baixa is null'); 
+		}
     	if ($params['tabla']=='noticia') {
 			$user= Auth::getUser($request,$response);
 			if (!empty($user)) if ($user->data->rol==0) $tabla='_noticia_'.(Fun::$idioma).'_admin';
@@ -223,6 +238,7 @@ static public function generic_query(Request $request, Response $response, $para
     if (!isset($_GET['csv']) && !empty($options['limit'])) $sql.= " limit ".$options['limit'];
 	//print_r($options);echo $sql;exit;
 	if ($tabla=='jugador') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=jugador.club) as nomclub ',$sql);
+	if ($tabla=='equip') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=equip.club) as nomclub,(select _camins.cami_val from _camins where id=equip.competicio) as nomcompeticio ',$sql);
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
