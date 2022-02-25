@@ -4,7 +4,7 @@
 		<h1> <span class="ui-icon material-icons">flag</span> Patrocinadors / Col·laboradors </h1>
 			
 		<div>
-			<a href="http://pilotaescola.es" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola" loading="lazy" style="width:128px !important"></a>
+			<a href="https://pilotaescola.gva.es/va/" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola" loading="lazy" style="width:128px !important"></a>
 			<a href="http://www.ceice.gva.es/ca/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/gva.jpg" alt="Conselleria d'Educació, Investigació, Cultura i Esport" title="Conselleria d'Educació, Investigació, Cultura i Esport" loading="lazy"></a>
 			<a href="http://www.sempreteua.gva.es/ca/elements-promocionals" target="_blank"><img src="/static/img/footer/sempreteua.jpg" alt="Sempre Teua" title="Sempre Teua" loading="lazy"></a>
 			<a href="http://www.dival.es/" target="_blank"><img src="/static/img/footer/diputacioval.jpg" alt="Diputació de València" title="Diputació de València" loading="lazy"></a>

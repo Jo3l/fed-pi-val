@@ -5,6 +5,8 @@
 			<h1>Jugadors</h1>
 			
 			<span class="button-right" v-if="!$route.params.equipId">
+				<ui-button icon="beach_access" icon-position="left" size="big" @click="batch(2)">Lot segur</ui-button>
+				<ui-button icon="group_add" icon-position="left" size="big" @click="batch(1)">Lot actius</ui-button>
 		        <ui-button icon="table_chart" icon-position="left" size="big" @click="csv('jugadors')">CSV</ui-button>
 				<ui-button icon="add_circle_outline" icon-position="left" size="big" @click="edit({id:''})">Afegir Jugador</ui-button>
 			</span>
@@ -184,6 +186,21 @@ export default {
 		},
 		csv: function(listName) {
 	        window.location.href='/api/'+listName+'?csv=true';
+		},
+		batch: function(tipus) {
+			var paste;
+			if(paste= prompt( 'Atenció: operació no reversible. Enganxa (CTRL+C, i després CTRL+V ací) la columna d\'Excel amb els numeros de soci que vulgues actualitzar amb data d\''+(tipus==1?'activitat':'assegurat')+' a 31 de desembre d\'enguany' )) {
+				var nums= Array.from(paste.matchAll('[0-9]+')).map(a=>a[0])
+				var vm= this;
+	        	vm.$http.post(tipus==1?'/dataactius/':'/datasegurs/',nums)
+				.then(function (response) {
+					alert('Jugadors '+(tipus==1?'activats':'assegurats')+' amb èxit')
+					vm.getData('jugador');
+				})
+				.catch(function (error) {
+					alert('Error en el procés: '+error)
+				});				
+			}
 		},
 		parseTime: function(str) {
 			console.log(str);

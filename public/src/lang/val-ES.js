@@ -100,7 +100,7 @@ export default {
 		newsNew: 'Nova noticia',
 		eventNew: 'Nou esdeveniment',
 		wrong: 'Valor incorrecte',
-		cookieLegal: 'Aquesta pàgina web utilitza cookies per a millorar l\'experiència navegant. Pots consultar ací la nostra ',
+		cookieLegal: 'Aquesta pàgina web usa cookies pròpies tècniques,	i de tercers per a estadístiques, per favor accepta per a millorar l\'experiència navegant. Pots consultar ací la nostra ',
 		next: 'Següent',
 		prev: 'Anterior',
 		lastResults:'Últims resultats',
@@ -123,6 +123,7 @@ export default {
 	modal: {
 		ok: 'Acceptar',
 		cancel: 'Cancelar',
-		close: 'Tancar'
+		close: 'Tancar',
+		reject: 'Rebutjar'
 	}
 }

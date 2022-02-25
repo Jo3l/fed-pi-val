@@ -1,45 +1,45 @@
 <template>
     <transition name="fade">
-					<div class="shopping-cart" >
-					    <div class="shopping-cart-header">
-					      <ui-icon icon="shopping_cart"></ui-icon><span class="badge">{{countCart}}</span>
-					      <div class="shopping-cart-total">
-					        <span class="lighter-text">Total:</span>
-					        <span class="main-color-text">{{cartTotalPrice}}€</span>
-					      </div>
-					    </div>
-				    	<swiper class="shopping-cart-items" :options="swiperOptionThumbs">
-				    		<div v-if="cart.length==0" class="swiper-slide empty">{{$t('cart.emptyCart')}}</div>
-						    <swiper-slide v-for="item in cart" v-else>
-						      	<router-link :to="{ path: '/'+$i18n.locale+'/'+$t('cart.shop')+'/'+item.fullProduct.content[$i18n.locale].slug }">
-						        <picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductType(item)}}</span></picture>
-						        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
-						        <span class="item-price">{{getProductPrice(item)}}€</span>
-						        <span class="item-quantity">{{$t('cart.quantity')}}: <input class="item-quantity" type="number" v-model="item.quantity"> </span>
-						        </router-link>
-						        <div class="modifier">
-						        	<ui-icon-button color="fedpival" icon="add" size="small" type="secondary" @click="$store.dispatch('increaseProductToCart', item)"></ui-icon-button>
-						        	<ui-icon-button color="fedpival" icon="remove" size="small" type="secondary" @click="$store.dispatch('removeProductToCart', item)"></ui-icon-button>
-						        	<ui-icon-button color="fedpival" icon="clear" size="small" type="secondary" @click="$store.dispatch('deleteProductToCart', item)"></ui-icon-button>
-						        </div>
-						    </swiper-slide>
-						    
-					    	<ui-icon-button icon="expand_less" type="primary" class="swiper-button-prev cart" slot="button-prev" v-if="cart.length>0"></ui-icon-button>
-							<ui-icon-button icon="expand_more" type="primary" class="swiper-button-next cart" slot="button-next" v-if="cart.length>0"></ui-icon-button>
-						</swiper>
+		<div class="shopping-cart" >
+			<div class="shopping-cart-header">
+				<ui-icon icon="shopping_cart"></ui-icon><span class="badge">{{countCart}}</span>
+				<div class="shopping-cart-total">
+				<span class="lighter-text">Total:</span>
+				<span class="main-color-text">{{cartTotalPrice}}€</span>
+				</div>
+			</div>
+			<swiper class="shopping-cart-items" :options="swiperOptionThumbs">
+				<div v-if="cart.length==0" class="swiper-slide empty">{{$t('cart.emptyCart')}}</div>
+				<swiper-slide v-for="item in cart" v-else>
+					<router-link :to="{ path: '/'+$i18n.locale+'/'+$t('cart.shop')+'/'+item.fullProduct.content[$i18n.locale].slug }">
+					<picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductType(item)}}</span></picture>
+					<span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
+					<span class="item-price">{{getProductPrice(item)}}€</span>
+					<span class="item-quantity">{{$t('cart.quantity')}}: <input class="item-quantity" type="number" v-model="item.quantity"> </span>
+					</router-link>
+					<div class="modifier">
+						<ui-icon-button color="fedpival" icon="add" size="small" type="secondary" @click="$store.dispatch('increaseProductToCart', item)"></ui-icon-button>
+						<ui-icon-button color="fedpival" icon="remove" size="small" type="secondary" @click="$store.dispatch('removeProductToCart', item)"></ui-icon-button>
+						<ui-icon-button color="fedpival" icon="clear" size="small" type="secondary" @click="$store.dispatch('deleteProductToCart', item)"></ui-icon-button>
+					</div>
+				</swiper-slide>
+				
+				<ui-icon-button icon="expand_less" type="primary" class="swiper-button-prev cart" slot="button-prev" v-if="cart.length>0"></ui-icon-button>
+				<ui-icon-button icon="expand_more" type="primary" class="swiper-button-next cart" slot="button-next" v-if="cart.length>0"></ui-icon-button>
+			</swiper>
 
-						<ui-button icon="shopping_cart" :class="cart.length>0 && cartTotalPrice>=10?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0 || cartTotalPrice<10" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}} <span v-if="cartTotalPrice<10" style="white-space:nowrap">...minim 10€!</span></ui-button>
+			<ui-button icon="shopping_cart" :class="cart.length>0 && cartTotalPrice>=10?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0 || cartTotalPrice<10" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}} <span v-if="cartTotalPrice<10" style="white-space:nowrap">...minim 10€!</span></ui-button>
 
-				        <ui-modal size="large" ref="buyModal" :title="$i18n.t('cart.customerData')">
-				        	
-				        	<div class="done" v-if="resultDone">
-				        		<p>{{resultDone}}</p>
-				        		<ui-button @click="eraseCart()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
-				        	</div>
+			<ui-modal size="large" ref="buyModal" :title="$i18n.t('cart.customerData')">
+				
+				<div class="done" v-if="resultDone">
+					<p>{{resultDone}}</p>
+					<ui-button @click="eraseCart()" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
+				</div>
 
-							<h3>{{$i18n.t('cart.info')}}:</h3>
-							<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo')}} </p>
-							<details ref="mesinfo"><summary><ui-button color="fedpival" @click="$refs['mesinfo'].open=!$refs['mesinfo'].open;">Més informació</ui-button></summary><div style="margin:0 1em; padding:1em; box-shadow:0 0 5px 2px black;">
+				<h3>{{$i18n.t('cart.info')}}:</h3>
+				<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo.trim()')}} </p>
+				<details ref="mesinfo"><summary><ui-button color="fedpival" @click="$refs['mesinfo'].open=!$refs['mesinfo'].open;">Més informació</ui-button></summary><div style="margin:0 1em; padding:1em; box-shadow:0 0 5px 2px black;">
 <!--
 <p ><b><span
 lang=ES >INFORMACIÓN BÁSICA SOBRE
@@ -386,287 +386,290 @@ PROTECCIÓN DE DATOS</span></b></p>
 
 
 
-<p><strong>CLAUSULA INFORMATIVA</strong></p>
-<p></p>
-<table>
-<tbody>
-<tr>
-<td class="pregunta">
-<p><strong>Qui &eacute;s el responsable de les seues dades?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Identitat:</strong> FEDERACI&Oacute; DE PILOTA VALENCIANA</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>CIF:</strong> G-46374351</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Direcci&oacute; postal:</strong> C/ Marqu&eacute;s de Sant Joan, 32 baix B - 46015 - Val&egrave;ncia</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Tel&egrave;fon:</strong> 963 74 95 58 <strong>Correu electr&ograve;nic:</strong> <a href="mailto:secretari@fedpival.es">secretari@fedpival.es</a></p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Delegat de Protecci&oacute; de Dades: </strong>MEDINALEON CONSULTORES ASOCIADOS SL</p>
-<p><strong>Contacte DPD: </strong>Pedro Medina <strong>Correu electr&ograve;nic:</strong> <a href="mailto:fedpival@dpddigital.com">dpd@ml-asociados.es</a> </p>
-<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>&iquest;Amb quina finalitat tractem les seues dades personals?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>En FEDERACI&Oacute; DE PILOTA VALENCIANA tractem dades de car&agrave;cter personal amb la finalitat de: respondre a les Sol&middot;licituds formulades, gestionar l'alta com a usuari a la p&agrave;gina web, enviar la informaci&oacute; que ens sigui sol&middot;licitada, aix&iacute; com qualsevol prospecci&oacute; comercial que puga ser d'inter&egrave;s per a l'usuari. Finalment, tractem sobre dades per treure la gesti&oacute; del Proc&eacute;s de compra que l'Interessat ha realitzat a trav&eacute;s de la cistella de compra del web.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Com deixar de rebre comunicacions comercials</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>De conformitat amb el que estableix la Llei 34/2002, de 11 de juliol, de Serveis de la Societat de la Informaci&oacute; i de Comer&ccedil; Electr&ograve;nic, en el cas que l'usuari desitge deixar de rebre comunicacions informatives o promocionals per part de FEDERACI&Oacute; DE PILOTA VALENCIANA, pot demanar la baixa del servei enviant un correu electr&ograve;nic a la seg&uuml;ent adre&ccedil;a: secretari@fedpival.es</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Per quant de temps conservarem les seues dades?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>Les dades personals proporcionades es conservaran mentre es mantinga la relaci&oacute; administrativa i no se sol&middot;licite la seua supressi&oacute; per l'interessat. Un cop conclosa la relaci&oacute; administrativa es conservaran en estat de bloqueig durant el termini legal establert en compliment de les obligacions legals i poder fer front a les possibles responsabilitats o requeriments de les administracions p&uacute;bliques i / o tribunals. Durant la subscripci&oacute; a l'enviament de les nostres comunicacions, fins al moment que sol&middot;licita l'usuari la baixa del servei.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Quina &eacute;s la legitimaci&oacute; per al tractament de les seves dades?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>La base legal per al tractament de les seues dades &eacute;s el consentiment de l'interessat en un formulari digital.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>A qu&egrave; destinataris es comunicaran les seues dades?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>Les dades es comunicaran a altres entitats privades o p&uacute;bliques, per a fins administratius i per a l'execuci&oacute; de la seua sol&middot;licitud. Podran a m&eacute;s de ser comunicats a l'administraci&oacute; i / o tribunals per complir amb la legislaci&oacute; vigent.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Quins s&oacute;n els seus drets quan ens facilita les seues dades?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>Qualsevol persona t&eacute; dret a obtenir confirmaci&oacute; sobre si en FEDERACI&Oacute; DE PILOTA VALENCIANA estem tractant dades personals que els concerneixen, o no. Les persones interessades tenen dret a accedir a les seues dades personals, aix&iacute; com a sol&middot;licitar la rectificaci&oacute; de les dades inexactes o, si escau, sol&middot;licitar la seva supressi&oacute; quan, entre d'altres motius, les dades ja no siguen necessaries per als fins que van ser recollides. T&eacute; dret a sol&middot;licitar tutela de l'Ag&egrave;ncia Espanyola de Protecci&oacute; de Dades. En determinades circumst&agrave;ncies i per motius relacionats amb la seua situaci&oacute; particular, els interessats podran oposar-se a el tractament de les seues dades. FEDERACI&Oacute; DE PILOTA VALENCIANA deixar&agrave; de tractar les dades, excepte per motius leg&iacute;tims imperiosos, o l'exercici o la defensa de possibles reclamacions.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Com exercir els seus drets?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>Podeu exercir els seus drets enviant escrit, adjuntant c&ograve;pia de document oficial que li identifiqui i concretant el dret o drets que desitja exercir, de qualsevol dels mitjans seg&uuml;ents:</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Com hem obtingut les seues dades?</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>Les dades personals que tractem en FEDERACI&Oacute; DE PILOTA VALENCIANA procedeixen de l'interessat.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Obtenim el consentiment quan:</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p>L'interessat crea un compte d'usuari al nostre web, marca la casella destinada a la subscripci&oacute; a les nostres comunicacions o emplena un formulari en format electr&ograve;nic.</p>
-</td>
-</tr>
-<tr>
-<td class="pregunta">
-<p><strong>Les categories de dades que es tracten s&oacute;n:</strong></p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Dades identificatives: </strong>nom i cognoms, DNI</p>
-</td>
-</tr>
-<tr>
-<td>
-<p><strong>Dades de contacte: </strong>tel&egrave;fon, adre&ccedil;a postal, correu electr&ograve;nic</p>
-</td>
-</tr>
-<tr>
-<td>
-<p>No es tracten dades especialment protegides.</p>
-</td>
-</tr>
-</tbody>
-</table>
+	<p><strong>CLAUSULA INFORMATIVA</strong></p>
+	<p></p>
+	<table>
+	<tbody>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Qui &eacute;s el responsable de les seues dades?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Identitat:</strong> FEDERACI&Oacute; DE PILOTA VALENCIANA</p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>CIF:</strong> G-46374351</p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Direcci&oacute; postal:</strong> C/ Marqu&eacute;s de Sant Joan, 32 baix B - 46015 - Val&egrave;ncia</p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Tel&egrave;fon:</strong> 963 74 95 58 <strong>Correu electr&ograve;nic:</strong> <a href="mailto:secretari@fedpival.es">secretari@fedpival.es</a></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Delegat de Protecci&oacute; de Dades: </strong>MEDINALEON CONSULTORES ASOCIADOS SL</p>
+	<p><strong>Contacte DPD: </strong>Pedro Medina <strong>Correu electr&ograve;nic:</strong> <a href="mailto:fedpival@dpddigital.com">dpd@ml-asociados.es</a> </p>
+	<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>&iquest;Amb quina finalitat tractem les seues dades personals?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>En FEDERACI&Oacute; DE PILOTA VALENCIANA tractem dades de car&agrave;cter personal amb la finalitat de: respondre a les Sol&middot;licituds formulades, gestionar l'alta com a usuari a la p&agrave;gina web, enviar la informaci&oacute; que ens sigui sol&middot;licitada, aix&iacute; com qualsevol prospecci&oacute; comercial que puga ser d'inter&egrave;s per a l'usuari. Finalment, tractem sobre dades per treure la gesti&oacute; del Proc&eacute;s de compra que l'Interessat ha realitzat a trav&eacute;s de la cistella de compra del web.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Com deixar de rebre comunicacions comercials</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>De conformitat amb el que estableix la Llei 34/2002, de 11 de juliol, de Serveis de la Societat de la Informaci&oacute; i de Comer&ccedil; Electr&ograve;nic, en el cas que l'usuari desitge deixar de rebre comunicacions informatives o promocionals per part de FEDERACI&Oacute; DE PILOTA VALENCIANA, pot demanar la baixa del servei enviant un correu electr&ograve;nic a la seg&uuml;ent adre&ccedil;a: secretari@fedpival.es</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Per quant de temps conservarem les seues dades?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>Les dades personals proporcionades es conservaran mentre es mantinga la relaci&oacute; administrativa i no se sol&middot;licite la seua supressi&oacute; per l'interessat. Un cop conclosa la relaci&oacute; administrativa es conservaran en estat de bloqueig durant el termini legal establert en compliment de les obligacions legals i poder fer front a les possibles responsabilitats o requeriments de les administracions p&uacute;bliques i / o tribunals. Durant la subscripci&oacute; a l'enviament de les nostres comunicacions, fins al moment que sol&middot;licita l'usuari la baixa del servei.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Quina &eacute;s la legitimaci&oacute; per al tractament de les seves dades?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>La base legal per al tractament de les seues dades &eacute;s el consentiment de l'interessat en un formulari digital.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>A qu&egrave; destinataris es comunicaran les seues dades?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>Les dades es comunicaran a altres entitats privades o p&uacute;bliques, per a fins administratius i per a l'execuci&oacute; de la seua sol&middot;licitud. Podran a m&eacute;s de ser comunicats a l'administraci&oacute; i / o tribunals per complir amb la legislaci&oacute; vigent.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Quins s&oacute;n els seus drets quan ens facilita les seues dades?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>Qualsevol persona t&eacute; dret a obtenir confirmaci&oacute; sobre si en FEDERACI&Oacute; DE PILOTA VALENCIANA estem tractant dades personals que els concerneixen, o no. Les persones interessades tenen dret a accedir a les seues dades personals, aix&iacute; com a sol&middot;licitar la rectificaci&oacute; de les dades inexactes o, si escau, sol&middot;licitar la seva supressi&oacute; quan, entre d'altres motius, les dades ja no siguen necessaries per als fins que van ser recollides. T&eacute; dret a sol&middot;licitar tutela de l'Ag&egrave;ncia Espanyola de Protecci&oacute; de Dades. En determinades circumst&agrave;ncies i per motius relacionats amb la seua situaci&oacute; particular, els interessats podran oposar-se a el tractament de les seues dades. FEDERACI&Oacute; DE PILOTA VALENCIANA deixar&agrave; de tractar les dades, excepte per motius leg&iacute;tims imperiosos, o l'exercici o la defensa de possibles reclamacions.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Com exercir els seus drets?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>Podeu exercir els seus drets enviant escrit, adjuntant c&ograve;pia de document oficial que li identifiqui i concretant el dret o drets que desitja exercir, de qualsevol dels mitjans seg&uuml;ents:</p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Canal RGPD: </strong><a href="https://fedpival-canaletico.appcore.es/"><strong>https://fedpival-canaletico.appcore.es/</strong></a></p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Com hem obtingut les seues dades?</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>Les dades personals que tractem en FEDERACI&Oacute; DE PILOTA VALENCIANA procedeixen de l'interessat.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Obtenim el consentiment quan:</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>L'interessat crea un compte d'usuari al nostre web, marca la casella destinada a la subscripci&oacute; a les nostres comunicacions o emplena un formulari en format electr&ograve;nic.</p>
+	</td>
+	</tr>
+	<tr>
+	<td class="pregunta">
+	<p><strong>Les categories de dades que es tracten s&oacute;n:</strong></p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Dades identificatives: </strong>nom i cognoms, DNI</p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p><strong>Dades de contacte: </strong>tel&egrave;fon, adre&ccedil;a postal, correu electr&ograve;nic</p>
+	</td>
+	</tr>
+	<tr>
+	<td>
+	<p>No es tracten dades especialment protegides.</p>
+	</td>
+	</tr>
+	</tbody>
+	</table>
 
 
 
-</div>
+		</div>
 
-							</details>
-							
-							<br>
-							<br>
-							
-							<p><a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
-						
-							<br>
-							
-							<ui-radio-group
-				                name="payment"
-				                :options="shipping"
-				                v-model="order.payment"
-				            >{{$i18n.t('cart.payType')}}</ui-radio-group>
-				            
-							<br>
-						    
-							<div class="clientData">
-								<div class="form">
-									
-						            <ui-textbox
-						                floating-label
-						                label="Nom"
-						                placeholder="Pose el seu nom"
-						                v-model="order.name"
-						                :invalid="order.name.length<4"
-						            ></ui-textbox>
+		</details>
 		
-						            <ui-textbox
-						                floating-label
-						                label="Cognoms"
-						                placeholder="Pose els seus cognoms"
-						                v-model="order.surname"
-						                :invalid="order.surname.length<4"
-						            ></ui-textbox>
+		<br>
+		<br>
 		
-						            <ui-textbox
-						                floating-label
-						                label="Adreça completa"
-						                placeholder="Pose l'adreça completa on es va a enviar"
-						                v-model="order.address"
-						                :invalid="order.address.length<4"
-						            ></ui-textbox>
+		<p><a href="mailto:botiga@fedpival.es">botiga@fedpival.es</a></p>
+
+		<br>
 		
-						            <ui-textbox
-						                floating-label
-						                label="Codi postal"
-						                placeholder="Pose el seu codi postal"
-						                type="number"
-						                v-model="order.cp"
-						                :invalid="isNaN(order.cp)||order.cp.toString().length!=5"
-						            ></ui-textbox>
-						            
-						            <ui-textbox
-						                floating-label
-						                label="Població"
-						                placeholder="Pose la població on es va a enviar"
-						                v-model="order.city"
-						                :invalid="order.city.length<3"
-						            ></ui-textbox>
+		<ui-radio-group
+			name="payment"
+			:options="shipping"
+			v-model="order.payment"
+		>{{$i18n.t('cart.payType')}}</ui-radio-group>
 		
-						            <ui-textbox
-						            	floating-label
-						                icon-position="right"
-						                icon="phone"
-						                label="Telèfon"
-						                type="number"
-						                placeholder="Pose el seu nº de telèfon"
-						                v-model="order.tel"
-						                :invalid="isNaN(order.tel)||order.tel.toString().length<9"
-						            ></ui-textbox>
-						            
-						            <ui-textbox
-						            	floating-label
-						                help=""
-						                icon-position="right"
-						                icon="mail"
-						                label="Email"
-						                placeholder="Pose la seua adreça de correu electrònic"
-						                type="email"
-						                v-model="order.email"
-						                :invalid="$store.getters.validate({string:order.email,type:'email'})"
-						            ></ui-textbox>
-						            
-						            <ui-textbox
-						                enforce-maxlength
-						                help="Maxim 256 caracters"
-						                label="Comentari"
-						                placeholder="Si vols afegir cap comentari, escriu ací"
-						                :multi-line="true"
-						                :maxlength="256"
-						                v-model="order.comentari"
-						            ></ui-textbox>
-						            
-								</div>
-								<div class="list">
-									
-							    	<div class="shopping-cart-items final">
-									    <div v-for="item in cart" class="swiper-slide">
-									        <span class="item-name">{{item.fullProduct.content[$i18n.locale].name}} [{{getProductType(item)}}]</span>
-									        <span class="item-price">{{getProductPrice(item)}}€</span>
-									        <span class="item-quantity">{{$t('cart.quantity')}}: {{item.quantity}}</span>
-									    </div>
+		<br>
+		
+		<div class="clientData">
+			<div class="form">
+				
+				<ui-textbox
+					floating-label
+					label="Nom"
+					placeholder="Pose el seu nom"
+					v-model="order.name"
+					:invalid="order.name.length<4"
+				></ui-textbox>
 
-									</div>
-									<span v-if="!isBlackFriday || (isBlackFriday && cartTotalPrice < 30)" class="finalPrice">+Despeses d'enviament 8,90€</span><br/><br/>
-									<span class="finalPrice"><strong>Total {{ (parseFloat(cartTotalPrice)+( (!isBlackFriday || (isBlackFriday && cartTotalPrice < 30) )?8.9:0)).toFixed(2) }}€</strong></span>
-								</div>
-				            </div>
-				            
-							<div slot="footer" v-if="!resultDone">
-				                <ui-button @click="buy()" :loading="buyButtonDisable" :disabled="buyButtonDisable" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
-				                <ui-button @click="closeModal('buyModal')">{{$i18n.t('modal.cancel')}}</ui-button>
-				            </div>
-				        </ui-modal>
+				<ui-textbox
+					floating-label
+					label="Cognoms"
+					placeholder="Pose els seus cognoms"
+					v-model="order.surname"
+					:invalid="order.surname.length<4"
+				></ui-textbox>
 
-    <form ref="tpvform" method="POST">
-          <input ref="version" type="hidden" name="Ds_SignatureVersion" />
-          <input ref="parameters" type="hidden" name="Ds_MerchantParameters" />
-          <input ref="signature" type="hidden" name="Ds_Signature" />
-    </form>
+				<ui-textbox
+					floating-label
+					label="Adreça completa"
+					placeholder="Pose l'adreça completa on es va a enviar"
+					v-model="order.address"
+					:invalid="order.address.length<4"
+				></ui-textbox>
 
-					 </div>
+				<ui-textbox
+					floating-label
+					label="Codi postal"
+					placeholder="Pose el seu codi postal"
+					type="number"
+					v-model="order.cp"
+					:invalid="isNaN(order.cp)||order.cp.toString().length!=5"
+				></ui-textbox>
+				
+				<ui-textbox
+					floating-label
+					label="Població"
+					placeholder="Pose la població on es va a enviar"
+					v-model="order.city"
+					:invalid="order.city.length<3"
+				></ui-textbox>
+
+				<ui-textbox
+					floating-label
+					icon-position="right"
+					icon="phone"
+					label="Telèfon"
+					type="number"
+					placeholder="Pose el seu nº de telèfon"
+					v-model="order.tel"
+					:invalid="isNaN(order.tel)||order.tel.toString().length<9"
+				></ui-textbox>
+				
+				<ui-textbox
+					floating-label
+					help=""
+					icon-position="right"
+					icon="mail"
+					label="Email"
+					placeholder="Pose la seua adreça de correu electrònic"
+					type="email"
+					v-model="order.email"
+					:invalid="$store.getters.validate({string:order.email,type:'email'})"
+				></ui-textbox>
+				
+				<ui-textbox
+					enforce-maxlength
+					help="Maxim 256 caracters"
+					label="Comentari"
+					placeholder="Si vols afegir cap comentari, escriu ací"
+					:multi-line="true"
+					:maxlength="256"
+					v-model="order.comentari"
+				></ui-textbox>
+				
+			</div>
+			<div class="list">
+				
+				<div class="shopping-cart-items final">
+					<div v-for="item in cart" class="swiper-slide">
+						<span class="item-name">{{item.fullProduct.content[$i18n.locale].name}} [{{getProductType(item)}}]</span>
+						<span class="item-price">{{getProductPrice(item)}}€</span>
+						<span class="item-quantity"><!--{{$t('cart.quantity')}}:--> x {{item.quantity}} = </span>
+						<span class="float-right">{{getProductPrice(item)*item.quantity}}€</span>
+					</div>
+				</div>
+
+				<span v-if="!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && cartTotalPrice < blackFriday.minimal)" class="finalPrice">+Despeses d'enviament 8,90€</span><br/><br/>
+				<span v-if="blackFriday.active(blackFriday) && blackFriday.discount && cartTotalPrice >= blackFriday.minimal" class="finalPrice"><strong>Descuento BlackFriday {{ (parseFloat( cartTotalPrice*blackFriday.discount ) ).toFixed(2) }}€</strong></span>
+				<span class="finalPrice"><strong>Total {{ (parseFloat( cartTotalPrice*(blackFriday.active(blackFriday)?1+blackFriday.discount:1) )+( (!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && blackFriday.freeShipping && cartTotalPrice < blackFriday.minimal) )?8.9:0)).toFixed(2) }}€</strong></span>
+			</div>
+		</div>
+		
+		<div slot="footer" v-if="!resultDone">
+			<ui-button @click="buy()" :loading="buyButtonDisable" :disabled="buyButtonDisable" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
+			<ui-button @click="closeModal('buyModal')">{{$i18n.t('modal.cancel')}}</ui-button>
+		</div>
+
+	</ui-modal>
+
+			<form ref="tpvform" method="POST">
+				<input ref="version" type="hidden" name="Ds_SignatureVersion" />
+				<input ref="parameters" type="hidden" name="Ds_MerchantParameters" />
+				<input ref="signature" type="hidden" name="Ds_Signature" />
+			</form>
+
+		</div>
     </transition>
 </template>
 
@@ -682,7 +685,15 @@ export default {
   data () {
     return {
     	resultDone:'',
-    	isBlackFriday: false,
+		blackFriday: {
+			from:'2021-11-20',
+			to:'2021-11-30',
+			minimal:20,
+			discount:-0.15,
+			freeShipping:true,
+			// use la funció active que rep el mateix objecte com a paràmetre i comprove si hui ha d'estar actiu el blackfriday
+			active: a => a.from <= (new Date()).toISOString().substr(0,10) && (new Date()).toISOString().substr(0,10) <= a.to
+		},
     	buyButtonDisable: false,
     	shipping : [
 		    {

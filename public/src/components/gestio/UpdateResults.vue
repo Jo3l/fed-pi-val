@@ -152,7 +152,7 @@
         
         <section>
         	
-        	<a :href="actaImg" target="_blank">{{actaImg}}</a>
+        	<a :href="actaImg" target="_blank"><img style="width:48px;aspect-ratio:1;" :src="actaImg" /><br/>{{actaImg}}</a>
 			<vue-core-image-upload
 			    text="Pujar Imatge Acta"
 			    class="uploader"
@@ -167,12 +167,12 @@
 		</section>	
         <section>
         	
-        	<a :href="equipsImg" target="_blank">{{equipsImg}}</a>
+        	<a :href="equipsImg" target="_blank"><img style="width:48px;aspect-ratio:1;" :src="equipsImg" /><br/>{{equipsImg}}</a>
 			<vue-core-image-upload
 			    text="Pujar Imatge Equip"
 			    class="uploader"
 				compress="50"
-			    url="/api/static/uploadacta"
+			    url="/api/static/uploadimgequip"
 				@imageuploaded="getPhotoEquips"
 			    :data="{do:'uploadequip'}"
 			    extensions="jpg,jpeg"
@@ -282,6 +282,8 @@ export default {
 	        	res.resultatvisitant = res.resultatvisitant ? res.resultatvisitant : 0;
 	        	res.sanciolocal = res.sanciolocal ? res.sanciolocal : 0;
 	        	res.sanciovisitant = res.sanciovisitant ? res.sanciovisitant : 0;
+				vm.actaImg= res.actaimg;				
+				vm.equipsImg= res.equipsimg;				
 	            vm.partida = res;
 	            vm.getJugadorsPartida(id);
 	        })
@@ -324,8 +326,8 @@ export default {
 				"nomDelegat":vm.partida.nomDelegat,
 				"llicenciaDelegat":vm.partida.llicenciaDelegat,
 				"contacteDelegat":vm.partida.contacteDelegat,
-				"actaImg":vm.actaImg,
-				"equipsImg":vm.equipsImg
+				"actaimg":vm.actaImg,
+				"equipsimg":vm.equipsImg
 			})
 	        .then(function (response) {
 

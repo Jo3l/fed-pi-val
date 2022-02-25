@@ -35,6 +35,7 @@ const adminProductes = function(resolve) {require(['./components/admin/Products.
 const adminProducte = function(resolve) {require(['./components/admin/Product.vue'], resolve)}
 const adminComandes = function(resolve) {require(['./components/admin/Comandes.vue'], resolve)}
 const EditEquip = function(resolve) {require(['./components/admin/EditEquip.vue'], resolve)}
+const adminAuditoria = function(resolve) {require(['./components/admin/Auditoria.vue'], resolve)}
 
 //gestio
 const GClub = function(resolve) {require(['./components/gestio/Club.vue'], resolve)}
@@ -455,6 +456,12 @@ const routes = [
 	    path: '/admin/comandes',
 	    name: 'Comandes',
 	    component: adminComandes,
+	    role: 0
+	  },
+	  {
+	    path: '/admin/auditoria',
+	    name: 'Auditoria',
+	    component: adminAuditoria,
 	    role: 0
 	  },
 	  {

@@ -19,6 +19,7 @@
     </div>
     <div class="consent-action">
          <button @click="acceptCookie" class="button cta"> {{$i18n.t('modal.ok')}} </button>
+         <button @click="rejectCookie" class="button cta"> {{$i18n.t('modal.reject')}} </button>
     </div>
 </div>
     </transition>
@@ -42,6 +43,10 @@ export default {
 			vm.cookieLegal = true;
 			vm.createCookie('seen-cookie-message','true','60','/');
 		},
+        rejectCookie: function() {
+			var vm=this;
+			vm.cookieLegal = true;
+        },
 		createCookie: function(name,value,days,path) {
 	        if (days) {
 	            var date = new Date();
@@ -63,7 +68,18 @@ export default {
 	    }
 	},
 	mounted: function () {
-
+        if(this.readCookie('seen-cookie-message')) {
+            var scripts = [
+            "/static/js/analytics.js",
+            "/static/js/intergram.js",
+            "https://www.intergram.xyz/js/widget.js"
+            ];
+            scripts.forEach(script => {
+            let tag = document.createElement("script");
+            tag.setAttribute("src", script);
+            document.head.appendChild(tag);
+            });
+        }
 	}
 }
 </script>

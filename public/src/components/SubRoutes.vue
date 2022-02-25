@@ -117,17 +117,21 @@
         </ui-modal>
   
   		<ui-modal ref="insertNodeCompeticio" size="large" title="Insertar Node Competició">
+			
 			<div class="ui-autocomplete__content" v-if="!newNode">
-				<label class="ui-autocomplete__label">
-					<ui-textbox
+
+					<label class="ui-autocomplete__label">
+
+						<ui-textbox
 							    floating-label
 					            autocomplete="off"
 					            error=""
 					            label="Nom de la Competició"
 								type="text"
 					            v-model="newNodeName.name"
-					></ui-textbox>
-					
+						></ui-textbox>
+
+					</label> 
 
 					<div class="input2flex-disabled">
 							<ui-datepicker
@@ -181,7 +185,6 @@
 						></ui-textbox>
 					</div>
 					
-				</label> 
 				
 				<div class="buttonGroupRight">
 					<ui-button :loading="buttonLoading" size="small" @click="saveNode('competicio')">{{ $t('common.save') }}</ui-button>
@@ -199,10 +202,10 @@
 
 import draggable from 'vuedraggable'
 import Content from './Content.vue';
-import DoubleDatepicker from './admin/DoubleDatepicker.vue'
+//import DoubleDatepicker from './admin/DoubleDatepicker.vue'
 export default {
     components: {
-		draggable, 'node-content':Content, DoubleDatepicker
+		draggable, 'node-content':Content//, DoubleDatepicker
     },
   	props: ['propDisable'],
 	head : function() {

@@ -40,6 +40,13 @@
 		<ui-alert type="warning" v-show="jugadors && jugadors.length<minimjugadors">
             Falt{{ ((minimjugadors-(jugadors?jugadors.length:0))==1?'a':'en') }} {{minimjugadors-(jugadors?jugadors.length:0)}} jugador{{ ((minimjugadors-(jugadors?jugadors.length:0))==1?'':'s') }} per a completar l'inscripció.
         </ui-alert>
+
+        <ui-modal ref="error" title="">
+            {{error.response && error.response.data.error?error.response.data.error:error.response  }}
+	        <div slot="footer">
+	            <ui-button @click="$refs.error.close()">Ok</ui-button>
+	        </div>
+        </ui-modal>		
         
 		<section class="overflow-hidden">
 			<ui-textbox
@@ -304,7 +311,8 @@ export default {
 			
 			vm.$http.get('/soci/'+player)
 	        .then(function (response) {
-				vm.equip.push(response.data);
+				console.log(vm.jugadors,vm.equip)
+				vm.jugadors.push(response.data);
 	        })
 	        .catch(function (error) {
 	            vm.error=error;
@@ -314,13 +322,43 @@ export default {
 		},
 		deletePlayer: function(player){
 			var vm = this;
-			for(var i = 0; i < vm.equip.length; i++) {
-			    if(vm.equip[i].id == player) {
-			        vm.equip.splice(i, 1);
+			for(var i = 0; i < vm.jugadors.length; i++) {
+			    if(vm.jugadors[i].id == player) {
+			        vm.jugadors.splice(i, 1);
 			        break;
 			    }
 			}
 		},
+		doModSubscribe:function(id){
+			var vm=this;
+			vm.$http.post('/equip/'+vm.equip.id, {"nom":vm.equip.nom, "club":vm.equip.club, "competicio":vm.equip.competicio, "hora":vm.equip.hora, "diasem":vm.equip.diasem, "lloc":vm.equip.lloc, "telefon":vm.equip.telefon, "jutge":vm.equip.jutge, "delegat":vm.equip.delegat } )
+			.then( function(response) {
+				
+					vm.$http.post('/inscrits/'+(id?id:response.data[0].id), vm.jugadors)
+					.then( function(response) {
+						vm.closeAllModals();
+						window.location.reload();
+					})
+					.catch( function (error) { 
+						vm.error={...error, ...{alerta:'Error inscrivint jugador'}};
+						// ací donava un error de la api però la inscripció la acabava fent
+						// ho canvie per a que recarregue la página igual que quan té éxit :
+						//vm.closeAllModals();
+						//window.location.reload();
+						vm.$refs.error.open()
+						console.log(vm.error);
+						console.log(error);
+					} );
+
+			})
+			.catch( function (error) { 
+				vm.error={...error, ...{alerta:'Error creant equip'}};
+				vm.$refs.error.open()
+				console.log(vm.error);
+				console.log(error);
+			} );
+		},
+
 		
 	},
 	mounted: function () {

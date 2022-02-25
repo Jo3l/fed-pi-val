@@ -64,6 +64,7 @@ static public function generic_update(Request $request, Response $response, $par
 			}
 		}
 	}
+	//Fun::phpmailer('alfons@alapont.net','sql update ptda',$sql.json_encode($bubu).json_encode($camps));
 	$pairs= implode(', ',$pairs);
 	$sql='update '.($tabla).' set '.$pairs.' where id='.($id);
 	try {
@@ -89,7 +90,7 @@ static public function generic_update(Request $request, Response $response, $par
 			if (!empty($data['comentari'])) Fun::phpmailer('campionats@fedpival.es',$sub,$msg);
 			$msg.= "\n\n\n Si veus alguna cosa incorrecta, tens 48 hores (".date('H:i\\h \\d\\e\\l d/m/Y', strtotime('+2 days')).") per demanar una correcció a campionats@fedpival.es";
 			$msg.= "\n\n En cas contrari, pots confirmar este resultat fent clic al següent enllaç: https://fedpival.es/api/confirmapartida/".($id%10).base64_encode($id)." \n";
-			if (!empty($data['email'])) Fun::phpmailer($data['email'],$sub,$msg);
+			if (!empty($data['email']) && $data['confirmalocal']!=1) Fun::phpmailer($data['email'],$sub,$msg);
 			//die("\n\n".$sub."\n\n".$msg);
 			Fun::phpmailer('alsanan@gmail.com',$sub,$msg.' @generics:92 ');
 			$db->sql("update partida set confirmalocal=1 where id=".$id);
@@ -161,7 +162,11 @@ public function generic_insert(Request $request, Response $response, $params) {
 	$sql="insert into ".$tabla." (".$keys.") values (".$values.");";
 	try {
 		$db->sql($sql);
-		$sql= "SELECT LAST_INSERT_ID() as id";
+	} catch (Exception $e) {
+		$response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$e->getMessage().'"}');
+	}
+	try {
+		$sql= "SELECT max(id) as id from ".$tabla;
 		$db->sql($sql);
 		$id = $db->all();
 	} catch (Exception $e) {
@@ -177,6 +182,7 @@ public function generic_insert(Request $request, Response $response, $params) {
 	// en cas de guardar una partida, he de tornar els blocs :
 	// 1AGO, kike em diu q ja no cal
 	// if ($params['tabla']=='partida') return $response->withRedirect('/api/node/'.$json['jerarquia']); 
+	//return $response->withStatus(200)->withHeader('Content-Type', 'application/json')->write('{"error":"'.$sql.'"}');
 	Generics::generic_id($request,$response,$params);
 }
 
@@ -221,13 +227,17 @@ static public function generic_query(Request $request, Response $response, $para
 
     try {
 		// taules que han de considerar borrats per a no apareixer
-		if (in_array($tabla,['producte','comanda'])) { 
+		if (in_array($tabla,['producte','comanda','jugador','noticia','acte'])) { 
 			if (!isset($options['wheres'])) $options['wheres']=[]; 
 			array_push($options['wheres'],'baixa is null'); 
 		}
     	if ($params['tabla']=='noticia') {
 			$user= Auth::getUser($request,$response);
-			if (!empty($user)) if ($user->data->rol==0) $tabla='_noticia_'.(Fun::$idioma).'_admin';
+			if (!empty($user)) if ($user->data->rol==0) {
+				$tabla='_noticia_'.(Fun::$idioma).'_admin';
+				array_push($options['wheres'],'baixa is null'); 
+			}
+			$options['order']='publicacio desc';
     	}
     } catch (Exception $e) { die($e->getMessage()); }
     
@@ -239,6 +249,7 @@ static public function generic_query(Request $request, Response $response, $para
 	//print_r($options);echo $sql;exit;
 	if ($tabla=='jugador') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=jugador.club) as nomclub ',$sql);
 	if ($tabla=='equip') $sql= str_replace(' * ',' *,(select club.nom from club where club.id=equip.club) as nomclub,(select _camins.cami_val from _camins where id=equip.competicio) as nomcompeticio ',$sql);
+	if ($tabla=='auditoria') $sql= str_replace(' * ',' *, if( taula=\'jugador\' , (select jugador.numsoci from jugador where jugador.id=auditoria.id) , null ) as numsoci ',$sql);
     $db->sql($sql);
     $data = $db->all();
     // retalle valors de titulars i noticies:
@@ -383,7 +394,10 @@ static public function generic_search(Request $request, Response $response, $par
 	$que= $db->all();
 	$ques= array();
 	foreach( $que as $elm ) { array_push( $ques, $elm['column_name']." like '%".$params['que']."%' " ); }
-	$sql= "select * from ".$tabla." where ".implode( $ques, ' OR ');
+	$where='';
+	if (in_array($tabla,['producte','comanda','jugador']))
+		$where= 'baixa is null and ';
+	$sql= "select * from ".$tabla." where ".$where."(".implode( $ques, ' OR ').")";
     if (isset($options['order'])) $sql.= " order by ".$options['order'];
     if (isset($options['limit'])) $sql.= " limit ".$options['limit'];
     //echo $sql;exit;
@@ -601,6 +615,7 @@ static public function date_query(Request $request, Response $response, $params)
     $sql= "SELECT * FROM ".$tabla;
 	if (!in_array('wheres',$options)) $options['wheres']= array('1=1');
 	array_push( $options['wheres'], "tipus='A'" );
+	array_push( $options['wheres'], "baixa is null" );
 	$mes= $params['mes'];
 	$mes= strtotime( substr($mes,0,4).'-'.substr($mes,4,2) );
 	$mes0= date('Ym',$mes);

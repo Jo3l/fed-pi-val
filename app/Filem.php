@@ -237,7 +237,7 @@ class Filem
 		
 		foreach(Filem::$disallowed_extensions as $ext) 
 			if(preg_match(sprintf('/\.%s$/',preg_quote($ext)), $_FILES['files']['name'])) 
-				err(403,"Files of this type are not allowed.");
+				Filem::err(403,"Files of this type are not allowed.");
 				
 		$year_folder = '/' . $what . '/' . date("Y");
 		$month_folder = $year_folder . '/' . date("m");
@@ -274,7 +274,9 @@ class Filem
 	static public function uploadimgjugador(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'jugadors'); }
 	
 	static public function uploadacta(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'actes'); }
-	
+
+	static public function uploadimgequip(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'equips'); }
+
 	static public function uploadimgproducte(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'productes'); }
 	
 	static public function uploadimg(Request $req, Response $res, $params) { Filem::upload($req,$res,$params,'upload'); }

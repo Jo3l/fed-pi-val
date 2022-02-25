@@ -42,8 +42,8 @@
 							<tr v-for="(rank, index) in group"  :class="[element.selected?'selected':'', (groupindex%2)?'odd':'even']">
 								<td><button class="ui-icon-button ui-icon-button--type-primary ui-icon-button--color-default ui-icon-button--size-mini"><div class="ui-icon-button__icon"><span>{{index+1}}</span></div></button></td>
 								<td>{{rank.nom}}</td>
-								<td>{{rank.punts}} 
-									<ui-icon v-if="rank.sancions<0" style="color:red;position:absolute; margin-left:6px;" :title="'sancionat amb '+rank.sancions+' punts'" icon="info_outline"></ui-icon>
+								<td >{{rank.punts}}
+									<ui-icon v-if="rank.sancions<0" style="color:red;position:absolute; margin-left:6px;" :title="'sancionat amb '+rank.sancions+' punts \n(per tant '+(rank.punts-rank.sancions)+''+rank.sancions+'='+rank.punts+' )'" icon="info_outline"></ui-icon>
 								</td>
 								<td>{{rank.pj}}</td>
 								<td>{{rank.pg}}</td>

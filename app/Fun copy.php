@@ -46,8 +46,8 @@ class Fun
     public static $idioma= 'val'; // idioma actual
     public static $idiomes= array('val','es'); // tots els idiomes disponibles
     private static $rowcount= null; 
-	//private static $blackFriday= false;	// OJO !!! interval black friday definit en comprar()
-	private static $blackFridayObj= ["active"=>false, "from"=>'20211120', 'to'=>'20211130', 'minimal'=>20, 'shipment'=>0, 'discount'=>15];
+	private static $blackFriday= false;
+
 
     
 //  //  //  //  //  //  //  //
@@ -872,43 +872,6 @@ static public function resum_competicio(Request $request, Response $response, $p
 //  //  //  //  //  //  //  //
 /*
 * @description
-* Obté un CSV amb els jutges de l'any indicat
-* URL: /api/jutges/2021
-*/
-static public function jutges(Request $request, Response $response, $params) {
-	$yr= $params['id'];
-	$db = new db();
-	$db->sql("select equip.id as elid, competicio as lacomp, (select cami_val from _camins where id=competicio) as comp, equip.nom as lequip, equip.creacio as creacio, (select concat(jutge,' ',jugador.nom,' ',jugador.cognoms) from jugador where numsoci=jutge) as eljutge, (select nom from club where club.id=equip.club) as elclub, fi from equip,jerarquia where competicio=jerarquia.id and equip.baixa is null and equip.creacio like '".$yr."%' order by creacio;");
-	header("Content-type: application/csv;charset=UTF-8");
-	header("Content-Disposition: attachment; filename=jutges_".$yr.".csv");
-	header("Pragma: no-cache");
-	header("Expires: 0");
-	fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
-	$output = fopen("php://output",'w') or die("Error: Can't open php://output");
-	fputcsv($output, ["id","node","competicio","equip","creacio","jutge","club","fi_inscripcio"],";");
-	foreach($db->all() as $rr) {
-			$rr['id']= $r['elid'];
-			$rr['node']= $r['lacomp'];
-			$rr['competicio']= $r['comp'];
-			$rr['equip']= $r['lequip'];
-			$rr['creacio']= $r['creacio'];
-			$rr['jutge']= $r['eljutge'];
-			$rr['club']= $r['elclub'];
-			$rr['fi_inscripcio']= $r['fi'];//date('d/m/Y',strtodate($r['fi']));
-			$rr= array_map("utf8_decode", $rr );
-	    	fputcsv($output, $rr,";");
-	}
-	fclose($output) or die("Can't close php://output");		
-	if ($doexit) exit; // ojo, se carrega el postproces (caché)
-	return $result;
-	exit;
-}
-
-
-//  //  //  //  //  //  //  //
-//  //  //  //  //  //  //  //
-/*
-* @description
 * Obté una taula amb les inscripcions per equip, categoria i jugadors d'un node de competició indicat
 * URL: /api/resuminscrits/17
 */
@@ -927,7 +890,7 @@ static public function resum_inscrits(Request $request, Response $response, $par
 		}
 	$ids= array_keys($llistanodes);
 	//echo '<h1>',$llistanodes[$node],'</h1>';
-	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, /*competicio,*/ (select node.nom from _jerarquia_val node where node.id=competicio) as cat, str_to_date(creacio, '%Y%m%d%H%i%s') as creacio,(select concat(jutge,' ',nom,' ',cognoms) from jugador where numsoci=jutge) as jutge from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
+	$sql= "select id,nom,/*club,*/(select club.nom from club where club.id=equip.club) as nomclub, /*competicio,*/ (select node.nom from _jerarquia_val node where node.id=competicio) as cat, str_to_date(creacio, '%Y%m%d%H%i%s') as creacio from equip where baixa is null and competicio in (".implode(',',$ids).") order by competicio, club;";
 	$db->sql($sql);
 	$data= $db->all();
 	$clubs=[];
@@ -940,7 +903,7 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	header("Expires: 0");
 	fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
 	$output = fopen("php://output",'w') or die("Error: Can't open php://output");
-	fputcsv($output, ["id","nom","cognoms","actiu","neixement","equip","club","competicio","creacio","jutge"],";");
+	fputcsv($output, ["id","nom","cognoms","actiu","neixement","equip","club","competicio","creacio"],";");
 	foreach($data as $r) {
 		//if ($ara!=$r['cat']) echo '<h1>', $ara=$r['cat'], '</h1>';
 		//echo '<b>',$r['nomclub'], '</b><br/>';
@@ -951,7 +914,6 @@ static public function resum_inscrits(Request $request, Response $response, $par
 			$rr['nomclub']= $r['nomclub'];
 			$rr['competicio']= $r['cat'];
 			$rr['creacio']= $r['creacio'];
-			$rr['jutge']= $r['jutge'];
 			$rr= array_map("utf8_decode", $rr );
 	    	fputcsv($output, $rr,";");
 		}
@@ -1187,7 +1149,6 @@ static public function comprar(Request $request, Response $response, $params) {
 	$json['data']= date('YmdHis');
 	$html='';
 	$min= [];
-	//Fun::$blackFriday= (date('Ymd')>='20211120' && date('Ymd')<='20211130');
 	
 	foreach($json['cart'] as $elm) {
 		$prod= $elm['name'];
@@ -1201,15 +1162,10 @@ static public function comprar(Request $request, Response $response, $params) {
 		array_push($carro,array('Producte: '.$elm['fullProduct']['content']['val']['name'].' '.$prod,'Quantitat: '.$elm['quantity'],$preuprod.' euros'));
 	}
 
-	$enviament=8.9;
-	if ( (Fun::$blackFridayObj["active"]==true) && (date('Ymd') >= Fun::$blackFridayObj["from"]) && (date('Ymd') <= Fun::$blackFridayObj["to"]) && ($preu >= Fun::$blackFridayObj["minimal"]) ) {
-        $enviament= Fun::$blackFridayObj["shipment"];
-		$discounted= (100 - Fun::$blackFridayObj["discount"]) / 100;
-		$preu= $preu * $discounted;
-		Fun::phpmailer('alsanan@gmail.com','blackfriday fpv',$preu.' + '.$enviament,true);
-	}
+	$enviament=0;
+	if (!Fun::$blackFriday) $enviament= 8.9;
+	if (Fun::$blackFriday && $preu < 30) $enviament= 8.9; 
 	$preu+= $enviament;
-	//die($preu);
 	
 	$str= sprintf("<br><h2>Dades comanda</h2>Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br/>Comentari:%s<hr/>",
 		date('d-m-Y H:i:s'),
@@ -1476,13 +1432,10 @@ static public function pagat(Request $request, Response $response, $params) {
 		array_push($carro,array('Producte: '.$elm->fullProduct->content->val->name.' '.$prod,'Quantitat: '.$elm->quantity,$preuprod.' euros'));
 	}
 
-	$enviament=8.9;
-	if ( (Fun::$blackFridayObj["active"]==true) && (date('Ymd') >= Fun::$blackFridayObj["from"]) && (date('Ymd') <= Fun::$blackFridayObj["to"]) && ($preu >= Fun::$blackFridayObj["minimal"]) ) {
-        $enviament= Fun::$blackFridayObj["shipment"];
-		$discounted= (100 - Fun::$blackFridayObj["discount"]) / 100;
-		$preu= $preu * $discounted;
-		Fun::phpmailer('alsanan@gmail.com','blackfriday fpv',$preu.' + '.$enviament,true);
-	}
+	$enviament=0;
+	if (!Fun::$blackFriday) $enviament= 8.9;
+	if (Fun::$blackFriday && $preu < 30) $enviament= 8.9; 
+	$preu+= $enviament;
 
 	$str= sprintf("<br><h2>Dades comanda</h2>Data: %s<br>Nom: %s <br>Adreça: %s<br> Tel: %s<br>Email comprador: <a href=\"mailto:%s\">%s</a><br>Comentari:%s<br/>Comanda %s pagada amb autorització %s<hr/>",
 		date('d-m-Y H:i:s'),
@@ -1672,7 +1625,7 @@ static public function nextphase(Request $request, Response $response, $params) 
 
 /*
 * @description
-* Canvia la data d'actiu d'un conjunt de jugadors identificats pel seu numsoci
+* Canvia la data d'actiu d'un conjunt de jugadors identificats pel seu id
 * URL: /api/dataactius/ [1,2,3,4]
 */
 static public function set_dataactiu(Request $request, Response $response, $params) {
@@ -1682,17 +1635,6 @@ static public function set_dataactiu(Request $request, Response $response, $para
 	return true;
 }
 
-/*
-* @description
-* Canvia la data d'assegurat d'un conjunt de jugadors identificats pel seu numsoci
-* URL: /api/datasegurs/ [1,2,3,4]
-*/
-static public function set_datasegur(Request $request, Response $response, $params) {
-	$db= new db();
-	$jugadors= json_decode(file_get_contents("php://input"),true);
-	$db->sql("update jugador set datasegur='".date('Y')."1231235959' where numsoci in ('".implode("','",$jugadors)."');");
-	return true;
-}
 
 
 } // of class Fun

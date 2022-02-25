@@ -1,5 +1,5 @@
 <template>
-	<nav class="social">
+	<nav class="social" v-if="readCookie('seen-cookie-message')">
     	<a target="_blank" href="https://es-es.facebook.com/fedpival/" title="facebook">
 	    	<ui-icon-button size="small" type="secondary" >
 				<svg viewBox="0 0 24 24">
@@ -44,28 +44,23 @@
 export default {
 	components: {  },
 	data () {
-	return {
-		loadingBar: false,
-	}
+		return {
+			loadingBar: false,
+		}
 	},
 	methods: {
-	
+		readCookie: function(name) {
+	        var nameEQ = name + "=";
+	        var ca = document.cookie.split(';');
+	        for(var i=0;i < ca.length;i++) {
+	            var c = ca[i];
+	            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+	            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	        }
+	        return null;
+	    }
 	},
-	mounted: function() {
 
-	},
-	beforeMount: function() {
-
-	},
-	computed:{
-
-	},
-	created: function(){
-
-	},
-	computed: {
-
-	},
 }
 </script>
 

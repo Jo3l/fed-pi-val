@@ -135,6 +135,7 @@
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/equips' }">Equips</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/productes' }">Productes</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/comandes' }">Comandes</router-link></li>
+			<li v-if="$store.getters.isAuthenticatedWithRole(0)"><router-link :to="{ path: '/admin/auditoria' }">Auditoria</router-link></li>
 			<li v-if="$store.getters.isAuthenticatedWithExactRole(10)"><router-link :to="{ path: '/gestio/club' }">Club</router-link></li>
 	    </ul>
 	</div>

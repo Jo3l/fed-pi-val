@@ -28,7 +28,10 @@ if (config::EN_PRODUCCIO) {
 	$c = $app->getContainer();
 	$c['errorHandler'] = $c['phpErrorHandler'] = function ($c) {
 	    return function ($request, $response, $exception) use ($c) {
-	    	file_put_contents('errors_php.txt',"\n---\n".date('YmdHis')."\n".json_encode($exception)."\n".json_encode($request),FILE_APPEND);
+			try{
+			$s= $request->getPath().' '.$request->getQuery().' '.$request->getParsedBody().'_ ';
+			} catch(Exception $e) { $s='exception reunint dades de error.'; }
+	    	file_put_contents('errors_php.txt',"\n---\n".date('YmdHis')."\n".json_encode($exception)."\n".json_encode($request)."\n".$s,FILE_APPEND);
 	        return $response->withStatus(500)
 	            ->withHeader('Content-Type', 'text/html')
 	            ->write("Apunta este codi. Error: ".date('YmdHis'));

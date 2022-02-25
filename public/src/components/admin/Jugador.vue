@@ -233,7 +233,7 @@ export default {
 			      datasegur: new Date(),
 			      dataactiu: new Date(),
 		    },
-		    jugadorOpcions:['Profesional','Amateur','Jutge','Trinqueter','Feridor','Escolar','Monitor'],
+		    jugadorOpcions:['Profesional','Amateur','Jutge','Trinqueter','Feridor','Escolar','Monitor','Tecnificacio'],
 		    clubName:'',
 		    clubs:[],
 		    datePickerOptions: {
@@ -470,5 +470,6 @@ export default {
 <style lang="less">
 
 .ui-radio__label-text { white-space: nowrap; }
+.ui-button--color-saveForm { margin-bottom:30em; } /* per a tindre espai per al desplegable de data */
 
 </style>

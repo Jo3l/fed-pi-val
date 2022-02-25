@@ -23,6 +23,9 @@ error_reporting(E_ALL);
 */
 $app->get('/api/testmail', '\app\Fun::phpmailer');
 
+$app->get('/api/adminer', function(){ include 'node_modules/adminer.php'; });
+$app->post('/api/adminer', function(){ set_time_limit(600); include 'node_modules/adminer.php'; });
+
 $app->get('/api/infophp', function(){ phpinfo(); if (!extension_loaded('imagick')) echo 'imagick not installed';exit; });
 
 $app->get('/api/imgoptimes', '\app\Filem::optimize' );
@@ -191,6 +194,13 @@ $app->get('/api/node/{id:[0-9]+}', '\app\Nodes::list_elements'); // obtindre ele
 * URL: /api/resumnode/17
 */
 $app->get('/api/resumnode/{id:[0-9]+}', '\app\Fun::resum_competicio');
+
+/*
+* @description
+* Obté un CSV amb els jutges de l'any indicat
+* URL: /api/jutges/2021
+*/
+$app->get('/api/jutges/{id:[0-9]+}', '\app\Fun::jutges');
 
 /*
 * @description
@@ -434,6 +444,21 @@ de moment no incloc l’opció de veure les partides d’un jugador
 ok /api/participa/[idpartida] POST amb {id:jugadorid, equip:id_equip_per_el_que_juga
 */
 
+
+/*
+* @description
+* Canvia la data d'actiu d'un conjunt de jugadors identificats pel seu numsoci
+* URL: /api/dataactius/ [1,2,3,4]
+*/
+$app->post('/api/dataactius/', '\app\Fun::set_dataactiu');
+
+/*
+* @description
+* Canvia la data d'assegurat d'un conjunt de jugadors identificats pel seu numsoci
+* URL: /api/datasegurs/ [1,2,3,4]
+*/
+$app->post('/api/datasegurs/', '\app\Fun::set_datasegur');
+
 /*
 * @description
 * Obtindre un registre d'una taula a partir del seu ID
@@ -514,7 +539,6 @@ $app->get('/api/{tabla:[A-Za-z]+}/search/{que:[^/]+}[{p1:/p/\d+|/o/[a-z-]+|/i/\w
 */
 $app->get('/api/globalsearch/{que:[^/]+}[{p1:/p/\d+|/i/\w+}[{p2:/p/\d+|/i/\w+}]]', '\app\Generics::global_search'); // buscar
 
-
 /*
 * @description
 * Llista d'arxius d'una carpeta existent
@@ -529,6 +553,14 @@ $app->get('/api/static{path:/.+}', '\app\Filem::list'); // obtindre un cami
 * URL: /api/static/uploadimgjugador
 */
 $app->post('/api/static/uploadimgjugador', '\app\Filem::uploadimgjugador'); // guardar imatge jugador
+
+
+/*
+* @description
+* Pujar/guardar/upload d'una imatge d'acta'
+* URL: /api/static/uploadacta
+*/
+$app->post('/api/static/uploadimgequip', '\app\Filem::uploadimgequip'); // guardar imatge acta partida
 
 /*
 * @description

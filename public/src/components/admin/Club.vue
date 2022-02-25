@@ -55,13 +55,18 @@
 					            v-model="club.email"
 					        ></ui-textbox>
 				        	
-							<ui-datepicker
+							<!--ui-datepicker
 				                placeholder="$i18n.t('calendar.dateTip')"
 				                :start-of-week="datePickerOptions.dow"
 				                v-model="club.fundacio"
 				                v-if="typeof club.fundacio === 'object'"
 				                :lang="datePickerOptions"
-				            >Data Fundació</ui-datepicker>
+				            >Data Fundació</ui-datepicker-->
+
+							<ui-textbox
+								v-model="club.fundacio"
+								type="number"
+							>Any Fundació</ui-textbox>
 				        
 							<ui-textbox
 							    floating-label
@@ -212,7 +217,7 @@ export default {
 			mapa: null,
 		    club:{
 			      nom: null,
-			      fundacio: new Date(),
+			      fundacio: 0, //new Date(),
 			      cif: null,
 			      geoloc: null,
 			      email: null,
@@ -313,10 +318,10 @@ export default {
 			}
 			
 			var vm=this;
-			vm.club.fundacio = vm.club.fundacio.toString('yyyy');
+//			vm.club.fundacio = vm.club.fundacio.toString('yyyy');
 	        vm.$http.post('/club/'+ (vm.$route.params.clubId?vm.$route.params.clubId :'') , vm.club)
 	        .then(function (response) {
-	            vm.club.fundacio = vm.parseTime(vm.club.fundacio);
+//	            vm.club.fundacio = vm.parseTime(vm.club.fundacio);
 	            vm.$router.push({ path: `/admin/clubs/`});
 	        })
 	        .catch(function (error) {
@@ -392,7 +397,8 @@ export default {
 	            vm.club = response.data[0];
 	            var json= JSON.parse(vm.club.json);
 	            vm.pwd= json.pwd;
-	            vm.club.fundacio = vm.parseTime(response.data[0].fundacio);
+//	            vm.club.fundacio = vm.parseTime(response.data[0].fundacio);
+	            vm.club.fundacio = response.data[0].fundacio;
 	            vm.getEquips('equipsdeclub');
 	        })
 	        .catch(function (error) {

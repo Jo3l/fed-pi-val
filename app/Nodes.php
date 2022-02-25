@@ -181,14 +181,16 @@ static private function ranking($pars) {
 	}
 	
 	//die(json_encode($equips));
-	
+	/* /// canvi criteri 2 juny 2021:
+		a)    Primer, es tindrà en compte les partides guanyades en els enfrontaments directes entre els equips empatats.
+		b)    Després, es determinarà segons el tanteig individual entre els equips empatats.
+		c)    Si encara no està resolt, es determinarà segons les partides guanyades de tota la fase (totes les partides contra tots els equips).
+		d)    Finalment, s’atendrà a la diferència de tanteig global de tot el campionat (totes les partides contra tots els equips).
+		e)    Si seguix l´empat, es contaran els jocs a favor.	
+	*/
 	foreach($equips as $grup=>$tots)
 		usort($equips[$grup], function($a,$b) {
 			if ($b['punts']!=$a['punts']) return $b['punts']-$a['punts'];
-			// han empatat a punts, però i a partides guanyades?
-			if ($b['pg']!=$a['pg']) return $b['pg']-$a['pg'];
-			// han empatat a punts i a partides, però i a jocs a favor?
-			if ($b['jf']!=$a['jf']) return $b['jf']-$a['jf'];
 			// casuistica desempats
 			// 1. Primer es miren les partides guanyades només entre els equips implicats en l'empat. per tant compare les partides jugades entre eixos dos equips i desempate amb qui tinga més partides guanyades dels dos
 			if ( $b[$a['id']]['partides']>0 ) return 1;
@@ -204,6 +206,10 @@ static private function ranking($pars) {
 			// 4. Quart es mira la diferencia de jocs de totes les partides. per tant desempat a qui tinga més jocs guanyats en total
 			if ( $b['jf']-$b['jc'] > $a['jf']-$a['jc'] ) return 1;
 			if ( $b['jf']-$b['jc'] < $a['jf']-$a['jc'] ) return -1;
+			// han empatat a partides guanyades?
+			if ($b['pg']!=$a['pg']) return $b['pg']-$a['pg'];
+			// han empatat a punts i a partides, però i a jocs a favor?
+			if ($b['jf']!=$a['jf']) return $b['jf']-$a['jf'];
 			return 0;
 			/*
 			$cada= [ $a['id']=>0, $b['id']=>0 ];
