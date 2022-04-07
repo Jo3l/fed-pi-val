@@ -262,13 +262,40 @@
 		            v-model="hora"
 		            :disabled="readonly === true"
 		        ></ui-textbox>
-		        
+
+				<br/>
+				<h3>INFORMACIÓ SOBRE PROTECCIÓ DE DADES:</h3><br>
+					<p>
+ 					De conformitat amb el que es disposa en
+					 el Reglament (UE) 2016/679, de 27 d'abril (*GDPR), i la 
+					 Llei orgànica 3/2018, de 5 de desembre (*LOPDGDD), done permís
+					 perquè les meues dades s'incorporen a un fitxer responsabilitat 
+					 de *FEDERACION DE *PILOTA VALENCIANA i es tracten amb la finalitat 
+					 de mantindre, desenvolupar i controlar la relació comercial. Aquestes 
+					 dades es conservaran mentre hi haja un interés mutu per a mantindre 
+					 la fi del tractament i quan ja no siga necessari per a tal fi, 
+					 se suprimiran amb mesures de seguretat adequades per a garantir 
+					 la *seudonimización de les dades o la destrucció total d'aquests 
+					 . Així mateix, se l'informa que pot retirar el 
+					 consentiment en qualsevol moment i que pot exercir els 
+					 drets d'accés, rectificació, portabilitat i supressió de 
+					 les seues dades, i de limitació o oposició al seu tractament 
+					 dirigint-se a Carrer Marqués de Sant Joan, 32 Sota B - 
+					 46015 València (València). o remetent un missatge de correu 
+					 electrònic a dpd@ml-asociados.es. També té dret a 
+					 presentar una reclamació davant l'Autoritat de control 
+					 (www.aepd.es) si considera que el tractament no s'ajusta 
+					 a la normativa vigent.
+					 </p>
+
+					<ui-switch label="accepte les condicions d'us de les meues dades" v-model="proteccioDades"></ui-switch>
+
 				<div class="buttonGroupRight">
 					
 					<ui-button 
 					size="small" 
 		            v-if="readonly === false"
-					:disabled="subscribeName=='' || equip.length<minimjugadors || hora=='' || diasem=='' || lloc=='' || telefon=='' || jutge=='' || delegat==''" 
+					:disabled="canContinueInscription" 
 					@click="doModSubscribe(subscribeId)">{{ $t('common.save') }}</ui-button>
 					
 					<ui-button color="red" size="small"  @click="closeAllModals()">{{ $t('common.cancel') }}</ui-button>
@@ -473,6 +500,7 @@ export default {
 		    jutge:'',
 		    jutgenom:'',
 		    delegat:'',
+			proteccioDades:false,
 		    columnsInscripcions:[
 	            {
 	                label: 'Competició',
@@ -1017,7 +1045,10 @@ export default {
 	computed: {
 	    ...mapGetters({
 	    	validate:'validate'
-	    })
+	    }),
+		canContinueInscription(){
+			return !this.proteccioDades || !this.subscribeName || this.equip.length<this.minimjugadors || !this.hora || !this.diasem || !this.lloc || !this.telefon || !this.jutge || !this.delegat
+		}
 	},
 }
 </script>
@@ -1025,6 +1056,10 @@ export default {
 <style lang="less" scoped>
 
 @import "../../assets/less/defines.less";
+
+summary{
+	cursor:pointer;
+}
 
 .flex50 {
 	
