@@ -133,16 +133,20 @@ export default {
 	min-height:200px;
 	background-color:white;
 	position:relative;
-	
+	display:flex;
+	@media(max-width:@screenMobile) {
+		flex-direction:column;
+	}
+
 	h3{
 		margin:0;
 	}
 
 	.teaserPicture {
-		width: 74.8%;
+		min-width: 75%;
 		box-shadow: 3px 15px 12px rgba(0, 0, 0, 0.2);
 		@media(max-width:768px){
-			width:100%;
+			/*width:100%;*/
 		}
 	    display: block;
 	    margin: 0;
@@ -188,8 +192,7 @@ export default {
 	    }
 	}
 	.competicions {
-		position: absolute;
-		width:25%;
+		min-width:25%;
 	    right: 0px;
 	    top: -5%;
 	    opacity:0;
@@ -200,9 +203,6 @@ export default {
 	    transition-delay:1s;
 	    max-height: 460px;
     	overflow-y: auto;
-    	@media(max-width:@screenTablet) {
-	    	display:none;
-		}
 			
 	    &.active {
 	    	top: 0%;

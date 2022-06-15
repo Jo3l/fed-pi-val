@@ -6,7 +6,7 @@
 
 			<div class="contentFlex formulari">
 			
-				<div class="left50">
+				<div class="left50" v-if="jugador">
 					
 					<ui-textbox
 					    floating-label
@@ -156,8 +156,8 @@
 			        v-if="Array.isArray(jugador.fitxa)"
                 	:options="jugadorOpcions"
                 	v-model="jugador.fitxa"
+					@click="e=>console.log(e)"
             		>Fitxes</ui-checkbox-group><br/>
-            		
 					<ui-datepicker
 						v-if="typeof jugador.dataactiu === 'object'"
 		                :placeholder="$i18n.t('calendar.dateTip')"
@@ -173,6 +173,39 @@
 		                v-model="jugador.datasegur"
 		                :lang="datePickerOptions"
 		            >Assegurat fins al </ui-datepicker>	
+
+					<ui-datepicker
+						v-if="jugador.fitxa && jugador.fitxa.includes('Jutge')"
+		                :placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.datajutge"
+		                :lang="datePickerOptions"
+		            >Llicència jutge fins al </ui-datepicker>	
+
+					<ui-datepicker
+						v-if="jugador.fitxa && jugador.fitxa.includes('Trinqueter')"
+		                :placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.datatrinqueter"
+		                :lang="datePickerOptions"
+		            >Llicència trinqueter fins al </ui-datepicker>	
+
+					<ui-datepicker
+						v-if="jugador.fitxa && jugador.fitxa.includes('Feridor')"
+		                :placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.dataferidor"
+		                :lang="datePickerOptions"
+		            >Llicència feridor fins al </ui-datepicker>	
+
+					<ui-datepicker
+						v-if="jugador.fitxa && jugador.fitxa.includes('Monitor')"
+		                :placeholder="$i18n.t('calendar.dateTip')"
+		                :start-of-week="datePickerOptions.dow"
+		                v-model="jugador.datamonitor"
+		                :lang="datePickerOptions"
+		            >Llicència monitor fins al </ui-datepicker>	
+
 
 			    	<ui-button color="saveForm" icon="save" size="small" type="secondary" @click="saveForm()">{{$i18n.t('common.save')}}</ui-button>
 
@@ -232,6 +265,10 @@ export default {
 			      club: null,
 			      datasegur: new Date(),
 			      dataactiu: new Date(),
+			      datajutge: new Date(),
+			      datatrinqueter: new Date(),
+			      dataferidor: new Date(),
+			      datamonitor: new Date(),
 		    },
 		    jugadorOpcions:['Profesional','Amateur','Jutge','Trinqueter','Feridor','Escolar','Monitor','Tecnificacio'],
 		    clubName:'',
@@ -332,6 +369,10 @@ export default {
 		        	naixement: vm.jugador.naixement.toString('yyyyMMddHHmmss'),
 		        	datasegur: vm.jugador.datasegur.toString('yyyyMMddHHmmss'),
 		        	dataactiu: vm.jugador.dataactiu.toString('yyyyMMddHHmmss'),
+		        	datajutge: vm.jugador.datajutge.toString('yyyyMMddHHmmss'),
+		        	datatrinqueter: vm.jugador.datatrinqueter.toString('yyyyMMddHHmmss'),
+		        	dataferidor: vm.jugador.dataferidor.toString('yyyyMMddHHmmss'),
+		        	datamonitor: vm.jugador.datamonitor.toString('yyyyMMddHHmmss'),
 		        	fitxa: vm.jugador.fitxa ? vm.jugador.fitxa.join(',') : ''
 		        }
 	        }).then(function (response) {
@@ -385,6 +426,12 @@ export default {
 	            vm.jugador.naixement = vm.jugador.naixement ? vm.parseTime(vm.jugador.naixement) : new Date();
 	            vm.jugador.datasegur = vm.jugador.datasegur ? vm.parseTime(vm.jugador.datasegur) : new Date();
 	            vm.jugador.dataactiu = vm.jugador.dataactiu ? vm.parseTime(vm.jugador.dataactiu) : new Date();
+
+				vm.jugador.datajutge = vm.jugador.datajutge ? vm.parseTime(vm.jugador.datajutge) : new Date();
+				vm.jugador.dataferidor = vm.jugador.dataferidor ? vm.parseTime(vm.jugador.dataferidor) : new Date();
+				vm.jugador.datatrinqueter = vm.jugador.datatrinqueter ? vm.parseTime(vm.jugador.datatrinqueter) : new Date();
+				vm.jugador.datamonitor = vm.jugador.datamonitor ? vm.parseTime(vm.jugador.datamonitor) : new Date();
+
 	            if (isNaN(vm.jugador.tipusfitxa)) vm.jugador.tipusfitxa = 0;
 	            //if (!vm.jugador.fitxa) vm.jugador.fitxa = [];
 	            //console.log('split',vm.jugador.fitxa)
