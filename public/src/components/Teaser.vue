@@ -20,7 +20,7 @@
 
 
 			  
-			<div class="three-quarters-loader"> </div>
+			<div v-if="!newsTeasers" class="three-quarters-loader"> </div>
 			
 			<div v-bind:class="{ competicions:true, active: newsTeasers!='' }">
 				
@@ -203,7 +203,10 @@ export default {
 	    transition-delay:1s;
 	    max-height: 460px;
     	overflow-y: auto;
-			
+		@media(max-width:@screenMobile) {
+			max-height: initial;
+		}
+
 	    &.active {
 	    	top: 0%;
 	    	opacity:1;
