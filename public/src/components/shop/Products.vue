@@ -1,7 +1,8 @@
 <template>
     <transition name="fade">
-    	
+
 		<div class="shop" v-if=" type=='slider' ">
+			<div class="avis-reis" v-show="reis">Avís: L'últim dia per a fer enviaments que arriben per a Reis serà el dia 29.</div>
 			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.highlightProducts') }}</h1>
 			
 		  <swiper :options="swiperOption" class="products">
@@ -26,7 +27,8 @@
 		  </swiper>
 		</div>
 		
-		<div class="shop full" v-else="v-else">
+		<div class="shop full" v-else="">
+			<div class="avis-reis" v-show="reis">Avís: L'últim dia per a fer enviaments que arriben abans de Reis serà el dijous 29</div>
 			<h3 v-if="categoria" @click="setCategoria('all')">{{$i18n.t('cart.viewAllProducts')}}</h3>
 			<div class="products">
 				<div v-for="product in products" class="item">
@@ -99,7 +101,8 @@ export default {
 	          }
 	        }
 	    },
-	    products: []
+	    products: [],
+		reis: ('12-18'<(new Date()).toISOString().substr(5,5)) || ('01-06'>(new Date()).toISOString().substr(5,5))
     }
   },
 
@@ -145,9 +148,9 @@ export default {
   },
   mounted: function() {
 		if(this.type == 'slider') {
-			this.getData('/productes/destacada');
+			this.getData('/productes/destacada'+'?'+Math.random());
 		} else {
-			this.getData('/productes');
+			this.getData('/productes'+'?'+Math.random());
 		}
   }
 }
@@ -197,7 +200,18 @@ export default {
 	}
 }
 
-
+.avis-reis {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	z-index: 99;
+	width:100vw;
+	background-color: #84212f;
+	color: #fff;
+	padding: 5px 5%;
+	display:none;
+}
+.full .avis-reis { display:block; }
 	
 	
 </style>

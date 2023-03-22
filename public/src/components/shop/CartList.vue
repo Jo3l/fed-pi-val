@@ -10,7 +10,7 @@
 			</div>
 			<swiper class="shopping-cart-items" :options="swiperOptionThumbs">
 				<div v-if="cart.length==0" class="swiper-slide empty">{{$t('cart.emptyCart')}}</div>
-				<swiper-slide v-for="item in cart" v-else>
+				<swiper-slide v-for="item in cart" v-bind:key="item" v-else>
 					<router-link :to="{ path: '/'+$i18n.locale+'/'+$t('cart.shop')+'/'+item.fullProduct.content[$i18n.locale].slug }">
 					<picture :style="'background-image:url('+ getProductImage(item) +');'"><span>{{getProductType(item)}}</span></picture>
 					<span class="item-name">{{item.fullProduct.content[$i18n.locale].name}}</span>
@@ -38,7 +38,8 @@
 				</div>
 
 				<h3>{{$i18n.t('cart.info')}}:</h3>
-				<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo.trim()')}} </p>
+				<p style="white-space: pre-wrap;">{{$i18n.t('cart.shippingInfo').trim()}} </p>
+<!--div style="border:1px solid red;padding:1rem;margin-bottom:1rem;font-size:150%;color:red;">Atenci&oacute;: La Federaci&oacute; de Pilota Valenciana estarà tancada per vacances fins el dia 22 d'Agost, en tornar farem efectiu el enviament de la seua comanda. <br> Moltes gr&agrave;cies i disculpen les mol&egrave;sties</div-->
 				<details ref="mesinfo"><summary><ui-button color="fedpival" @click="$refs['mesinfo'].open=!$refs['mesinfo'].open;">Més informació</ui-button></summary><div style="margin:0 1em; padding:1em; box-shadow:0 0 5px 2px black;">
 <!--
 <p ><b><span
@@ -642,7 +643,7 @@ PROTECCIÓN DE DATOS</span></b></p>
 			<div class="list">
 				
 				<div class="shopping-cart-items final">
-					<div v-for="item in cart" class="swiper-slide">
+					<div v-for="item in cart" v-bind:key="item" class="swiper-slide">
 						<span class="item-name">{{item.fullProduct.content[$i18n.locale].name}} [{{getProductType(item)}}]</span>
 						<span class="item-price">{{getProductPrice(item)}}€</span>
 						<span class="item-quantity"><!--{{$t('cart.quantity')}}:--> x {{item.quantity}} = </span>
@@ -652,7 +653,9 @@ PROTECCIÓN DE DATOS</span></b></p>
 
 				<span v-if="!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && cartTotalPrice < blackFriday.minimal)" class="finalPrice">+Despeses d'enviament 8,90€</span><br/><br/>
 				<span v-if="blackFriday.active(blackFriday) && blackFriday.discount && cartTotalPrice >= blackFriday.minimal" class="finalPrice"><strong>Descuento BlackFriday {{ (parseFloat( cartTotalPrice*blackFriday.discount ) ).toFixed(2) }}€</strong></span>
-				<span class="finalPrice"><strong>Total {{ (parseFloat( cartTotalPrice*(blackFriday.active(blackFriday)?1+blackFriday.discount:1) )+( (!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && blackFriday.freeShipping && cartTotalPrice < blackFriday.minimal) )?8.9:0)).toFixed(2) }}€</strong></span>
+				<span class="finalPrice"><strong>Total 
+					{{ (parseFloat( cartTotalPrice*(blackFriday.active(blackFriday)?1+blackFriday.discount:1) )+( (!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && blackFriday.freeShipping && (blackFriday.minimal > cartTotalPrice)) )?8.9:0)).toFixed(2) }}€
+				</strong></span>
 			</div>
 		</div>
 		
@@ -686,10 +689,10 @@ export default {
     return {
     	resultDone:'',
 		blackFriday: {
-			from:'2021-11-20',
-			to:'2021-11-30',
-			minimal:20,
-			discount:-0.15,
+			from:'2022-11-25',
+			to:'2022-11-30',
+			minimal:25,
+			discount:0, /*-0.15*/
 			freeShipping:true,
 			// use la funció active que rep el mateix objecte com a paràmetre i comprove si hui ha d'estar actiu el blackfriday
 			active: a => a.from <= (new Date()).toISOString().substr(0,10) && (new Date()).toISOString().substr(0,10) <= a.to

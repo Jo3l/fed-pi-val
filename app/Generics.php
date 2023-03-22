@@ -219,6 +219,12 @@ static public function generic_query(Request $request, Response $response, $para
     $tabla= Fun::tables($params['tabla'],'select');
 	$options= ['limit'=>Fun::$itemsPerPage];
 	if (in_array($tabla,['trinquet','producte'])) $options['limit']=PHP_INT_MAX; // canvie el limit per defecte si és trinquet (modificable per paràmetres a continuació)
+	if (in_array($tabla,['producte'])) {
+		// demane evitar cachear preus productes
+		header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+	}
 	if (in_array('p1',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p1'],$options,$tabla));
 	if (in_array('p2',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p2'],$options,$tabla));
 	if (in_array('p3',array_keys($params))) $options= array_merge(Generics::procesaparam($params['p3'],$options,$tabla));
@@ -321,7 +327,10 @@ static public function generic_query(Request $request, Response $response, $para
 				unset($data[$idx]);
 				continue;
 			}
-			$datacsv[$idx]['pagament']= $json['payment']=='cash-on-delivery'?'RB':$json['payment']=='ONLINE'?'targeta':'TRANSFER';
+			$datacsv[$idx]['pagament']= '???';
+			if ( $json['payment']=='cash-on-delivery' ) $datacsv[$idx]['pagament']='RB';
+			if ( $json['payment']=='online-pay') $datacsv[$idx]['pagament']='TARGETA';
+			if ( $json['payment']=='bank-transfer') $datacsv[$idx]['pagament']='TRANSFER';
 		}
 		return Fun::render($datacsv);
 		exit;

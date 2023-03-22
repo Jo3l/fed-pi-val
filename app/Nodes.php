@@ -341,7 +341,7 @@ static public function jerarquia($fill='competicions') {
 	unset($result);
 	$estructura= array();
 	//echo '<pre>',print_r($resultids),'</pre>';exit;
-	$antilock= 1000; // màxim de 1000 nodes
+	$antilock= 5000; // màxim de 5000 nodes
 	while (count($resultids)>1) {
 	    $last= array_pop($resultids);
 	    $pareid= $last['pare'];

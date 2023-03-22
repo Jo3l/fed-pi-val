@@ -47,7 +47,7 @@ class Fun
     public static $idiomes= array('val','es'); // tots els idiomes disponibles
     private static $rowcount= null; 
 	//private static $blackFriday= false;	// OJO !!! interval black friday definit en comprar()
-	private static $blackFridayObj= ["active"=>false, "from"=>'20211120', 'to'=>'20211130', 'minimal'=>20, 'shipment'=>0, 'discount'=>15];
+	private static $blackFridayObj= ["active"=>true, "from"=>'20221125', 'to'=>'20221130', 'minimal'=>25, 'shipment'=>0, 'discount'=>0];
 
     
 //  //  //  //  //  //  //  //
@@ -580,7 +580,7 @@ static public function participa(Request $request, Response $response, $params) 
 static public function partides(Request $request, Response $response, $params) {
 	$db= new db();
 	// compte: només lliste els que apareixen com a local
-	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and baixa is null and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+3 days'))."'  and (select pagina.baixa from pagina where id=partida.registreid) is null;");
+	$db->sql("select partida.*, (select nom from trinquet where lloc=trinquet.id) as nom_lloc, (select club from equip where equip.id=local) as clublocal, (select club from equip where equip.id=visitant) as clubvisitant, (select nom from equip where local=equip.id) as nom_inscripcio_local, (select nom from equip where visitant=equip.id) as nom_inscripcio_visitant, (select club.nom from club,equip where club.id=equip.club and local=equip.id) as nom_club_local, (select club.nom from club,equip where club.id=equip.club and visitant=equip.id) as nom_club_visitant,cami_es,cami_val from partida,_camins where jerarquia=_camins.id and (select club from equip where equip.id=local)=".$params['club']." and baixa is null and data>'".date('YmdHis',strtotime('-10 days'))."' and data<'".date('YmdHis',strtotime('+7 days'))."'  and (select pagina.baixa from pagina where id=partida.registreid) is null;");
 	$data = $db->all();
 	foreach($data as $id=>$elm) {
 		//$data[$id]['cami']['es']= str_replace('/','>',$data[$id]['cami_es']);
@@ -940,11 +940,13 @@ static public function resum_inscrits(Request $request, Response $response, $par
 	header("Expires: 0");
 	fprintf($df, chr(0xEF).chr(0xBB).chr(0xBF));
 	$output = fopen("php://output",'w') or die("Error: Can't open php://output");
-	fputcsv($output, ["id","nom","cognoms","actiu","neixement","equip","club","competicio","creacio","jutge"],";");
+	//fputcsv($output, ["id","nom","cognoms","actiu","neixement","equip","club","competicio","creacio","jutge"],";");
+	fputcsv($output, ["id","nom","cognoms","actiu","neixement",/*"nomequip",*/"altres","nomclub","competicio","creacio","jutge"],";");
 	foreach($data as $r) {
 		//if ($ara!=$r['cat']) echo '<h1>', $ara=$r['cat'], '</h1>';
 		//echo '<b>',$r['nomclub'], '</b><br/>';
-		$db->sql("select convert(numsoci,UNSIGNED) as numsoci,nom,cognoms,if(DATEDIFF(dataactiu,CURRENT_TIMESTAMP)<0,'inactiu','ACTIU') as estat, substring(naixement,1,4) as neix from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
+		//$db->sql("select convert(numsoci,UNSIGNED) as numsoci,nom,cognoms,if(DATEDIFF(dataactiu,CURRENT_TIMESTAMP)<0,'inactiu','ACTIU') as estat, substring(naixement,1,4) as neix from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
+		$db->sql("select convert(numsoci,UNSIGNED) as numsoci,nom,cognoms,if(DATEDIFF(dataactiu,CURRENT_TIMESTAMP)<0,'inactiu','ACTIU') as estat, substring(naixement,1,4) as neix,concat(if(substr(datajutge,1,8)=concat(substr(CURRENT_DATE,1,4),'1231'),'jutge ',''),if(substr(datamonitor,1,8)=concat(substr(CURRENT_DATE,1,4),'1231'),'monitor','')) as altres from pertany,jugador where pertany.jugador=jugador.id and equip=".$r['id']);
 		//foreach($db->all() as $rr) echo $r['nomclub'],' ',$r['nomclub'],': ',$rr['qui'],' (',$rr['neix'],')<br/>';
 		foreach($db->all() as $rr) {
 			$rr['nomequip']= $r['nom'];
