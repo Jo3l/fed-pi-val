@@ -1,6 +1,7 @@
 <template>
     <transition name="fade">
-		<div class="shopping-cart" >
+		<div v-if="vacances"><h1>Durant el periode de vacances no atenem comandes.</h1></div>
+		<div class="shopping-cart" v-if="!vacances">
 			<div class="shopping-cart-header">
 				<ui-icon icon="shopping_cart"></ui-icon><span class="badge">{{countCart}}</span>
 				<div class="shopping-cart-total">
@@ -559,10 +560,19 @@ PROTECCIÓN DE DATOS</span></b></p>
 			:options="shipping"
 			v-model="order.payment"
 		>{{$i18n.t('cart.payType')}}</ui-radio-group>
-		
+
+		<ui-radio-group
+			name="country"
+			:options="countries"
+			v-model="country"
+		>Pais</ui-radio-group>
+
 		<br>
 		
-		<div class="clientData">
+		<h1 v-if="country!='ES'">
+			No se permiten envios fuera de España con el sistema actual. Para solicitar un envio al extranjero, ponte en contacto&nbsp;<a href="mailto:botiga@fedpival.es">aquí</a>.
+		</h1>
+		<div class="clientData" v-if="country=='ES'">
 			<div class="form">
 				
 				<ui-textbox
@@ -659,7 +669,7 @@ PROTECCIÓN DE DATOS</span></b></p>
 			</div>
 		</div>
 		
-		<div slot="footer" v-if="!resultDone">
+		<div slot="footer" v-if="!resultDone && country=='ES'">
 			<ui-button @click="buy()" :loading="buyButtonDisable" :disabled="buyButtonDisable" color="fedpival">{{$i18n.t('modal.ok')}}</ui-button>
 			<ui-button @click="closeModal('buyModal')">{{$i18n.t('modal.cancel')}}</ui-button>
 		</div>
@@ -687,6 +697,7 @@ export default {
   components: { swiper, swiperSlide },
   data () {
     return {
+		vacances: new Date().toISOString().substr(5,5)>='08-07' && new Date().toISOString().substr(5,5)<='08-23',
     	resultDone:'',
 		blackFriday: {
 			from:'2022-11-25',
@@ -712,6 +723,11 @@ export default {
 		        value: 'online-pay'
 		    }
 		],
+		countries : [
+			{	label: 'Espanya/España',value:'ES' },
+			{	label: 'Altre.../Otro...',value:'' },
+		],
+		country: 'ES',
     	order:{
     		name:'',
     		surname:'',

@@ -91,7 +91,7 @@ export default {
 		save_on_other_lang: 'Guardar en ',
 		duplicate_on_other_lang: 'Duplicar en ',
 		page: 'pàgina',
-		calendar: 'calendari',
+		calendar: 'Calendari',
 		save: 'Guardar',
 		cancel: 'Cancelar',
 		delete: 'Borrar',

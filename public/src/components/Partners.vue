@@ -6,25 +6,29 @@
 		<div>
 			<a href="https://pilotaescola.gva.es/va/" target="_blank"><img src="/static/img/footer/pilotaalescola.jpg" alt="Pilota a l'Escola" title="Pilota a l'Escola" loading="lazy" style="width:128px !important"></a>
 			<a href="http://www.ceice.gva.es/ca/web/deporte/pilota-valenciana" target="_blank"><img src="/static/img/footer/logos-CVCdE-GV-FTA.png" alt="Conselleria d'Educació, Investigació, Cultura i Esport" title="Conselleria d'Educació, Investigació, Cultura i Esport" loading="lazy"></a>
+			<a href="https://gvaoberta.gva.es/va/regia" target="_blank"><img src="/static/img/footer/regia.jpg" alt="Regia. Tercer sector" title="Regia. Tercer sector" loading="lazy" style=""></a>
 			<a href="http://www.sempreteua.gva.es/ca/elements-promocionals" target="_blank"><img src="/static/img/footer/sempreteua.jpg" alt="Sempre Teua" title="Sempre Teua" loading="lazy"></a>
 			<a href="http://www.dival.es/" target="_blank"><img src="/static/img/footer/diputacioval.jpg" alt="Diputació de València" title="Diputació de València" loading="lazy"></a>
 			<a href="http://www.diputacionalicante.es" target="_blank"><img src="/static/img/footer/alacant.jpg" alt="Diputació d'Alacant" title="Diputació d'Alacant" loading="lazy"></a>
 			<a href="http://www.dipcas.es" target="_blank"><img src="/static/img/footer/castello.jpg" alt="Diputació de Castelló" title="Diputació de Castelló" loading="lazy"></a>
 			<a href="http://www.valencia.es" target="_blank"><img src="/static/img/footer/valencia.jpg" alt="Ajuntament de València" title="Ajuntament de València" loading="lazy"></a>
+			<a href="https://www.mancomunitat-safor.es/" target="_blank"><img src="/static/img/footer/mancomunitat_la_safor_1.png" alt="Mancomunitat La Safor" title="Mancomunitat La Safor" loading="lazy" style="width:200px !important; height:50px !important;"></a>
 			<!--a href="http://www.deportevalencia.com" target="_blank"><img src="/static/img/footer/fdm.jpg" alt="Fundació Esportiva Municipal" title="Fundació Esportiva Municipal" loading="lazy"></a>
 			<a href="https://fundaciontrinidadalfonso.org/va/" target="_blank"><img src="/static/img/footer/fta.jpg" alt="Trinidad Alfonso" title="Trinidad Alfonso" loading="lazy" style="width:128px !important" /></a-->
 		</div>
 		<div>
 			<a href="http://www.elcorteingles.es" target="_blank"><img src="/static/img/footer/eci.jpg" alt="El Corte Inglés" title="El Corte Inglés" loading="lazy"></a>
-			<a href="http://aprooptelecom.com" target="_blank"><img src="/static/img/footer/aproop.jpg" alt="aproop!" title="aproop!" loading="lazy"></a>
+			<!--a href="http://aprooptelecom.com" target="_blank"><img src="/static/img/footer/aproop.jpg" alt="aproop!" title="aproop!" loading="lazy"></a-->
 			<a href="http://www.edicom.es" target="_blank"><img src="/static/img/footer/edicom.jpg" alt="Edicom" title="Edicom" loading="lazy"></a>
 			<a href="http://www.caixapopular.es" target="_blank"><img src="/static/img/footer/caixapopular.jpg" alt="Caixa Popular" title="Caixa Popular" loading="lazy"></a>
 			<a href="http://www.bankia.es" target="_blank"><img src="/static/img/footer/bankia.jpg" alt="Bankia" title="Bankia" loading="lazy"></a>
 			<!--a href="http://www.acerbis.com/" target="_blank"><img src="/static/img/footer/acerbis.jpg" alt="Acerbis" title="Acerbis" loading="lazy"></a-->
 			<a href="https://labolata.com/" target="_blank"><img src="/static/img/footer/bolata.jpg" alt="La Bolata" title="La Bolata" loading="lazy"></a>
 			<a href="http://www.intersport.es/" target="_blank"><img src="/static/img/footer/intersport.jpg" alt="Intersport" title="Intersport" loading="lazy"></a>
-			<a href="https://www.aon.com" target="_blank"><img src="/static/img/footer/aon.jpg" alt="Aon" title="Aon" loading="lazy"></a>
+			<a href="https://www.aon.com" target="_blank"><img src="/static/img/footer/aon.jpg" alt="Aon" title="Aon" loading="lazy" style="width:100px !important;height:40px !important;"></a>
 			<a href="https://www.sgs.es/es-es/news/2015/11/iso-9001-2015" target="_blank"><img src="/static/img/footer/SGS_ISO 9001_TCL_HR.jpg" alt="iso 9001" title="iso 9001" loading="lazy"></a>
+			<a href="https://www.victortormo.com/" target="_blank"><img src="/static/img/footer/vito2.png" alt="Victor Tormo" title="Victor Tormo" loading="lazy" style="width:100px !important; height:50px !important;"></a>
+			<a href="https://www.rolser.com/" target="_blank"><img src="/static/img/footer/rolser.png" alt="Rolser" title="Rolser" loading="lazy" style="width:120px !important; height:30px !important;"></a>
 			<!--img src="/static/img/footer/iso.jpg" alt="ISO 9001" title="ISO 9001" loading="lazy">
 			<a href="http://lacaixa.es/" target="_blank"><img src="/static/img/footer/lacaixa.jpg" alt="La Caixa" title="La Caixa" loading="lazy"></a>
 			<a href="http://twitter.com/fedpival" target="_blank"><img src="/static/img/footer/tw.png" alt="Twitter" title="Twitter" loading="lazy"></a>

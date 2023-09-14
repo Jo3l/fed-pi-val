@@ -1,13 +1,14 @@
 <template>
     <transition name="fade">
 
-		<div class="shop" v-if=" type=='slider' ">
+		<div v-if="vacances"><h1>Durant el periode de vacances no atenem comandes.</h1></div>
+		<div class="shop" v-if="type=='slider' && !vacances">
 			<div class="avis-reis" v-show="reis">Avís: L'últim dia per a fer enviaments que arriben per a Reis serà el dia 29.</div>
 			<h1><ui-icon>shopping_cart</ui-icon> {{ $t('cart.highlightProducts') }}</h1>
 			
 		  <swiper :options="swiperOption" class="products">
 	
-		  	<swiper-slide v-for="product,i in products">
+		  	<swiper-slide v-for="product in products">
 			    <div class="item" >
 			    	
 		    	<item-container :product="product">
@@ -27,7 +28,7 @@
 		  </swiper>
 		</div>
 		
-		<div class="shop full" v-else="">
+		<div class="shop full" v-else >
 			<div class="avis-reis" v-show="reis">Avís: L'últim dia per a fer enviaments que arriben abans de Reis serà el dijous 29</div>
 			<h3 v-if="categoria" @click="setCategoria('all')">{{$i18n.t('cart.viewAllProducts')}}</h3>
 			<div class="products">
@@ -71,6 +72,7 @@ export default {
   },
   data () {
     return {
+		vacances: new Date().toISOString().substr(5,5)>='08-07' && new Date().toISOString().substr(5,5)<='08-23',
     	categoria:'',
     	allProducts:[],
 	    swiperOption: {
