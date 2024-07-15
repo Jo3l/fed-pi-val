@@ -29,7 +29,7 @@
 				<ui-icon-button icon="expand_more" type="primary" class="swiper-button-next cart" slot="button-next" v-if="cart.length>0"></ui-icon-button>
 			</swiper>
 
-			<ui-button icon="shopping_cart" :class="cart.length>0 && cartTotalPrice>=10?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0 || cartTotalPrice<10" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}} <span v-if="cartTotalPrice<10" style="white-space:nowrap">...minim 10€!</span></ui-button>
+			<ui-button icon="shopping_cart" :class="cart.length>0 && (cartTotalPrice>=10 || (cart.every(item=>item['id']==363)))?'checkout':'checkout disabled'" color="fedpival" :disabled="cart.length<=0 || (cartTotalPrice<10 && !cart.every(item=>item['id']==363))" @click="openModal('buyModal')">{{$i18n.t('cart.buy')}} <span v-if="cartTotalPrice<10 && !cart.every(item=>item['id']==363)" style="white-space:nowrap">...minim 10€!</span></ui-button>
 
 			<ui-modal size="large" ref="buyModal" :title="$i18n.t('cart.customerData')">
 				
@@ -663,8 +663,9 @@ PROTECCIÓN DE DATOS</span></b></p>
 
 				<span v-if="!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && cartTotalPrice < blackFriday.minimal)" class="finalPrice">+Despeses d'enviament 8,90€</span><br/><br/>
 				<span v-if="blackFriday.active(blackFriday) && blackFriday.discount && cartTotalPrice >= blackFriday.minimal" class="finalPrice"><strong>Descuento BlackFriday {{ (parseFloat( cartTotalPrice*blackFriday.discount ) ).toFixed(2) }}€</strong></span>
+				<span class="finalPrice" v-if="cart.every(item=>item['id']==363)">-8,90 (entrades enviament gratis)</span> 
 				<span class="finalPrice"><strong>Total 
-					{{ (parseFloat( cartTotalPrice*(blackFriday.active(blackFriday)?1+blackFriday.discount:1) )+( (!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && blackFriday.freeShipping && (blackFriday.minimal > cartTotalPrice)) )?8.9:0)).toFixed(2) }}€
+					{{ (parseFloat( cartTotalPrice*(blackFriday.active(blackFriday)?1+blackFriday.discount:1) ) + ( (!blackFriday.active(blackFriday) || (blackFriday.active(blackFriday) && blackFriday.freeShipping && (blackFriday.minimal > cartTotalPrice)) )?8.9:0) + (cart.every(item=>item['id']==363) ? -8.9 : 0) ).toFixed(2) }}€
 				</strong></span>
 			</div>
 		</div>

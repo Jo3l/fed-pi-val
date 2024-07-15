@@ -5,10 +5,10 @@
 			<div class="product">
 				<aside :class="product.images.length>1?'images':'images single'" v-if="product.images.length>0">	
 				    <swiper :options="swiperOptionThumbs" class="gallery-thumbs" ref="swiperThumbs" v-if="product.images.length>1">
-				        <swiper-slide v-for="image in product.images" :style="'background-image:url('+ image.thumb +');'"></swiper-slide>
+				        <swiper-slide v-for="(image,ix) in product.images" :style="'background-image:url('+ image.thumb +');'" :key="ix"></swiper-slide>
 				    </swiper>
 					<swiper :options="swiperOptionTop" class="gallery-top" ref="swiperTop">
-						<swiper-slide class="swipe" v-for="image in product.images" :style="'background-image:url('+ image.img +');'"></swiper-slide>
+						<swiper-slide class="swipe" v-for="(image,ix) in product.images" :style="'background-image:url('+ image.img +');'" :key="ix"></swiper-slide>
 					  	<ui-icon-button icon="chevron_left" type="primary" class="swiper-button-prev prod" slot="button-prev"></ui-icon-button>
 						<ui-icon-button icon="chevron_right" type="primary" class="swiper-button-next prod" slot="button-next"></ui-icon-button>
 				    </swiper>
@@ -31,7 +31,7 @@
 			        <div class="swatches" v-bind:style="{ 'visibility': product.types.length>1?'':'hidden' }">
 	                    <div class="swatch">
 	                      <div class="header">{{$i18n.t('cart.options')}}</div>
-	                      <div class="swatch-element plain" v-for="(variation,index) in getVariations(product)">
+	                      <div class="swatch-element plain" v-for="(variation,index) in getVariations(product)" :key="index">
 	                        <input type="radio" :id="'swatch-'+index+'-variation'" name="variation" :value="variation" @click="function(){typeSelected=variation;productSelected = selectProduct( product, typeSelected);}"/>
 	                        <label :for="'swatch-'+index+'-variation'">
 	                        {{variation}}
@@ -296,7 +296,8 @@ export default {
 	},
 	beforeMount() {
 			if(this.$route.params.slug) {
-				this.getData('producte/slug/'+this.$route.params.slug);
+				// afegisc random en la URL per obligar que baixe la última versió sempre
+				this.getData('producte/slug/'+this.$route.params.slug+'?'+Math.random());
 			}
 	},
 	mounted: function() {
@@ -304,7 +305,8 @@ export default {
 	  		
 	},
 	beforeRouteUpdate (to, from, next) {
-    	this.getData('producte/slug/'+to.params.slug);
+		// afegisc random en la URL per obligar que baixe la última versió sempre
+    	this.getData('producte/slug/'+to.params.slug+'?'+Math.random());
     	next();
 	}
 	

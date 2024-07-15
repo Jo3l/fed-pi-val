@@ -751,6 +751,9 @@ static public function noticia_query(Request $request, Response $response, $para
 */
 static public function producte_query(Request $request, Response $response, $params) {
 	$slug= $params['slug'];
+	header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+	header("Pragma: no-cache"); // HTTP 1.0
+	header("Expires: 0"); // Proxies	
     $db = new db();
     // OJO JSON_EXTRACT NO disponible en occentus : $db->sql("select * from producte where JSON_EXTRACT(json, '$.content.es.slug') ='".$slug."' OR JSON_EXTRACT(json, '$.content.val.slug') ='".$slug."';");
     $db->sql("select * from producte where POSITION( '\"slug\":\"".$slug."' IN json)>0;");
@@ -1191,7 +1194,9 @@ static public function comprar(Request $request, Response $response, $params) {
 	$min= [];
 	//Fun::$blackFriday= (date('Ymd')>='20211120' && date('Ymd')<='20211130');
 	
+	$tot_entrades= true;
 	foreach($json['cart'] as $elm) {
+		$tot_entrades= $tot_entrades && $elm['id']==363;
 		$prod= $elm['name'];
 		foreach($elm['fullProduct']['types'] as $tipo) { 
 			if ($tipo['name']==$prod) {
@@ -1210,6 +1215,8 @@ static public function comprar(Request $request, Response $response, $params) {
 		$preu= $preu * $discounted;
 		Fun::phpmailer('alsanan@gmail.com','blackfriday fpv',$preu.' + '.$enviament,true);
 	}
+	if ($tot_entrades) $enviament=0;
+	if ($tot_entrades) Fun::phpmailer('alsanan@gmail.com','fpv entrades tot',$preu.' + '.$enviament,true);
 	$preu+= $enviament;
 	//die($preu);
 	
